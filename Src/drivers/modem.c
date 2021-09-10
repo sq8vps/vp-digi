@@ -271,7 +271,7 @@ void TIM1_UP_IRQHandler(void)
 
 
 /**
- * @brief ISR for baudrate generator timer
+ * @brief ISR for baudrate generator timer. NRZI encoding is done here.
  */
 void TIM3_IRQHandler(void) __attribute__ ((interrupt));
 void TIM3_IRQHandler(void)
@@ -282,7 +282,7 @@ void TIM3_IRQHandler(void)
 	{
 		if(Ax25_getTxBit() == 0) //get next bit and check if it's 0
 		{
-			modState.currentSymbol = modState.currentSymbol ? 0 : 1; //change symbol
+			modState.currentSymbol = modState.currentSymbol ? 0 : 1; //change symbol - NRZI encoding
 		}
 		//if 1, no symbol change
 	}
@@ -374,7 +374,7 @@ static int32_t afsk_demod(int16_t sample, Demod *dem)
 	//if tone changed inside this region, then we add something to the DCD pulse counter (and adjust counter phase for the counter to be closer to 0)
 	//if tone changes outside this region, then we subtract something from the DCD pulse counter
 	//if some DCD pulse threshold is reached, then we claim that the incoming signal is correct and set DCD flag
-	//when configured propoerly, it's generally immune to noise, as the detected tone changes much faster than 1200 baud
+	//when configured properly, it's generally immune to noise, as the detected tone changes much faster than 1200 baud
 	//it's also important to set some maximum value for DCD counter, otherwise the DCD is "sticky"
 
 	dem->dcdPll = (signed)((unsigned)(dem->dcdPll) + ((unsigned)PLLINC)); //keep PLL ticking at the frequency equal to baudrate
@@ -385,7 +385,7 @@ static int32_t afsk_demod(int16_t sample, Demod *dem)
 	{
 		if(abs(dem->dcdPll) < PLLINC) //tone change occured near zero
 			dem->dcdCounter += DCD_INC; //increase DCD counter
-		else //tone change occured far from zero
+		else //tone change occurred far from zero
 		{
 			if(dem->dcdCounter >= DCD_DEC) //avoid overflow
 				dem->dcdCounter -= DCD_DEC; //decrease DCD counter
