@@ -23,6 +23,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include "common.h"
 
+
 /*
  * Configuration for PLL-based data carrier detection
  * DCD_MAXPULSE is the maximum value of the DCD pulse counter
@@ -602,6 +603,12 @@ static void afsk_ptt(uint8_t state)
  */
 void Afsk_init(void)
 {
+	/**
+	 * TIM1 is used for pushing samples to DAC (R2R or PWM)
+	 * TIM3 is the baudrate generator for TX
+	 * TIM4 is the PWM generator with no software interrupt
+	 * TIM2 is the RX sampling timer with no software interrupt, but it directly calls DMA
+	 */
 
 	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
 	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
