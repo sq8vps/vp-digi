@@ -1,0 +1,13 @@
+# 1.2.0 (2021-09-10)
+This is the very first open-source VP-Digi release.
+## New features
+* Viscous-delay and direct-only modes are enabled separately for each digipeater alias: ```digi <0-7> viscous [on/off]``` and ``` digi <0-7> direct [on/off] ```.
+**When updating from version <1.2.0 please erase configuration or set new settings carefully.**
+* Selectable signal input type: normal (filtered) audio or flat (unfiltered) audio: ```flat [on/off]``` - switches modem settings - before v. 1.2.0 was hardcoded for normal audio
+* Erase all settings command: ```eraseall```
+## Bug fixes
+* none
+## Other
+* Code was partially rewritten (especially digipeater, modem and AX.25 layer)
+## Known bugs
+* none as far

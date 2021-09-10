@@ -1,0 +1,43 @@
+#ifndef DRIVERS_AFSK_H_
+#define DRIVERS_AFSK_H_
+
+//#define ALVLDBG
+
+#include "systick.h"
+#include "stm32f10x.h"
+#include <math.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "variables.h"
+#include "common.h"
+#include "ax25.h"
+
+#ifdef ALVLDBG
+#include "drivers/uart.h"
+#endif
+
+#define NN 8 //probkowanie/baudrate
+
+#define PTT_ON GPIOC->BSRR = GPIO_BSRR_BS14
+#define PTT_OFF GPIOC->BSRR = GPIO_BSRR_BR14
+#define DCD_ON (GPIOC->BSRR = GPIO_BSRR_BR13)
+#define DCD_OFF (GPIOC->BSRR = GPIO_BSRR_BS13)
+
+void afsk_decode(uint8_t);
+int32_t afsk_demod(int16_t);
+void DMA1_Channel2_IRQHandler(void) __attribute__ ((interrupt));
+void DMA1_Channel2_IRQHandler(void);
+void TIM2_IRQHandler(void) __attribute__ ((interrupt));
+void TIM2_IRQHandler(void);
+void TIM3_IRQHandler(void) __attribute__ ((interrupt));
+void TIM3_IRQHandler(void);
+void afsk_sendTone(uint8_t);
+void afsk_sendFlag(uint8_t);
+void afsk_transmitTestStart(uint8_t);
+void afsk_transmitTestStop(void);
+void afsk_transmitStart(void);
+void afsk_transmitStop(void);
+void afsk_init(void);
+
+
+#endif
