@@ -22,6 +22,8 @@ DCD uses an analog-digital approach: based on PLL, but working on a digital unfi
 AX.25 encoder is also quite simple. It can handle multiple frames in a row (limited by buffer length). Every transmission starts with preamble flags, then header flags, actual data, CRC, footer/separating flags, actual data, CRC, footer/separating flags... and tail flags. Raw bits are requested by the modulator.
 ### Modulator (and NRZI encoder)
 The NRZI encoder runs at exactly 1200Hz (=1200 Baud) and requests bits from the AX.25 encoder. Bits are encoded to symbols and the DAC sampling timer interval is set depending on symbol value. Because of that there is only one sine table used. For 1200Hz tone the timer interval is larger than for 2200 Hz tone - the sampling frequency is changed to change the output signal frequency. An array index is always kept so that the output signal phase is continuous.
+## Using VP-Digi code in your project
+I would love to hear about projects which implement VP-Digi source code. If you are making one, let me know at sq8vps<at>gmail.com.
 ## References
 The project took a lot of time, but now it's probably the most effective, publicly available, STM32-based modem and the most customizable microcontroller-based APRS digipeater. I would like to mention some resources I found really useful or inspiring:
 * [multimon-ng](https://github.com/EliasOenal/multimon-ng) - general demodulator idea (correlation)
