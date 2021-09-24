@@ -25,7 +25,7 @@ The NRZI encoder runs at exactly 1200Hz (=1200 Baud) and requests bits from the 
 ## Using VP-Digi code in your project
 I would love to hear about projects which implement VP-Digi source code. If you are making one, let me know at sq8vps(at)gmail.com.
 ## References
-The project took a lot of time, but now it's probably the most effective, publicly available, STM32-based modem and the most customizable microcontroller-based APRS digipeater. I would like to mention some resources I found really useful or inspiring:
+The project took a lot of time to finish, but now it's probably the most effective, publicly available, STM32-based modem and the most customizable microcontroller-based APRS digipeater. I would like to mention some resources I found really useful or inspiring:
 * [multimon-ng](https://github.com/EliasOenal/multimon-ng) - general demodulator idea (correlation)
 * [BeRTOS](https://github.com/develersrl/bertos) - AX.25 decoder
 * [Forum thread by SP8EBC](http://forum.aprs.pl/index.php?topic=2086.0) - inspiration
