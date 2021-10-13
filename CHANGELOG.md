@@ -1,3 +1,12 @@
+# 1.2.1 (2021-10-13)
+## New features
+* none
+## Bug fixes
+* Digi max and rep values could not be entered when only <LF> line ending was used.
+## Other
+* none
+## Known bugs
+* none as far
 # 1.2.0 (2021-09-10)
 This is the very first open-source VP-Digi release.
 ## New features
