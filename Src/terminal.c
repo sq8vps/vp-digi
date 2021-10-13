@@ -1347,7 +1347,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 
 				uint8_t err = 0;
 
-				if(!(cmd[12] == '\r') || (cmd[12] == '\n'))
+				if(!((cmd[12] == '\r') || (cmd[12] == '\n')))
 				{
 					err = 1;
 				}
