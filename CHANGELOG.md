@@ -2,7 +2,7 @@
 ## New features
 * none
 ## Bug fixes
-* Digi max and rep values could not be entered when only <LF> line ending was used.
+* Digi max and rep values could not be entered when only LF line ending was used.
 ## Other
 * none
 ## Known bugs
