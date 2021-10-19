@@ -168,7 +168,7 @@ void handleFrame(void)
 
 		if(ax25.sLvl > 100)
 		{
-			term_sendMonitor((uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 50-70\%.\r\n", 0);
+			term_sendMonitor((uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 50-70%.\r\n", 0);
 		}
 
 		if(ax25.sLvl < 10)
@@ -198,7 +198,7 @@ void handleFrame(void)
 		term_sendMonitor(t, 3);
 		term_sendMonitor((uint8_t*)"], signal level ", 0);
 		term_sendMonitorNumber(ax25.sLvl);
-		term_sendMonitor((uint8_t*)"\%: ", 0);
+		term_sendMonitor((uint8_t*)"%: ", 0);
 
 		term_sendMonitor(bufto, 0);
 		term_sendMonitor((uint8_t*)"\r\n", 0);
