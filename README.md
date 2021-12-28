@@ -1,6 +1,15 @@
 # VP-Digi
 VP-Digi is a functional, cheap, easy to assemble and configure STM32-based APRS digipeater controller with built-in KISS modem.
 
+* 1200 Bd Bell 202 modem (VHF APRS standard)
+* R2R or PWM signal generation
+* Analog-digital busy channel detection (data carrier detection)
+* AX.25 coder/decoder designed for APRS frames
+* digipeater: 4 settable n-N aliases, 4 simple aliases, viscous delay (known from aprx) or direct only, black and white list
+* 8 independent beacons
+* KISS mode (can be used as an ordinary modem with UI-View, APRSIS32, XASTIR etc.)
+* USB and 2 UARTs: independent, running in KISS, monitor or configuration mode
+
 ## Description, schematic, instructions
 If you are not interested in source code, this repository is not for you. You can find full project description, schematics, compiled firmware and instructions [on my website](https://sq8l.pzk.pl/index.php/vp-digi-cheap-and-functional-aprs-digipeater-controller-with-kiss-modem/).
 
