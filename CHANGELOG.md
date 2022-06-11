@@ -1,3 +1,12 @@
+# 1.2.2 (2022-06-11)
+## New features
+* none
+## Bug fixes
+* Default de-dupe time was 0, backspace was sometimes stored in config, frame length was not checked in viscous delay mode
+## Other
+* none
+## Known bugs
+* none as far
 # 1.2.1 (2021-10-13)
 ## New features
 * none
