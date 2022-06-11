@@ -162,13 +162,13 @@ void handleFrame(void)
 		//that should give a RMS of around 2900 for pure sine wave
 		//for pure square wave it should be equal to the amplitude (around 4095)
 		//real data contains lots of imperfections (especially mark/space amplitude imbalance) and this value is far smaller than 2900 for standard frames
-		//division by 9 was selected by trial and error to provide a value of 100(%) when the input signal having peak-peak voltage of almost 3.3V
+		//division by 9 was selected by trial and error to provide a value of 100(%) when the input signal had peak-peak voltage of 3.3V
 		//this probably should be done in a different way, like some peak amplitude tracing
 		ax25.sLvl /= 9;
 
 		if(ax25.sLvl > 100)
 		{
-			term_sendMonitor((uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 50-70\%.\r\n", 0);
+			term_sendMonitor((uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 50-70%.\r\n", 0);
 		}
 
 		if(ax25.sLvl < 10)
@@ -192,13 +192,13 @@ void handleFrame(void)
 			else
 				t[1] = 'P';
 		}
-		else t
-			[1] = '_';
+		else
+			t[1] = '_';
 
 		term_sendMonitor(t, 3);
 		term_sendMonitor((uint8_t*)"], signal level ", 0);
 		term_sendMonitorNumber(ax25.sLvl);
-		term_sendMonitor((uint8_t*)"\%: ", 0);
+		term_sendMonitor((uint8_t*)"%: ", 0);
 
 		term_sendMonitor(bufto, 0);
 		term_sendMonitor((uint8_t*)"\r\n", 0);
@@ -275,6 +275,7 @@ int main(void)
 	ax25Cfg.quietTime = 300;
 	ax25Cfg.txDelayLength = 300;
 	ax25Cfg.txTailLength = 30;
+	digi.dupeTime = 30;
 
 	Config_read();
 

@@ -225,7 +225,7 @@ void Ax25_bitParse(uint8_t bit, uint8_t modemNo)
 
 	if(++rx->rBitIdx >= 8) //received full byte
 	{
-		if(rx->frameIdx > FRAMELEN) //frame is top long
+		if(rx->frameIdx > FRAMELEN) //frame is too long
 		{
 			rx->rx = RX_STAGE_IDLE;
 			rx->recByte = 0;
@@ -233,6 +233,7 @@ void Ax25_bitParse(uint8_t bit, uint8_t modemNo)
 			rx->frameIdx = 0;
 			rx->crc = 0xFFFF;
 			Afsk_clearRMS(modemNo);
+			return;
 		}
 		if(rx->frameIdx >= 2) //more than 2 bytes received, calculate CRC
 		{

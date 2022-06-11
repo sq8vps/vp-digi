@@ -55,6 +55,8 @@ void term_handleSpecial(Terminal_stream src)
 				if(spLastIdx[0] > 0)
 					spLastIdx[0]--; //1 character was removed
 			}
+			else //there was only a backspace
+				usbcdcidx = 0;
 		}
 		uint16_t t = usbcdcidx; //store last index
 		if(spLastIdx[0] < t) //local echo handling
@@ -93,6 +95,8 @@ void term_handleSpecial(Terminal_stream src)
 				if(spLastIdx[nr] > 0)
 					spLastIdx[nr]--; //1 character was removed
 			}
+			else //there was only a backspace
+				u->bufrxidx = 0;
 		}
 		uint16_t t = u->bufrxidx; //store last index
 		if(spLastIdx[nr] < t) //local echo handling

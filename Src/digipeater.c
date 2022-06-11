@@ -177,6 +177,10 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
         		break;
         	}
         }
+
+    	if((len + 7) > FRAMELEN) //if frame length (+ 7 bytes for inserted call) is bigger than buffer size
+    		return; //drop
+
     	buf = viscousBuf[viscousSlot];
     }
     else //normal mode
@@ -207,7 +211,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     	}
     }
 
-    if(simple) //if this is a simple alias, our own call or we treat n-N as a simple alias OR it
+    if(simple) //if this is a simple alias, our own call or we treat n-N as a simple alias
     {
     	while(bufidx < (len)) //copy whole frame
     	{
@@ -308,8 +312,8 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     		term_sendMonitor((uint8_t*)"(AX.25) Digipeating frame: ", 0);
     		term_sendMonitor(buf, 0);
     		term_sendMonitor((uint8_t*)"\r\n", 0);
-    		free(buf);
         }
+		free(buf);
 	}
 }
 
