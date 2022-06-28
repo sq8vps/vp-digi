@@ -6,7 +6,7 @@
 ## Other
 * none
 ## Known bugs
-* none as far
+* none so far
 # 1.2.1 (2021-10-13)
 ## New features
 * none
@@ -15,7 +15,7 @@
 ## Other
 * none
 ## Known bugs
-* none as far
+* none so far
 # 1.2.0 (2021-09-10)
 This is the very first open-source VP-Digi release.
 ## New features
@@ -28,4 +28,4 @@ This is the very first open-source VP-Digi release.
 ## Other
 * Code was partially rewritten (especially digipeater, modem and AX.25 layer)
 ## Known bugs
-* none as far
+* none so far
