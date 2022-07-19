@@ -6,7 +6,7 @@
 ## Other
 * none
 ## Known bugs
-* none so far
+* USB in KISS mode has problem with TX frames
 # 1.2.1 (2021-10-13)
 ## New features
 * none
