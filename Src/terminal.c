@@ -27,7 +27,7 @@ uint8_t termBuf[TERMBUFLEN]; //terminal mode TX buffer
 uint16_t termBufIdx = 0; //terminal mode TX buffer index
 
 
-static uint16_t spLastIdx[3] = {0, 0, 0}; //index buffer was "special" terminal cases
+uint16_t spLastIdx[3] = {0, 0, 0}; //index buffer was "special" terminal cases
 
 /**
  * @brief Handle "special" terminal cases like backspace or local echo

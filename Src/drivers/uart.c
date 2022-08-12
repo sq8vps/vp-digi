@@ -16,6 +16,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "drivers/uart.h"
+#include "drivers/systick.h"
 #include "terminal.h"
 #include "ax25.h"
 #include "common.h"
@@ -66,7 +67,6 @@ uint8_t Uart_txKiss(uint8_t *buf, uint16_t len)
 	return 0;
 }
 
-
 static volatile void uart_handleInterrupt(Uart *port)
 {
 	if(port->port->SR & USART_SR_RXNE) //byte received
@@ -81,6 +81,8 @@ static volatile void uart_handleInterrupt(Uart *port)
 
 		port->bufrxidx %= UARTBUFLEN;
 
+		if(port->mode == MODE_KISS)
+			port->kissTimer = ticks + 500; //set timeout to 5s in KISS mode
 	}
 	if(port->port->SR & USART_SR_IDLE) //line is idle, end of data reception
 	{
@@ -88,14 +90,16 @@ static volatile void uart_handleInterrupt(Uart *port)
 		if(port->bufrxidx == 0)
 			return; //no data, stop
 
-		if((port->bufrx[0] == 0xc0) /*&& (port->bufrx[1] == 0x00)*/ && (port->bufrx[port->bufrxidx - 1] == 0xc0)) //data starts and ends with 0xc0, this is a KISS frame
+		if((port->bufrx[0] == 0xc0) && (port->bufrx[port->bufrxidx - 1] == 0xc0))   //data starts with 0xc0 and ends with 0xc0 - this is a KISS frame
 		{
 			port->rxflag = DATA_KISS;
+			port->kissTimer = 0;
 		}
 
 		if(((port->bufrx[port->bufrxidx - 1] == '\r') || (port->bufrx[port->bufrxidx - 1] == '\n'))) //data ends with \r or \n, process as data
 		{
 			port->rxflag = DATA_TERM;
+			port->kissTimer = 0;
 		}
 
 	}
@@ -110,6 +114,13 @@ static volatile void uart_handleInterrupt(Uart *port)
 			port->txflag = 0; //stop transmission
 			port->port->CR1 &= ~USART_CR1_TXEIE;
 		}
+	}
+
+	if((port->kissTimer > 0) && (ticks >= port->kissTimer)) //KISS timer timeout
+	{
+		port->kissTimer = 0;
+		port->bufrxidx = 0;
+		memset(port->bufrx, 0, UARTBUFLEN);
 	}
 }
 
@@ -251,6 +262,7 @@ void uart_init(Uart *port, USART_TypeDef *uart, uint32_t baud)
 	port->buftxwr = 0;
 	port->mode = MODE_KISS;
 	port->enabled = 0;
+	port->kissTimer = 0;
 	memset(port->bufrx, 0, UARTBUFLEN);
 	memset(port->buftx, 0, UARTBUFLEN);
 }

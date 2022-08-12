@@ -79,6 +79,7 @@ ProjectManager.PreviousToolchain=SW4STM32
 ProjectManager.ProjectBuild=false
 ProjectManager.ProjectFileName=F103C8T6_DIGI_USB.ioc
 ProjectManager.ProjectName=F103C8T6_DIGI_USB
+ProjectManager.RegisterCallBack=
 ProjectManager.StackSize=0x400
 ProjectManager.TargetToolchain=SW4STM32
 ProjectManager.ToolChainLocation=
