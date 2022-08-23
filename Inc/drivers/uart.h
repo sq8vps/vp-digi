@@ -50,6 +50,7 @@ typedef struct
 	uint16_t buftxrd, buftxwr; //tx buffer indexes
 	Uart_mode mode; //uart mode
 	uint8_t enabled;
+	uint32_t kissTimer;
 } Uart;
 
 Uart uart1, uart2;

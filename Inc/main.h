@@ -17,7 +17,7 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
+
 /*
 This file is part of VP-Digi.
 
@@ -34,6 +34,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* USER CODE END Header */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H

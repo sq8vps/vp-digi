@@ -178,7 +178,7 @@ void handleFrame(void)
 
 		term_sendMonitor((uint8_t*)"(AX.25) Frame received [", 0); //show which modem received the frame: [FP] (flat and preemphasized), [FD] (flat and deemphasized - in flat audio input mode)
 																   //[F_] (only flat), [_P] (only preemphasized) or [_D] (only deemphasized - in flat audio input mode)
-		uint8_t t[3] = {0};
+		uint8_t t[2] = {0};
 		if(modemReceived & 1)
 		{
 			t[0] = 'F';
@@ -195,7 +195,7 @@ void handleFrame(void)
 		else
 			t[1] = '_';
 
-		term_sendMonitor(t, 3);
+		term_sendMonitor(t, 2);
 		term_sendMonitor((uint8_t*)"], signal level ", 0);
 		term_sendMonitorNumber(ax25.sLvl);
 		term_sendMonitor((uint8_t*)"%: ", 0);
@@ -297,10 +297,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+	static uint32_t usbKissTimer = 0;
   while (1)
   {
     /* USER CODE END WHILE */
-	/* USER CODE BEGIN 3 */
+
+    /* USER CODE BEGIN 3 */
 	  Wdog_reset();
 
 	  if(ax25.frameReceived)
@@ -316,16 +319,29 @@ int main(void)
 	  if(USBint) //USB "interrupt"
 	  {
 		  USBint = 0; //clear
+
+		  if(USBmode == MODE_KISS) //is USB in KISS mode?
+			  usbKissTimer = ticks + 500; //set timeout to 5s
+
 		  term_handleSpecial(TERM_USB); //handle special characters (e.g. backspace)
 		  if((usbcdcdata[0] == 0xc0) && /*(usbcdcdata[1] == 0x00) &&*/ (usbcdcdata[usbcdcidx - 1] == 0xc0)) //probably a KISS frame
 		  {
 			  USBrcvd = DATA_KISS;
+			  usbKissTimer = 0;
 		  }
 
 		  if(((usbcdcdata[usbcdcidx - 1] == '\r') || (usbcdcdata[usbcdcidx - 1] == '\n'))) //proabably a command
 		  {
 			  USBrcvd = DATA_TERM;
+			  usbKissTimer = 0;
 		  }
+	  }
+
+	  if((usbKissTimer > 0) && (ticks >= usbKissTimer)) //USB KISS timer timeout
+	  {
+		  usbcdcidx = 0;
+		  memset(usbcdcdata, 0, UARTBUFLEN);
+		  usbKissTimer = 0;
 	  }
 
 
@@ -373,7 +389,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -386,7 +402,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -447,7 +463,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

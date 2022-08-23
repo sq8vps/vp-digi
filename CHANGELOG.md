@@ -1,3 +1,21 @@
+# 1.2.3 (2022-08-23)
+## New features
+* none
+## Bug fixes
+* KISS TX (UART and USB) buffer overrun, minor changes
+## Other
+* none
+## Known bugs
+* none as far
+# 1.2.2 (2022-06-11)
+## New features
+* none
+## Bug fixes
+* Default de-dupe time was 0, backspace was sometimes stored in config, frame length was not checked in viscous delay mode
+## Other
+* none
+## Known bugs
+* USB in KISS mode has problem with TX frames
 # 1.2.2 (2022-06-11)
 ## New features
 * none

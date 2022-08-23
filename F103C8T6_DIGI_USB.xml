@@ -12,7 +12,7 @@
 <targetDefinitions>
   <board id="f103c8t6_digi_usb">
     <name>F103C8T6_DIGI_USB</name>
-    <dbgIF>SWD</dbgIF>
+    <dbgIF>JTAG</dbgIF>
     <dbgDEV>ST-Link</dbgDEV>
     <mcuId>stm32f103c8tx</mcuId>
   </board>

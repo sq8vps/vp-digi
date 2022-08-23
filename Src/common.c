@@ -25,7 +25,7 @@ uint8_t callSsid = 0;
 
 const uint8_t dest[7] = {130, 160, 156, 172, 96, 98, 96}; //APNV01-0
 
-const uint8_t *versionString = (const uint8_t*)"VP-Digi v. 1.2.2\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
+const uint8_t *versionString = (const uint8_t*)"VP-Digi v. 1.2.3\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
 
 uint8_t autoReset = 0;
 uint32_t autoResetTimer = 0;
