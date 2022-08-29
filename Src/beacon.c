@@ -81,6 +81,9 @@ void Beacon_send(uint8_t no)
 			ax25.frameXmit[ax25.xmitIdx++] = buf[i]; //copy frame to main TX buffer
 		}
 
+        if(kissMonitor) //monitoring mode, send own frames to KISS ports
+        	SendKiss(ax25.frameXmit, ax25.xmitIdx);
+
 		ax25.frameXmit[ax25.xmitIdx++] = 0xFF; //frame separator
 		Digi_storeDeDupeFromXmitBuf(frameStart); //store frame hash in duplicate protection buffer (to prevent from digipeating own packets)
 

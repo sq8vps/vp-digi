@@ -93,7 +93,7 @@ void handleFrame(void)
 	uint8_t modemReceived = ax25.frameReceived; //store states
 	ax25.frameReceived = 0; //clear flag
 
-	uint8_t bufto[FRAMELEN + 30], buf[FRAMELEN]; //bufory dla konwersji ramki z formatu APRS do TNC2
+	uint8_t bufto[FRAMELEN + 30], buf[FRAMELEN]; //buffer for raw frames to TNC2 frames conversion
 	uint16_t bufidx = 0;
 	uint16_t i = ax25.frameBufRd;
 
@@ -119,38 +119,7 @@ void handleFrame(void)
 	}
 
 
-	Uart *u = &uart1;
-
-	for(uint8_t i = 0; i < 2; i++)
-	{
-		if(u->mode == MODE_KISS) //check if KISS mode
-		{
-			uart_sendByte(u, 0xc0); //send data in kiss format
-			uart_sendByte(u, 0x00);
-			for(uint16_t j = 0; j < (bufidx); j++)
-			{
-				uart_sendByte(u, buf[j]);
-			}
-			uart_sendByte(u, 0xc0);
-			uart_transmitStart(u);
-		}
-		u = &uart2;
-	}
-
-	if(USBmode == MODE_KISS) //check if USB in KISS mode
-	{
-		uint8_t t[2] = {0xc0, 0};
-
-		CDC_Transmit_FS(&t[0], 1);
-		CDC_Transmit_FS(&t[1], 1);
-
-		for(uint16_t i = 0; i < (bufidx); i++)
-		{
-			CDC_Transmit_FS(&buf[i], 1);
-
-		}
-		CDC_Transmit_FS(&t[0], 1);
-	}
+	SendKiss(buf, bufidx); //send KISS frames if ports available
 
 
 	if(((USBmode == MODE_MONITOR) || (uart1.mode == MODE_MONITOR) || (uart2.mode == MODE_MONITOR)))

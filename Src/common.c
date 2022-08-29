@@ -19,16 +19,19 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include <math.h>
 #include <stdlib.h>
+#include "drivers/uart.h"
+#include "usbd_cdc_if.h"
 
 uint8_t call[6] = {'N' << 1, '0' << 1, 'C' << 1, 'A' << 1, 'L' << 1, 'L' << 1};
 uint8_t callSsid = 0;
 
 const uint8_t dest[7] = {130, 160, 156, 172, 96, 98, 96}; //APNV01-0
 
-const uint8_t *versionString = (const uint8_t*)"VP-Digi v. 1.2.3\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
+const uint8_t *versionString = (const uint8_t*)"VP-Digi v. 1.2.4\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
 
 uint8_t autoReset = 0;
 uint32_t autoResetTimer = 0;
+uint8_t kissMonitor = 0;
 
 
 int64_t strToInt(uint8_t *str, uint8_t len)
@@ -180,4 +183,40 @@ uint32_t crc32(uint32_t crc0, uint8_t *s, uint64_t n)
 	}
 
 	return ~crc;
+}
+
+void SendKiss(uint8_t *buf, uint16_t len)
+{
+	Uart *u = &uart1;
+
+	for(uint8_t i = 0; i < 2; i++)
+	{
+		if(u->mode == MODE_KISS) //check if KISS mode
+		{
+			uart_sendByte(u, 0xc0); //send data in kiss format
+			uart_sendByte(u, 0x00);
+			for(uint16_t j = 0; j < len; j++)
+			{
+				uart_sendByte(u, buf[j]);
+			}
+			uart_sendByte(u, 0xc0);
+			uart_transmitStart(u);
+		}
+		u = &uart2;
+	}
+
+	if(USBmode == MODE_KISS) //check if USB in KISS mode
+	{
+		uint8_t t[2] = {0xc0, 0};
+
+		CDC_Transmit_FS(&t[0], 1);
+		CDC_Transmit_FS(&t[1], 1);
+
+		for(uint16_t i = 0; i < len; i++)
+		{
+			CDC_Transmit_FS(&buf[i], 1);
+
+		}
+		CDC_Transmit_FS(&t[0], 1);
+	}
 }
