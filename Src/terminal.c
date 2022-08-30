@@ -487,7 +487,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendBuf(src);
 		term_sendString((uint8_t*)"digi list <0-19> [set <call>/remove] - sets/clears specified callsign slot in filter list\r\n", 0);
 		term_sendString((uint8_t*)"autoreset <0-255> - sets auto-reset interval (h) - 0 to disable\r\n", 0);
-		term_sendString((uint8_t*)"kissmon [on/off] - send own and digipeated frames to KISS ports\r\n", 0);
+		term_sendString((uint8_t*)"monkiss [on/off] - send own and digipeated frames to KISS ports\r\n", 0);
 		term_sendBuf(src);
 		return;
 	}
@@ -681,7 +681,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 			term_sendByte(callent + 48);
 		term_sendString((uint8_t*)" entries\r\nAuto-reset every (h): ", 0);
 		if(autoReset == 0)
-			term_sendString((uint8_t*)"disabled\r\n", 0);
+			term_sendString((uint8_t*)"disabled", 0);
 		else
 			term_sendNumber(autoReset);
 		term_sendString((uint8_t*)"\r\nKISS monitor: ", 0);
@@ -1698,7 +1698,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		return;
 	}
 
-	if(checkcmd(cmd, 8, (uint8_t*)"kissmon "))
+	if(checkcmd(cmd, 8, (uint8_t*)"monkiss "))
 	{
 		uint8_t err = 0;
 		if(checkcmd(&cmd[8], 2, (uint8_t*)"on"))
