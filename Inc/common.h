@@ -31,6 +31,7 @@ const uint8_t *versionString; //version string
 
 uint8_t autoReset;
 uint32_t autoResetTimer;
+uint8_t kissMonitor;
 
 /**
  * @brief Generate random number from min to max
@@ -64,5 +65,12 @@ void common_toTNC2(uint8_t *from, uint16_t fromlen, uint8_t *to);
  * @return Calculated CRC32
  */
 uint32_t crc32(uint32_t crc0, uint8_t *s, uint64_t n);
+
+/**
+ * @brief Send frame to available UARTs and USB in KISS format
+ * @param[in] *buf Frame buffer
+ * @param[in] len Frame buffer length
+ */
+void SendKiss(uint8_t *buf, uint16_t len);
 
 #endif /* COMMON_H_ */

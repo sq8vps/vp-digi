@@ -189,6 +189,7 @@ void Config_write(void)
 	flash_writeString(CONFIG_DIGIFILLIST, digi.callFilter[0], 140);
 	flash_write(CONFIG_AUTORST, autoReset);
 	flash_write(CONFIG_PWM_FLAT, afskCfg.usePWM | (afskCfg.flatAudioIn << 1));
+	flash_write(CONFIG_KISSMONITOR, kissMonitor);
 
 	flash_write(CONFIG_FLAG, FLAG_CONFIG_WRITTEN);
 
@@ -273,6 +274,7 @@ uint8_t Config_read(void)
 	t = (uint8_t)flash_read(CONFIG_PWM_FLAT);
 	afskCfg.usePWM = t & 1;
 	afskCfg.flatAudioIn = (t & 2) > 0;
+	kissMonitor = (flash_read(CONFIG_KISSMONITOR) == 1);
 
 	return 1;
 }

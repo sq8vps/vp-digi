@@ -1,3 +1,12 @@
+# 1.2.4 (2022-08-30)
+## New features
+* Added ```monkiss [on/off]``` command that enables sending own and digipeated frames to KISS ports
+## Bug fixes
+* included .cproject so that the project can be imported and compiled in SW4STM32 without generating in CubeMX
+## Other
+* none
+## Known bugs
+* none
 # 1.2.3 (2022-08-23)
 ## New features
 * none
@@ -6,7 +15,7 @@
 ## Other
 * none
 ## Known bugs
-* none as far
+* none
 # 1.2.2 (2022-06-11)
 ## New features
 * none
@@ -33,7 +42,7 @@
 ## Other
 * none
 ## Known bugs
-* none so far
+* none
 # 1.2.0 (2021-09-10)
 This is the very first open-source VP-Digi release.
 ## New features
@@ -46,4 +55,4 @@ This is the very first open-source VP-Digi release.
 ## Other
 * Code was partially rewritten (especially digipeater, modem and AX.25 layer)
 ## Known bugs
-* none so far
+* none

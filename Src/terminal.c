@@ -487,6 +487,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendBuf(src);
 		term_sendString((uint8_t*)"digi list <0-19> [set <call>/remove] - sets/clears specified callsign slot in filter list\r\n", 0);
 		term_sendString((uint8_t*)"autoreset <0-255> - sets auto-reset interval (h) - 0 to disable\r\n", 0);
+		term_sendString((uint8_t*)"monkiss [on/off] - send own and digipeated frames to KISS ports\r\n", 0);
 		term_sendBuf(src);
 		return;
 	}
@@ -680,10 +681,14 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 			term_sendByte(callent + 48);
 		term_sendString((uint8_t*)" entries\r\nAuto-reset every (h): ", 0);
 		if(autoReset == 0)
-			term_sendString((uint8_t*)"disabled\r\n", 0);
+			term_sendString((uint8_t*)"disabled", 0);
 		else
 			term_sendNumber(autoReset);
-		term_sendString((uint8_t*)"\r\n", 0);
+		term_sendString((uint8_t*)"\r\nKISS monitor: ", 0);
+		if(kissMonitor == 1)
+			term_sendString((uint8_t*)"On\r\n", 0);
+		else
+			term_sendString((uint8_t*)"Off\r\n", 0);
 		term_sendBuf(src);
 		return;
 	}
@@ -1593,7 +1598,6 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 			term_sendBuf(src);
 			return;
 		}
-
 		else err = 1;
 
 		if(err == 1)
@@ -1605,6 +1609,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendBuf(src);
 		return;
 	}
+
 
 	if(checkcmd(cmd, 10, (uint8_t*)"autoreset "))
 	{
@@ -1678,6 +1683,28 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 			afskCfg.flatAudioIn = 1;
 		else if(checkcmd(&cmd[5], 3, (uint8_t*)"off"))
 			afskCfg.flatAudioIn = 0;
+		else
+			err = 1;
+
+		if(err)
+		{
+			term_sendString((uint8_t*)"Incorrect command!\r\n", 0);
+		}
+		else
+		{
+			term_sendString((uint8_t*)"OK\r\n", 0);
+		}
+		term_sendBuf(src);
+		return;
+	}
+
+	if(checkcmd(cmd, 8, (uint8_t*)"monkiss "))
+	{
+		uint8_t err = 0;
+		if(checkcmd(&cmd[8], 2, (uint8_t*)"on"))
+			kissMonitor = 1;
+		else if(checkcmd(&cmd[8], 3, (uint8_t*)"off"))
+			kissMonitor = 0;
 		else
 			err = 1;
 

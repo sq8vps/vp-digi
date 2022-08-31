@@ -84,6 +84,11 @@ void Digi_viscousRefresh(void)
             ax25.frameXmit[ax25.xmitIdx] = 0xFF;
             ax25.xmitIdx++;
 
+            if(kissMonitor) //monitoring mode, send own frames to KISS ports
+            {
+            	SendKiss(ax25.frameXmit, ax25.xmitIdx - 1);
+            }
+
         	uint8_t buf[200];
         	common_toTNC2((uint8_t*)&ax25.frameXmit[begin], ax25.xmitIdx - begin - 1, buf);
 
@@ -307,6 +312,11 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
             	ax25.frameXmit[ax25.xmitIdx++] = buf[i];
             }
             ax25.frameXmit[ax25.xmitIdx++] = 0xFF;
+
+            if(kissMonitor) //monitoring mode, send own frames to KISS ports
+            {
+            	SendKiss(ax25.frameXmit, ax25.xmitIdx - 1);
+            }
 
     		common_toTNC2((uint8_t *)&ax25.frameXmit[begin], ax25.xmitIdx - begin - 1, buf);
     		term_sendMonitor((uint8_t*)"(AX.25) Digipeating frame: ", 0);
