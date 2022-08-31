@@ -33,12 +33,12 @@
 ## Other
 * none
 ## Known bugs
-* none
+* USB in KISS mode has problem with TX frames
 # 1.2.1 (2021-10-13)
 ## New features
 * none
 ## Bug fixes
-* Digi max and rep values could not be entered when only <LF> line ending was used.
+* Digi max and rep values could not be entered when only LF line ending was used.
 ## Other
 * none
 ## Known bugs
