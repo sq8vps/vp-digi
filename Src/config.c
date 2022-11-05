@@ -128,6 +128,7 @@ void Config_write(void)
 
 	flash_writeString(CONFIG_CALL, call, 6);
 	flash_write(CONFIG_SSID, callSsid);
+	flash_writeString(CONFIG_DEST, dest, 6);
 	flash_write(CONFIG_TXDELAY, ax25Cfg.txDelayLength);
 	flash_write(CONFIG_TXTAIL, ax25Cfg.txTailLength);
 	flash_write(CONFIG_TXQUIET, ax25Cfg.quietTime);
@@ -204,9 +205,14 @@ uint8_t Config_read(void)
 	{
 		return 0;
 	}
-
 	flash_readString(CONFIG_CALL, call, 6);
 	callSsid = (uint8_t)flash_read(CONFIG_SSID);
+	uint8_t temp[6];
+	flash_readString(CONFIG_DEST, temp, 6);
+	if((temp[0] >= ('A' << 1)) && (temp[0] <= ('Z' << 1)) && ((temp[0] & 1) == 0)) //check if stored destination address is correct (we just assume it by reading the first byte)
+	{
+		memcpy(dest, temp, sizeof(uint8_t) * 6);
+	}
 	ax25Cfg.txDelayLength = flash_read(CONFIG_TXDELAY);
 	ax25Cfg.txTailLength = flash_read(CONFIG_TXTAIL);
 	ax25Cfg.quietTime = flash_read(CONFIG_TXQUIET);

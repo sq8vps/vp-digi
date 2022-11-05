@@ -25,7 +25,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 uint8_t call[6]; //device callsign
 uint8_t callSsid; //device ssid
 
-const uint8_t dest[7]; //constant destination field for own beacons. Should be APNV01-0 for VP-Digi
+uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
 
 const uint8_t *versionString; //version string
 

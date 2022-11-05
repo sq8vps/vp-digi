@@ -25,9 +25,9 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 uint8_t call[6] = {'N' << 1, '0' << 1, 'C' << 1, 'A' << 1, 'L' << 1, 'L' << 1};
 uint8_t callSsid = 0;
 
-const uint8_t dest[7] = {130, 160, 156, 172, 96, 98, 96}; //APNV01-0
+uint8_t dest[7] = {130, 160, 156, 172, 96, 98, 96}; //destination address: APNV01-0 by default. SSID MUST remain 0.
 
-const uint8_t *versionString = (const uint8_t*)"VP-Digi v. 1.2.4\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
+const uint8_t *versionString = (const uint8_t*)"VP-Digi v. 1.2.5\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
 
 uint8_t autoReset = 0;
 uint32_t autoResetTimer = 0;

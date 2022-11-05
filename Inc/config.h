@@ -86,7 +86,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_DIGISSID7 1214
 #define CONFIG_PWM_FLAT 1216
 #define CONFIG_KISSMONITOR 1218
-#define CONFIG_XXX 1220 //next address (not used)
+#define CONFIG_DEST 1220
+#define CONFIG_XXX 1226 //next address (not used)
 
 /**
  * @brief Store configuration from RAM to Flash

@@ -459,6 +459,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendBuf(src);
 		term_sendString((uint8_t*)"call <callsign> - sets callsign\r\n", 0);
 		term_sendString((uint8_t*)"ssid <0-15> - sets SSID\r\n", 0);
+		term_sendString((uint8_t*)"dest <address> - sets destination address\r\n", 0);
 		term_sendString((uint8_t*)"txdelay <50-2550> - sets TXDelay time (ms)\r\n", 0);
 		term_sendString((uint8_t*)"txtail <10-2550> - sets TXTail time (ms)\r\n", 0);
 		term_sendString((uint8_t*)"quiet <100-2550> - sets quiet time (ms)\r\n", 0);
@@ -515,15 +516,23 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		return;
 	}
 
-	if(checkcmd(cmd, 5, (uint8_t*)"print")) //wyrzucamy cala konfiguracje
+	if(checkcmd(cmd, 5, (uint8_t*)"print"))
 	{
 		term_sendString((uint8_t*)"Callsign: ", 0);
 		for(uint8_t i = 0; i < 6; i++)
 		{
-			if((call[i]) != 64) term_sendByte(call[i] >> 1);
+			if((call[i]) != 64)
+				term_sendByte(call[i] >> 1);
 		}
 		term_sendByte('-');
 		term_sendNumber(callSsid);
+
+		term_sendString((uint8_t*)"\r\nDestination: ", 0);
+		for(uint8_t i = 0; i < 6; i++)
+		{
+			if((dest[i]) != 64)
+				term_sendByte(dest[i] >> 1);
+		}
 
 		term_sendString((uint8_t*)"\r\nTXDelay (ms): ", 0);
 		term_sendNumber(ax25Cfg.txDelayLength);
@@ -768,7 +777,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 					err = 1;
 				break;
 			}
-			if(!(((cmd[5 + i] > 47) && (cmd[5 + i] < 58)) || ((cmd[5 + i] > 64) && (cmd[5 + i] < 91)))) //only alphanumerical characters
+			if(!(((cmd[5 + i] > 47) && (cmd[5 + i] < 58)) || ((cmd[5 + i] > 64) && (cmd[5 + i] < 91)))) //only alphanumeric characters
 			{
 				err = 1;
 				break;
@@ -780,14 +789,59 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 			}
 			tmp[i] = cmd[5 + i] << 1;
 		}
-		if(!err) for(uint8_t i = 0; i < 6; i++)
-		{
-			call[i] = 64; //fill with spaces
-			if(tmp[i] != 0) call[i] = tmp[i];
-		}
+		if(!err)
+			for(uint8_t i = 0; i < 6; i++)
+			{
+				call[i] = 64; //fill with spaces
+				if(tmp[i] != 0)
+					call[i] = tmp[i];
+			}
 		if(err)
 		{
 			term_sendString((uint8_t*)"Incorrect callsign!\r\n", 0);
+		}
+		else
+		{
+			term_sendString((uint8_t*)"OK\r\n", 0);
+		}
+		term_sendBuf(src);
+		return;
+	}
+
+	if(checkcmd(cmd, 4, (uint8_t*)"dest"))
+	{
+		uint8_t tmp[6] = {0};
+		uint8_t err = 0;
+		for(uint8_t i = 0; i < 7; i++)
+		{
+			if((cmd[5 + i] == '\r') || (cmd[5 + i] == '\n'))
+			{
+				if((i == 0))
+					err = 1;
+				break;
+			}
+			if(!(((cmd[5 + i] > 47) && (cmd[5 + i] < 58)) || ((cmd[5 + i] > 64) && (cmd[5 + i] < 91)))) //only alphanumeric characters
+			{
+				err = 1;
+				break;
+			}
+			if(i == 6) //address too long
+			{
+				err = 1;
+				break;
+			}
+			tmp[i] = cmd[5 + i] << 1;
+		}
+		if(!err)
+			for(uint8_t i = 0; i < 6; i++)
+			{
+				dest[i] = 64; //fill with spaces
+				if(tmp[i] != 0)
+					dest[i] = tmp[i];
+			}
+		if(err)
+		{
+			term_sendString((uint8_t*)"Incorrect address!\r\n", 0);
 		}
 		else
 		{

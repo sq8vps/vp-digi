@@ -28,10 +28,10 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
  * Configuration for PLL-based data carrier detection
  * DCD_MAXPULSE is the maximum value of the DCD pulse counter
  * DCD_THRES is the threshold value of the DCD pulse counter. When reached the input signal is assumed to be valid
- * DCD_MAXPULSE and DCD_THRES difference sets the DCD "intertia" so that the DCD state won't change rapidly when a valid signal is present
+ * DCD_MAXPULSE and DCD_THRES difference sets the DCD "inertia" so that the DCD state won't change rapidly when a valid signal is present
  * DCD_DEC is the DCD pulse counter decrementation value when symbol changes too far from PLL counter zero
  * DCD_INC is the DCD pulse counter incrementation value when symbol changes near the PLL counter zero
- * DCD_PLLTUNE is the DCD tining coefficient when symbol changes, pll_counter = pll_counter * DCD_PLLTUNE
+ * DCD_PLLTUNE is the DCD timing coefficient when symbol changes, pll_counter = pll_counter * DCD_PLLTUNE
  * The DCD mechanism is described in afsk_demod().
  * All values were selected by trial and error
  */
@@ -58,7 +58,7 @@ struct ModState
 {
 	TxTestMode txTestState; //current TX test mode
 	uint16_t dacSine[DACSINELEN]; //sine samples for DAC
-	uint8_t dacSineIdx; //current sine smaple index
+	uint8_t dacSineIdx; //current sine sample index
 	uint16_t samples_oversampling[4]; //very raw received samples, filled directly by DMA
 	uint8_t currentSymbol; //current symbol for NRZI encoding
 	uint16_t txDelay; //TXDelay length in number of bytes
@@ -370,7 +370,7 @@ static int32_t afsk_demod(int16_t sample, Demod *dem)
 	//PLL timer is counting up and eventually overflows to a minimal negative value
 	//so it crosses zero in the middle
 	//tone change should happen somewhere near this zero-crossing (in ideal case of exactly same TX and RX baudrates)
-	//nothing is ideal, so we need to have some region around zero where the tone should change
+	//nothing is ideal, so we need to have some region around zero where tone change is expected
 	//if tone changed inside this region, then we add something to the DCD pulse counter (and adjust counter phase for the counter to be closer to 0)
 	//if tone changes outside this region, then we subtract something from the DCD pulse counter
 	//if some DCD pulse threshold is reached, then we claim that the incoming signal is correct and set DCD flag
@@ -383,7 +383,7 @@ static int32_t afsk_demod(int16_t sample, Demod *dem)
 
 	if(dcdSymbol != dem->dcdLastSymbol) //tone changed
 	{
-		if(abs(dem->dcdPll) < PLLINC) //tone change occured near zero
+		if(abs(dem->dcdPll) < PLLINC) //tone change occurred near zero
 			dem->dcdCounter += DCD_INC; //increase DCD counter
 		else //tone change occurred far from zero
 		{
@@ -582,6 +582,8 @@ void Afsk_transmitStop(void)
 	NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 
 	afsk_ptt(0);
+
+	TIM4->CCR1 = 44; //set around 50% duty cycle
 }
 
 /**
@@ -665,7 +667,7 @@ void Afsk_init(void)
     DMA1_Channel2->CCR |= DMA_CCR_PSIZE_0;
 	DMA1_Channel2->CCR &= ~DMA_CCR_PSIZE_1;
 
-	DMA1_Channel2->CCR |= DMA_CCR_MINC | DMA_CCR_CIRC| DMA_CCR_TCIE; //circural mode, memory increment and interrupt
+	DMA1_Channel2->CCR |= DMA_CCR_MINC | DMA_CCR_CIRC| DMA_CCR_TCIE; //circular mode, memory increment and interrupt
     DMA1_Channel2->CNDTR = 4; //4 samples
 	DMA1_Channel2->CPAR = (uint32_t)&(ADC1->DR); //ADC data register address
 	DMA1_Channel2->CMAR = (uint32_t)modState.samples_oversampling; //sample buffer address

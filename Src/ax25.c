@@ -358,7 +358,7 @@ uint8_t Ax25_getTxBit(void)
 				txState.txByte = 0x7E;
 				txState.txTailElapsed++;
 			}
-			else //tail transmitted, stop transmissiob
+			else //tail transmitted, stop transmission
 			{
 				txState.txTailElapsed = 0;
 				txState.txStage = TX_STAGE_IDLE;
@@ -400,7 +400,7 @@ uint8_t Ax25_getTxBit(void)
 			txState.txBitIdx++;
 		}
 	}
-	else //transmitting preambles or flags, don't calculate CRC, don't use bit stuffing
+	else //transmitting preamble or flags, don't calculate CRC, don't use bit stuffing
 	{
 			txBit = txState.txByte & 1;
 			txState.txByte >>= 1;
@@ -433,7 +433,7 @@ void Ax25_transmitBuffer(void)
 
 
 /**
- * @brief Start transmissin immediately
+ * @brief Start transmission immediately
  * @warning Transmission should be initialized using Ax25_transmitBuffer
  */
 static void ax25_transmitStart(void)
@@ -476,7 +476,7 @@ void Ax25_transmitCheck(void)
 		}
 		else //channel is busy
 		{
-			if(txState.txRetries == 8) //8th retry occured, transmit immediately
+			if(txState.txRetries == 8) //8th retry occurred, transmit immediately
 			{
 				txState.tx = TX_INIT_TRANSMITTING; //transmit right now
 				txState.txRetries = 0;
