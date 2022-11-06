@@ -582,7 +582,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendBuf(src);
 		for(uint8_t i = 0; i < 8; i++)
 		{
-			term_sendString((uint8_t*)"\r\n\r\nBeacon ", 0);
+			term_sendString((uint8_t*)"\r\nBeacon ", 0);
 			term_sendByte(i + 48);
 			term_sendString((uint8_t*)": ", 0);
 			if(beacon[i].enable)
