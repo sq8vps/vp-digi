@@ -112,7 +112,7 @@ void Beacon_check(void)
 	for(uint8_t i = 0; i < 8; i++)
 	{
 		if(beacon[i].enable == 0)
-			return;
+			continue;
 
 		if((beacon[i].interval > 0) && ((ticks >= beacon[i].next) || (beacon[i].next == 0)))
 		{
