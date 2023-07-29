@@ -515,6 +515,8 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendBuf(src);
 		term_sendString((uint8_t*)"monkiss [on/off] - send own and digipeated frames to KISS ports\r\n", 0);
 		term_sendBuf(src);
+		term_sendString((uint8_t*)"nonaprs [on/off] - enable reception of non-APRS frames\r\n", 0);
+		term_sendBuf(src);
 		return;
 	}
 	if(checkcmd(cmd, 7, (uint8_t*)"version"))
@@ -720,6 +722,11 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 			term_sendNumber(autoReset);
 		term_sendString((uint8_t*)"\r\nKISS monitor: ", 0);
 		if(kissMonitor == 1)
+			term_sendString((uint8_t*)"On\r\n", 0);
+		else
+			term_sendString((uint8_t*)"Off\r\n", 0);
+		term_sendString((uint8_t*)"Allow non-APRS frames: ", 0);
+		if(ax25Cfg.allowNonAprs == 1)
 			term_sendString((uint8_t*)"On\r\n", 0);
 		else
 			term_sendString((uint8_t*)"Off\r\n", 0);
@@ -1798,7 +1805,27 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendBuf(src);
 		return;
 	}
+	if(checkcmd(cmd, 8, (uint8_t*)"nonaprs "))
+	{
+		uint8_t err = 0;
+		if(checkcmd(&cmd[8], 2, (uint8_t*)"on"))
+			ax25Cfg.allowNonAprs = 1;
+		else if(checkcmd(&cmd[8], 3, (uint8_t*)"off"))
+			ax25Cfg.allowNonAprs = 0;
+		else
+			err = 1;
 
+		if(err)
+		{
+			term_sendString((uint8_t*)"Incorrect command!\r\n", 0);
+		}
+		else
+		{
+			term_sendString((uint8_t*)"OK\r\n", 0);
+		}
+		term_sendBuf(src);
+		return;
+	}
 
 	term_sendString((uint8_t*)"Unknown command. For command list type \"help\"\r\n", 0);
 	term_sendBuf(src);

@@ -191,6 +191,7 @@ void Config_write(void)
 	flash_write(CONFIG_AUTORST, autoReset);
 	flash_write(CONFIG_PWM_FLAT, afskCfg.usePWM | (afskCfg.flatAudioIn << 1));
 	flash_write(CONFIG_KISSMONITOR, kissMonitor);
+	flash_write(CONFIG_ALLOWNONAPRS, ax25Cfg.allowNonAprs);
 
 	flash_write(CONFIG_FLAG, FLAG_CONFIG_WRITTEN);
 
@@ -281,6 +282,7 @@ uint8_t Config_read(void)
 	afskCfg.usePWM = t & 1;
 	afskCfg.flatAudioIn = (t & 2) > 0;
 	kissMonitor = (flash_read(CONFIG_KISSMONITOR) == 1);
+	ax25Cfg.allowNonAprs = (flash_read(CONFIG_ALLOWNONAPRS) == 1);
 
 	return 1;
 }

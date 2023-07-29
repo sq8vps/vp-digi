@@ -38,6 +38,7 @@ typedef struct
 	uint16_t txDelayLength; //TXDelay length in ms
 	uint16_t txTailLength; //TXTail length in ms
 	uint16_t quietTime; //Quiet time in ms
+	uint8_t allowNonAprs; //allow non-APRS packets
 
 } Ax25_config;
 

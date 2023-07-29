@@ -140,10 +140,9 @@ void Ax25_bitParse(uint8_t bit, uint8_t modemNo)
         				break;
         		}
 
-				//check if this frame has control=0x03 and PID=0xF0
-				//if not, it's not a correct APRS frame, even if it has correct CRC
+				//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
 
-				if(!((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xf0)))
+				if(!ax25Cfg.allowNonAprs && ((rx->frame[i + 1] != 0x03) || (rx->frame[i + 2] != 0xf0)))
 				{
 					rx->recByte = 0;
 					rx->rBitIdx = 0;
