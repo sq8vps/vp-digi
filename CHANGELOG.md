@@ -1,3 +1,21 @@
+# 1.2.6 (2023-08-29)
+## New features
+* Added ```nonaprs [on/off]``` command that enables reception of non-APRS frames, e.g. for full Packet Radio use
+## Bug fixes
+* Beacons not being send fixed
+## Other
+* none
+## Known bugs
+* none
+# 1.2.5 (2022-11-05)
+## New features
+* Added ```dest <address>``` command that enables setting own destination address
+## Bug fixes
+* none
+## Other
+* PWM defaulting to 50%
+## Known bugs
+* none
 # 1.2.4 (2022-08-30)
 ## New features
 * Added ```monkiss [on/off]``` command that enables sending own and digipeated frames to KISS ports
