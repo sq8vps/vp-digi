@@ -1,4 +1,4 @@
-# 1.2.6 (2023-08-29)
+# 1.2.6 (2023-07-29)
 ## New features
 * Added ```nonaprs [on/off]``` command that enables reception of non-APRS frames, e.g. for full Packet Radio use
 ## Bug fixes
