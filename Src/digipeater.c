@@ -1,5 +1,5 @@
 /*
-This file is part of VP-Digi.
+This file is part of VP-DigiConfig.
 
 VP-Digi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
+along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "digipeater.h"
@@ -24,31 +24,51 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include "drivers/systick.h"
 
-#define VISCOUS_DATA_LEN (6) //max frames in viscous-delay buffer
-uint8_t viscousBuf[VISCOUS_DATA_LEN][FRAMELEN]; //viscous-delay frames buffer
-uint32_t viscousData[VISCOUS_DATA_LEN][2]; //viscous-delay hash and timestamp buffer
-#define VISCOUS_HOLD_TIME 500 //viscous-delay hold time in 10 ms units
+struct _DigiConfig DigiConfig;
+
+#define VISCOUS_MAX_FRAME_COUNT 20 //max frames in viscous-delay buffer
+#define VISCOUS_MAX_FRAME_SIZE 150
+
+struct ViscousData
+{
+	uint32_t hash;
+	uint32_t timeLimit;
+	uint8_t *frame;
+	uint16_t size;
+};
+static struct ViscousData viscous[VISCOUS_MAX_FRAME_COUNT];
+#define VISCOUS_HOLD_TIME 5000 //viscous-delay hold time in ms
+
+struct DeDupeData
+{
+	uint32_t hash;
+	uint32_t timeLimit;
+};
+
+#define DEDUPE_SIZE (40) //duplicate protection buffer size (number of hashes)
+static struct DeDupeData deDupe[DEDUPE_SIZE]; //duplicate protection hash buffer
+static uint8_t deDupeCount = 0; //duplicate protection buffer index
 
 
-#define DEDUPE_LEN (40) //duplicate protection buffer size (number of hashes)
-uint32_t deDupeBuf[DEDUPE_LEN][2]; //duplicate protection hash buffer
-uint8_t deDupeIndex = 0; //duplicate protection buffer index
-
+#define DIGI_BUFFER_SIZE 200
+static uint8_t buf[DIGI_BUFFER_SIZE];
 
 /**
- * @brief Check if frame with specified hash is alread in viscous-delay buffer and delete it if so
+ * @brief Check if frame with specified hash is already in viscous-delay buffer and delete it if so
  * @param[in] hash Frame hash
  * @return 0 if not in buffer, 1 if in buffer
  */
-static uint8_t digi_viscousCheckAndRemove(uint32_t hash)
+static uint8_t viscousCheckAndRemove(uint32_t hash)
 {
-    for(uint8_t i = 0; i < VISCOUS_DATA_LEN; i++)
+    for(uint8_t i = 0; i < VISCOUS_MAX_FRAME_COUNT; i++)
     {
-    	if(viscousData[i][0] == hash) //matching hash
+    	if(viscous[i].hash == hash) //matching hash
     	{
-    		viscousData[i][0] = 0; //clear slot
-    		viscousData[i][1] = 0;
-    		term_sendMonitor((uint8_t*)"Digipeated frame received, dropping old frame from viscous-delay buffer\r\n", 0);
+    		viscous[i].hash = 0; //clear slot
+    		viscous[i].timeLimit = 0;
+    		free(viscous[i].frame);
+    		viscous[i].size = 0;
+    		//term_sendMonitor((uint8_t*)"Digipeated frame received, dropping old frame from viscous-delay buffer\r\n", 0);
     		return 1;
     	}
     }
@@ -57,102 +77,89 @@ static uint8_t digi_viscousCheckAndRemove(uint32_t hash)
 
 
 
-void Digi_viscousRefresh(void)
+void DigiViscousRefresh(void)
 {
-    if(digi.viscous == 0) //viscous-digipeating disabled on every alias
+    if(DigiConfig.viscous == 0) //viscous digipeating disabled on every alias
     {
     	return;
     }
 
-	for(uint8_t i = 0; i < VISCOUS_DATA_LEN; i++)
+	for(uint8_t i = 0; i < VISCOUS_MAX_FRAME_COUNT; i++)
     {
-    	if((viscousData[i][0] > 0) && ((ticks - viscousData[i][1]) > VISCOUS_HOLD_TIME)) //it's time to transmit this frame
+    	if((viscous[i].timeLimit > 0) && (ticks >= viscous[i].timeLimit)) //it's time to transmit this frame
         {
-            uint8_t len = strlen((char*)viscousBuf[i]);
-            if((len + 2) > (FRAMEBUFLEN - ax25.xmitIdx)) //frame won't fit in tx buffer
+            void *handle = NULL;
+            if(NULL != (handle = Ax25WriteTxFrame(viscous[i].frame, viscous[i].size)))
             {
-            	return;
+				if(GeneralConfig.kissMonitor) //monitoring mode, send own frames to KISS ports
+				{
+					TermSendToAll(MODE_KISS, viscous[i].frame, viscous[i].size);
+				}
+
+				TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Transmitting viscous-delayed frame: ", 0);
+				SendTNC2(viscous[i].frame, viscous[i].size);
+				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
             }
 
-    		uint16_t begin = ax25.xmitIdx;
-
-    		for(uint8_t j = 0; j < len; j++) //copy frame to tx buffer
-            {
-                ax25.frameXmit[ax25.xmitIdx] = viscousBuf[i][j];
-                ax25.xmitIdx++;
-            }
-            ax25.frameXmit[ax25.xmitIdx] = 0xFF;
-            ax25.xmitIdx++;
-
-            if(kissMonitor) //monitoring mode, send own frames to KISS ports
-            {
-            	SendKiss(ax25.frameXmit, ax25.xmitIdx - 1);
-            }
-
-        	uint8_t buf[200];
-        	common_toTNC2((uint8_t*)&ax25.frameXmit[begin], ax25.xmitIdx - begin - 1, buf);
-
-            term_sendMonitor((uint8_t*)"(AX.25) Transmitting viscous-delayed frame: ", 0);
-            term_sendMonitor(buf, 0);
-            term_sendMonitor((uint8_t*)"\r\n", 0);
-
-            viscousData[i][0] = 0;
-            viscousData[i][1] = 0;
+    		viscous[i].hash = 0; //clear slot
+    		viscous[i].timeLimit = 0;
+    		free(viscous[i].frame);
+    		viscous[i].size = 0;
         }
     }
 }
 
 /**
  * @brief Compare callsign with specified call in call filter table - helper function.
- * @param[in] *call Callsign
- * @param[in] no Callsign filter table index
- * @return 0 if matched with call filter, 1 if not
+ * @param *call Callsign
+ * @param index Callsign filter table index
+ * @return 1 if matched, 0 otherwise
  */
-static uint8_t compareFilterCall(uint8_t *call, uint8_t no)
+static uint8_t compareFilterCall(uint8_t *call, uint8_t index)
 {
 	uint8_t err = 0;
 
 	for(uint8_t i = 0; i < 6; i++)
 	{
-		if((digi.callFilter[no][i] < 0xff) && ((call[i] >> 1) != digi.callFilter[no][i]))
+		if((DigiConfig.callFilter[index][i] < 0xff) && ((call[i] >> 1) != DigiConfig.callFilter[index][i]))
 			err = 1;
 	}
-	if((digi.callFilter[no][6] < 0xff) && ((call[6] - 96) != digi.callFilter[no][6])) //special case for ssid
+	if((DigiConfig.callFilter[index][6] < 0xff) && ((call[6] - 96) != DigiConfig.callFilter[index][6])) //special case for ssid
 		err = 1;
-	return err;
+
+	return (err == 0);
 }
 
 /**
  * @brief Check frame with call filter
  * @param[in] *call Callsign in incoming frame
  * @param[in] alias Digi alias index currently used
- * @return 0 if accepted, 1 if rejected
+ * @return 1 if accepted, 0 if rejected
  */
 static uint8_t filterFrameCheck(uint8_t *call, uint8_t alias)
 {
-
 	//filter by call
-	if((digi.callFilterEnable >> alias) & 1) //check if enabled
+	if((DigiConfig.callFilterEnable >> alias) & 1) //check if enabled
 	{
-		for(uint8_t i = 0; i < 20; i++)
+		for(uint8_t i = 0; i < (sizeof(DigiConfig.callFilter) / sizeof(DigiConfig.callFilter[0])); i++)
 		{
-			if(!compareFilterCall(call, i)) //if callsigns match...
+			if(compareFilterCall(call, i)) //if callsigns match...
 			{
-				if((digi.filterPolarity) == 0)
-					return 1; //...and blacklist is enabled, drop the frame
+				if(DigiConfig.filterPolarity == 0)
+					return 0; //...and blacklist is enabled, drop the frame
 				else
-					return 0; //...and whitelist is enabled, accept the frame
+					return 1; //...and whitelist is enabled, accept the frame
 			}
 		}
 		//if callsign is not on the list...
-		if((digi.filterPolarity) == 0)
-			return 0; //...and blacklist is enabled, accept the frame
+		if((DigiConfig.filterPolarity) == 0)
+			return 1; //...and blacklist is enabled, accept the frame
 		else
-			return 1; //...and whitelist is enabled, drop the frame
+			return 0; //...and whitelist is enabled, drop the frame
 
 	}
 	//filter by call disabled
-	return 0;
+	return 1;
 }
 
 
@@ -168,38 +175,43 @@ static uint8_t filterFrameCheck(uint8_t *call, uint8_t alias)
  */
 static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t hash, uint8_t alias, uint8_t simple, uint8_t n)
 {
-    uint8_t *buf;
-    uint16_t bufidx = 0;
+    uint16_t _index = 0; //underlying index for buffer if not in viscous-delay mode
+    uint8_t *buffer; //buffer to store frame being prepared
+    uint16_t *index = &_index; //index in buffer
     uint8_t viscousSlot = 0; //viscous delay frame slot we will use
 
-    if((alias < 8) && (digi.viscous & (1 << (alias))))
+    if((alias < 8) && (DigiConfig.viscous & (1 << (alias)))) //viscous delay mode
     {
-    	for(uint8_t i = 0; i < VISCOUS_DATA_LEN; i++)
+    	for(uint8_t i = 0; i < VISCOUS_MAX_FRAME_COUNT; i++)
         {
-        	if(viscousData[i][0] == 0) //look for the first available slot
+        	if(viscous[i].timeLimit == 0) //look for the first available slot
         	{
         		viscousSlot = i;
         		break;
         	}
         }
 
-    	if((len + 7) > FRAMELEN) //if frame length (+ 7 bytes for inserted call) is bigger than buffer size
+    	if((len + 7) > VISCOUS_MAX_FRAME_SIZE) //if frame length (+ 7 bytes for inserted call) is bigger than buffer size
     		return; //drop
 
-    	buf = viscousBuf[viscousSlot];
+    	viscous[viscousSlot].frame = malloc(len + 7);
+    	if(NULL == viscous[viscousSlot].frame)
+    		return;
+    	buffer = viscous[viscousSlot].frame;
+    	index = &(viscous[viscousSlot].size);
+    	*index = 0;
     }
     else //normal mode
     {
-    	buf = malloc(FRAMELEN);
-    	if(buf == NULL)
+    	if(sizeof(buf) < (len + 7))
     		return;
+    	buffer = buf;
     }
-
 
 
     if(alias < 8)
     {
-    	if(filterFrameCheck(&frame[7], alias)) //push source callsign though the filter
+    	if(!filterFrameCheck(&frame[7], alias)) //push source callsign through the filter
     		return;
     }
     uint8_t ssid = (frame[elStart + 6] >> 1) - 48; //store SSID (N)
@@ -207,7 +219,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 
     if(alias < 8)
     {
-    	if((digi.viscous & (1 << (alias))) || (digi.directOnly & (1 << alias))) //viscous-delay or direct-only enabled
+    	if((DigiConfig.viscous & (1 << (alias))) || (DigiConfig.directOnly & (1 << alias))) //viscous-delay or direct-only enabled
     	{
     		if(elStart != 14)
     			return; //this is not the very first path element, frame not received directly
@@ -218,143 +230,117 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 
     if(simple) //if this is a simple alias, our own call or we treat n-N as a simple alias
     {
-    	while(bufidx < (len)) //copy whole frame
+    	while(*index < len) //copy whole frame
     	{
-    		buf[bufidx] = frame[bufidx];
-    		bufidx++;
-    		if(bufidx >= FRAMELEN)
-    		{
-    			if(buf != NULL)
-    				free(buf);
-    			return;
-    		}
+    		buffer[*index] = frame[*index];
+    		(*index)++;
     	}
-    	if((alias == 8) || ((digi.traced & (1 << alias)) == 0)) //own call or untraced
+
+    	if((alias == 8) || ((DigiConfig.traced & (1 << alias)) == 0)) //own call or untraced
     	{
-    		buf[elStart + 6] += 128; //add h-bit
+    		buffer[elStart + 6] += 128; //add h-bit
     	}
     	else //not our call, but treat it as a simple alias
     	{
-    		for(uint8_t i = 0; i < 6; i++) //replace with own call
-    			buf[elStart + i] = call[i];
+    		for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //replace with own call
+    			buffer[elStart + i] = GeneralConfig.call[i];
 
-    		buf[elStart + 6] &= 1; //clear everything but path end bit
-    		buf[elStart + 6] |= ((callSsid << 1) + 0b11100000); //inset ssid and h-bit
+    		buffer[elStart + 6] &= 1; //clear everything but path end bit
+    		buffer[elStart + 6] |= ((GeneralConfig.callSsid << 1) + 0b11100000); //insert ssid and h-bit
     	}
     }
     else //standard n-N alias
     {
-    	while(bufidx < elStart) //copy all data before current path element
+    	while(*index < elStart) //copy all data before current path element
     	{
-    		buf[bufidx] = frame[bufidx];
-    		bufidx++;
-    		if(bufidx >= FRAMELEN)
-    		{
-    			if(buf != NULL)
-    				free(buf);
-    			return;
-    		}
+    		buffer[*index] = frame[*index];
+    		(*index)++;
     	}
 
     	uint16_t shift = 0;
 
-    	if((digi.traced & (1 << alias)) || ((ssid == n) && (elStart == 14))) //if this is a traced alias OR it's not, but this is the very first hop for this packet, insert own call
+    	//insert own callsign to path if:
+    	//1. this is a traced alias OR
+    	//2. this is an untraced alias, but it is the very first hop (heard directly)
+    	if((DigiConfig.traced & (1 << alias)) || ((ssid == n) && (elStart == 14)))
     	{
-    		for(uint8_t i = 0; i < 6; i++) //insert own call
-    			buf[bufidx++] = call[i];
+    		for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //insert own call
+    			buffer[(*index)++] = GeneralConfig.call[i];
 
-    		buf[bufidx++] = ((callSsid << 1) + 0b11100000); //insert ssid and h-bit
+    		buffer[(*index)++] = ((GeneralConfig.callSsid << 1) + 0b11100000); //insert ssid and h-bit
     		shift = 7; //additional shift when own call is inserted
     	}
 
-		while(bufidx < (len + shift)) //copy rest of the frame
+		while(*index < (len + shift)) //copy rest of the frame
     	{
-    		buf[bufidx] = frame[bufidx - shift];
-    		bufidx++;
-    		if(bufidx >= FRAMELEN)
-    		{
-    			if(buf != NULL)
-    				free(buf);
-    			return;
-    		}
+    		buffer[*index] = frame[*index - shift];
+    		(*index)++;
     	}
 
-		buf[elStart + shift + 6] -= 2; //decrement SSID in alias (2 beacuse ssid is shifted left by 1)
-		if((buf[elStart + shift + 6] & 0b11110) == 0) //if SSID is 0
+		buffer[elStart + shift + 6] -= 2; //decrement SSID in alias (2 because ssid is shifted left by 1)
+		if((buffer[elStart + shift + 6] & 0b11110) == 0) //if SSID is 0
 		{
-			buf[elStart + shift + 6] += 128; //add h-bit
+			buffer[elStart + shift + 6] += 0x80; //add h-bit
 		}
 
     }
 
-	if((alias < 8) && (digi.viscous & (1 << alias)))
+	if((alias < 8) && (DigiConfig.viscous & (1 << alias)))
 	{
-    	buf[bufidx++] = 0x00;
-		viscousData[viscousSlot][0] = hash;
-    	viscousData[viscousSlot][1] = ticks;
-		term_sendMonitor((uint8_t*)"Saving frame for viscous-delay digipeating\r\n", 0);
+		viscous[viscousSlot].hash = hash;
+    	viscous[viscousSlot].timeLimit = ticks + (VISCOUS_HOLD_TIME / SYSTICK_INTERVAL);
+		TermSendToAll(MODE_MONITOR, (uint8_t*)"Saving frame for viscous-delay digipeating\r\n", 0);
 	}
 	else
 	{
-        if((FRAMEBUFLEN - ax25.xmitIdx) > (bufidx + 2))
+		void *handle = NULL;
+        if(NULL != (handle = Ax25WriteTxFrame(buffer, *index)))
         {
-            deDupeIndex %= DEDUPE_LEN;
+            DigiStoreDeDupe(buffer, *index);
 
-            deDupeBuf[deDupeIndex][0] = hash; //store duplicate protection hash
-            deDupeBuf[deDupeIndex][1] = ticks; //store timestamp
+			if(GeneralConfig.kissMonitor) //monitoring mode, send own frames to KISS ports
+			{
+				TermSendToAll(MODE_KISS, buffer, *index);
+			}
 
-            deDupeIndex++;
-
-            uint16_t begin = ax25.xmitIdx; //store frame beginning in tx buffer
-
-            for(uint16_t i = 0; i < bufidx; i++) //copy frame to tx buffer
-            {
-            	ax25.frameXmit[ax25.xmitIdx++] = buf[i];
-            }
-            ax25.frameXmit[ax25.xmitIdx++] = 0xFF;
-
-            if(kissMonitor) //monitoring mode, send own frames to KISS ports
-            {
-            	SendKiss(ax25.frameXmit, ax25.xmitIdx - 1);
-            }
-
-    		common_toTNC2((uint8_t *)&ax25.frameXmit[begin], ax25.xmitIdx - begin - 1, buf);
-    		term_sendMonitor((uint8_t*)"(AX.25) Digipeating frame: ", 0);
-    		term_sendMonitor(buf, 0);
-    		term_sendMonitor((uint8_t*)"\r\n", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Digipeating frame: ", 0);
+			SendTNC2(buffer, *index);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
         }
-		free(buf);
 	}
 }
 
 
 
-void Digi_digipeat(uint8_t *frame, uint16_t len)
+void DigiDigipeat(uint8_t *frame, uint16_t len)
 {
+	if(!DigiConfig.enable)
+		return;
 
-    uint16_t t = 13; //path length for now
+    uint16_t t = 13; //start from first byte that can contain path end bit
     while((frame[t] & 1) == 0) //look for path end
     {
+    	if((t + 7) >= len)
+    		return;
         t += 7;
-        if(t > 150) return;
     }
 
     //calculate frame "hash"
-    uint32_t hash = crc32(CRC32_INIT, frame, 14); //use destination and source adddress, skip path
-    hash = crc32(hash, &frame[t + 1], len - t - 1); //continue through all remaining data
+    uint32_t hash = Crc32(CRC32_INIT, frame, 14); //use destination and source address, skip path
+    hash = Crc32(hash, &frame[t + 1], len - t); //continue through all remaining data
 
-    if(digi.viscous) //viscous-delay enabled on any slot
+    if(DigiConfig.viscous) //viscous-delay enabled on any slot
     {
-    	if(digi_viscousCheckAndRemove(hash)) //check if this frame was received twice
+    	if(viscousCheckAndRemove(hash)) //check if this frame was received twice
     		return; //if so, drop it
     }
 
-    for(uint8_t i = 0; i < DEDUPE_LEN; i++) //check if frame is already in duplicate filtering buffer
+    for(uint8_t i = 0; i < DEDUPE_SIZE; i++) //check if frame is already in duplicate filtering buffer
     {
-        if(deDupeBuf[i][0] == hash)
+        if(deDupe[i].hash == hash)
         {
-            if((ticks - deDupeBuf[i][1]) <= (digi.dupeTime * 100))
-            	return; //filter duplicate frame
+            if(ticks < (deDupe[i].timeLimit))
+            	return; //filter out duplicate frame
         }
     }
 
@@ -365,7 +351,7 @@ void Digi_digipeat(uint8_t *frame, uint16_t len)
     }
 
 
-    while((frame[t] & 128) == 0) //look for h-bit
+    while((frame[t] & 0x80) == 0) //look for h-bit
     {
         if(t == 13)
         {
@@ -375,17 +361,19 @@ void Digi_digipeat(uint8_t *frame, uint16_t len)
     }
     t++; //now t is the index for the first byte in path element we want to process
 
-
     uint8_t ssid = ((frame[t + 6] >> 1) - 0b00110000); //current path element SSID
 
     uint8_t err = 0;
 
-    for(uint8_t i = 0; i < 6; i++) //compare with our call
+    for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //compare with our call
     {
-    	if(frame[t + i] != call[i])
+    	if(frame[t + i] != GeneralConfig.call[i])
+    	{
     		err = 1;
+    		break;
+    	}
     }
-    if(ssid != callSsid) //compare SSID also
+    if(ssid != GeneralConfig.callSsid) //compare SSID also
     	err = 1;
 
     if(err == 0) //our callsign is in the path
@@ -394,19 +382,18 @@ void Digi_digipeat(uint8_t *frame, uint16_t len)
     	return;
     }
 
-
-
     for(uint8_t i = 0; i < 4; i++) //check for simple alias match
     {
         err = 0;
-    	for(uint8_t j = 0; j < 6; j++)
+    	for(uint8_t j = 0; j < sizeof(DigiConfig.alias[0]); j++)
         {
-        	if(frame[t + j] != digi.alias[i + 4][j])
+        	if(frame[t + j] != DigiConfig.alias[i + 4][j])
         	{
             	err = 1;
+            	break;
         	}
         }
-        if(ssid != digi.ssid[i])
+        if(ssid != DigiConfig.ssid[i])
         	err = 1;
 
         if(err == 0) //no error
@@ -422,11 +409,12 @@ void Digi_digipeat(uint8_t *frame, uint16_t len)
     {
         err = 0;
         uint8_t j = 0;
-    	for(; j < strlen((const char *)digi.alias[i]); j++)
+    	for(; j < strlen((const char *)DigiConfig.alias[i]); j++)
         {
-            if(frame[t + j] != digi.alias[i][j]) //check for matching alias
+            if(frame[t + j] != DigiConfig.alias[i][j]) //check for matching alias
             {
                 err = 1; //alias not matching
+                break;
             }
         }
 
@@ -435,7 +423,7 @@ void Digi_digipeat(uint8_t *frame, uint16_t len)
             uint8_t n = ((frame[t + j] >> 1) - 48); //get n from alias (e.g. WIDEn-N) - N is in ssid variable
 
             //every path must meet several requirements
-            //say we have WIDEn-N path
+            //say we have a WIDEn-N path. Then:
             //N <= n
             //0 < n < 8
             //0 < N < 8
@@ -443,14 +431,14 @@ void Digi_digipeat(uint8_t *frame, uint16_t len)
             	return;
 
             //check if n and N <= digi max
-            if((n <= digi.max[i]) && (ssid <= digi.max[i]))
+            if((n <= DigiConfig.max[i]) && (ssid <= DigiConfig.max[i]))
             {
-                if(digi.enableAlias & (1 << i))
+                if(DigiConfig.enableAlias & (1 << i))
                 	makeFrame(frame, t, len, hash, i, 0, n); //process as a standard n-N frame
             }
-            else if((digi.rep[i] > 0) && (n >= digi.rep[i])) //else check if n and N >= digi replace
+            else if((DigiConfig.rep[i] > 0) && (n >= DigiConfig.rep[i])) //else check if n and N >= digi replace
             {
-                if(digi.enableAlias & (1 << i))
+                if(DigiConfig.enableAlias & (1 << i))
                 	makeFrame(frame, t, len, hash, i, 1, n);
             }
         }
@@ -461,28 +449,24 @@ void Digi_digipeat(uint8_t *frame, uint16_t len)
 
 
 
-void Digi_storeDeDupeFromXmitBuf(uint16_t idx)
+void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
 {
-	uint32_t hash = crc32(CRC32_INIT, &ax25.frameXmit[idx], 14); //calculate for destination and source address
-
+	uint32_t hash = Crc32(CRC32_INIT, buf, 14); //calculate for destination and source address
 
     uint16_t i = 13;
 
-    while((ax25.frameXmit[i] & 1) == 0) //look for path end bit (skip path)
+    while((buf[i] & 1) == 0) //look for path end bit (skip path)
     {
         i++;
     }
     i++;
 
-    while(ax25.frameXmit[i] != 0xFF)
-    {
-        hash = crc32(hash, &ax25.frameXmit[i++], 1);
-    }
+    hash = Crc32(hash, &buf[i], size - i);
 
-    deDupeIndex %= DEDUPE_LEN;
+    deDupeCount %= DEDUPE_SIZE;
 
-    deDupeBuf[deDupeIndex][0] = hash;
-    deDupeBuf[deDupeIndex][1] = ticks;
+    deDupe[deDupeCount].hash = hash;
+    deDupe[deDupeCount].timeLimit = ticks + (DigiConfig.dupeTime * 10 / SYSTICK_INTERVAL);
 
-    deDupeIndex++;
+    deDupeCount++;
 }

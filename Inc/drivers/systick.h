@@ -19,12 +19,15 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define SYSTICK_H_
 
 #include <stdint.h>
-#include "stm32f1xx.h"
+
+
+#define SYSTICK_FREQUENCY 100 //systick frequency in Hz
+#define SYSTICK_INTERVAL (1000 / SYSTICK_FREQUENCY) //systick interval in milliseconds
 
 extern volatile uint32_t ticks;
 
 //void SysTick_Handler(void);
 
-void SysTick_init(void);
+void SysTickInit(void);
 
 #endif /* SYSTICK_H_ */

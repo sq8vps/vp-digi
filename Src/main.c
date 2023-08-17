@@ -85,103 +85,85 @@ static void MX_GPIO_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
 /**
- * \brief Handle received frame from RF
+ * @brief Handle received frame
  */
-void handleFrame(void)
+static void handleFrame(void)
 {
-	uint8_t modemReceived = ax25.frameReceived; //store states
-	ax25.frameReceived = 0; //clear flag
+	uint8_t modemBitmap = Ax25GetReceivedFrameBitmap(); //store states
+	Ax25ClearReceivedFrameBitmap();
 
-	uint8_t bufto[FRAMELEN + 30], buf[FRAMELEN]; //buffer for raw frames to TNC2 frames conversion
-	uint16_t bufidx = 0;
-	uint16_t i = ax25.frameBufRd;
+	uint8_t *buf = NULL;
+	uint16_t size = 0;
+	uint16_t signalLevel = 0;
 
-	while(i != ax25.frameBufWr)
+	while(Ax25ReadNextRxFrame(&buf, &size, &signalLevel))
 	{
-		if(ax25.frameBuf[i] != 0xFF)
+
+		TermSendToAll(MODE_KISS, buf, size);
+
+
+
+		if(((UartUsb.mode == MODE_MONITOR) || (Uart1.mode == MODE_MONITOR) || (Uart2.mode == MODE_MONITOR)))
 		{
-			buf[bufidx++] = ax25.frameBuf[i++]; //store frame in temporary buffer
+			//in general, the RMS of the frame is calculated (excluding preamble!)
+			//it it calculated from samples ranging from -4095 to 4095 (amplitude of 4095)
+			//that should give a RMS of around 2900 for pure sine wave
+			//for pure square wave it should be equal to the amplitude (around 4095)
+			//real data contains lots of imperfections (especially mark/space amplitude imbalance) and this value is far smaller than 2900 for standard frames
+			//division by 9 was selected by trial and error to provide a value of 100(%) when the input signal had peak-peak voltage of 3.3V
+			//this probably should be done in a different way, like some peak amplitude tracing
+			signalLevel /= 9;
+
+			if(signalLevel > 100)
+			{
+				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 50-70%.\r\n", 0);
+			}
+			else if(signalLevel < 10)
+			{
+				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too low! Please increase so most stations are around 50-70%.\r\n", 0);
+			}
+
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0); //show which modem received the frame: [FP] (flat and preemphasized), [FD] (flat and deemphasized - in flat audio input mode)
+																	   //[F_] (only flat), [_P] (only preemphasized) or [_D] (only deemphasized - in flat audio input mode)
+			for(uint8_t i = 0; i < MODEM_DEMODULATOR_COUNT; i++)
+			{
+				if(modemBitmap & (1 << i))
+				{
+					enum ModemEmphasis m = ModemGetFilterType(i);
+					switch(m)
+					{
+						case PREEMPHASIS:
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"P", 1);
+							break;
+						case DEEMPHASIS:
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
+							break;
+						case EMPHASIS_NONE:
+						default:
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
+							break;
+					}
+				}
+				else
+					TermSendToAll(MODE_MONITOR, (uint8_t*)"_", 1);
+			}
+
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"], signal level ", 0);
+			TermSendNumberToAll(MODE_MONITOR, signalLevel);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"%: ", 0);
+
+			SendTNC2(buf, size);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
+
 		}
-		else
-		{
-			break;
-		}
-		i %= (FRAMEBUFLEN);
+
+
+		DigiDigipeat(buf, size);
+
+		free(buf);
 	}
-
-	ax25.frameBufRd = ax25.frameBufWr;
-
-	for(i = 0; i < (bufidx); i++)
-	{
-		if(buf[i] & 1)
-			break; //look for path end bit
-	}
-
-
-	SendKiss(buf, bufidx); //send KISS frames if ports available
-
-
-	if(((USBmode == MODE_MONITOR) || (uart1.mode == MODE_MONITOR) || (uart2.mode == MODE_MONITOR)))
-	{
-		common_toTNC2(buf, bufidx, bufto); //convert to TNC2 format
-
-		//in general, the RMS of the frame is calculated (excluding preamble!)
-		//it it calculated from samples ranging from -4095 to 4095 (amplitude of 4095)
-		//that should give a RMS of around 2900 for pure sine wave
-		//for pure square wave it should be equal to the amplitude (around 4095)
-		//real data contains lots of imperfections (especially mark/space amplitude imbalance) and this value is far smaller than 2900 for standard frames
-		//division by 9 was selected by trial and error to provide a value of 100(%) when the input signal had peak-peak voltage of 3.3V
-		//this probably should be done in a different way, like some peak amplitude tracing
-		ax25.sLvl /= 9;
-
-		if(ax25.sLvl > 100)
-		{
-			term_sendMonitor((uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 50-70%.\r\n", 0);
-		}
-
-		if(ax25.sLvl < 10)
-		{
-			term_sendMonitor((uint8_t*)"\r\nInput level too low! Please increase so most stations are around 50-70%.\r\n", 0);
-		}
-
-		term_sendMonitor((uint8_t*)"(AX.25) Frame received [", 0); //show which modem received the frame: [FP] (flat and preemphasized), [FD] (flat and deemphasized - in flat audio input mode)
-																   //[F_] (only flat), [_P] (only preemphasized) or [_D] (only deemphasized - in flat audio input mode)
-		uint8_t t[2] = {0};
-		if(modemReceived & 1)
-		{
-			t[0] = 'F';
-		}
-		else
-			t[0] = '_';
-		if(modemReceived & 2)
-		{
-			if(afskCfg.flatAudioIn)
-				t[1] = 'D';
-			else
-				t[1] = 'P';
-		}
-		else
-			t[1] = '_';
-
-		term_sendMonitor(t, 2);
-		term_sendMonitor((uint8_t*)"], signal level ", 0);
-		term_sendMonitorNumber(ax25.sLvl);
-		term_sendMonitor((uint8_t*)"%: ", 0);
-
-		term_sendMonitor(bufto, 0);
-		term_sendMonitor((uint8_t*)"\r\n", 0);
-
-	}
-
-
-	if(digi.enable)
-	{
-		Digi_digipeat(buf, bufidx);
-	}
-
-
-
 }
 
 
@@ -211,15 +193,16 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
-  SysTick_init();
+  SysTickInit();
 
   //force usb re-enumeration after reset
   RCC->APB2ENR |= RCC_APB2ENR_IOPAEN; //pull D+ to ground for a moment
   GPIOA->CRH |= GPIO_CRH_MODE12_1;
   GPIOA->CRH &= ~GPIO_CRH_CNF12;
   GPIOA->BSRR = GPIO_BSRR_BR12;
-  uint32_t t = ticks + 10;
-  while(t > ticks);;
+  uint32_t t = ticks + (100 / SYSTICK_INTERVAL);
+  while(t > ticks)
+	  ;
   GPIOA->CRH &= ~GPIO_CRH_MODE12;
   GPIOA->CRH |= GPIO_CRH_CNF12_0;
 
@@ -233,117 +216,110 @@ int main(void)
 
 
 
-	Wdog_init(); //initialize watchdog
+	WdogInit(); //initialize watchdog
 
+	memset(&beacon, 0, sizeof(beacon));
+	memset(&Ax25Config, 0, sizeof(Ax25Config));
+	memset(&ModemConfig, 0, sizeof(ModemConfig));
+	memset(&DigiConfig, 0, sizeof(DigiConfig));
 
 	//set some initial values in case there is no configuration saved in memory
-	uart1.baudrate = 9600;
-	uart2.baudrate = 9600;
-	afskCfg.usePWM = 0;
-	afskCfg.flatAudioIn = 0;
-	ax25Cfg.quietTime = 300;
-	ax25Cfg.txDelayLength = 300;
-	ax25Cfg.txTailLength = 30;
-	digi.dupeTime = 30;
+	Uart1.baudrate = 9600;
+	Uart2.baudrate = 9600;
+	ModemConfig.usePWM = 0;
+	ModemConfig.flatAudioIn = 0;
+	Ax25Config.quietTime = 300;
+	Ax25Config.txDelayLength = 300;
+	Ax25Config.txTailLength = 30;
+	DigiConfig.dupeTime = 30;
 
-	Config_read();
+	ConfigRead();
 
-	Ax25_init();
+	Ax25Init();
 
-	uart_init(&uart1, USART1, uart1.baudrate);
-	uart_init(&uart2, USART2, uart2.baudrate);
+	UartInit(&Uart1, USART1, Uart1.baudrate);
+	UartInit(&Uart2, USART2, Uart2.baudrate);
+	UartInit(&UartUsb, NULL, 1);
 
-	uart_config(&uart1, 1);
-	uart_config(&uart2, 1);
+	UartConfig(&Uart1, 1);
+	UartConfig(&Uart2, 1);
+	UartConfig(&UartUsb, 1);
 
-	Afsk_init();
-	Beacon_init();
-
-
-	autoResetTimer = autoReset * 360000;
+	ModemInit();
+	BeaconInit();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-	static uint32_t usbKissTimer = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  Wdog_reset();
+	  WdogReset();
 
-	  if(ax25.frameReceived)
+	  if(Ax25GetReceivedFrameBitmap())
 		  handleFrame();
 
-	  Digi_viscousRefresh(); //refresh viscous-delay buffers
+	  DigiViscousRefresh(); //refresh viscous-delay buffers
+
+	  Ax25TransmitBuffer(); //transmit buffer (will return if nothing to be transmitted)
+
+	  Ax25TransmitCheck(); //check for pending transmission request
+
+//	  if(USBint) //USB "interrupt"
+//	  {
+//		  USBint = 0; //clear
+//
+//		  if(USBmode == MODE_KISS) //is USB in KISS mode?
+//			  usbKissTimer = ticks + 500; //set timeout to 5s
+//
+//		  term_handleSpecial(TERM_USB); //handle special characters (e.g. backspace)
+//		  if((usbcdcdata[0] == 0xc0) && /*(usbcdcdata[1] == 0x00) &&*/ (usbcdcdata[usbcdcidx - 1] == 0xc0)) //probably a KISS frame
+//		  {
+//			  USBrcvd = DATA_KISS;
+//			  usbKissTimer = 0;
+//		  }
+//
+//		  if(((usbcdcdata[usbcdcidx - 1] == '\r') || (usbcdcdata[usbcdcidx - 1] == '\n'))) //proabably a command
+//		  {
+//			  USBrcvd = DATA_TERM;
+//			  usbKissTimer = 0;
+//		  }
+//	  }
+//
+//	  if((usbKissTimer > 0) && (ticks >= usbKissTimer)) //USB KISS timer timeout
+//	  {
+//		  usbcdcidx = 0;
+//		  memset(usbcdcdata, 0, UARTBUFLEN);
+//		  usbKissTimer = 0;
+//	  }
 
 
-	  Ax25_transmitBuffer(); //transmit buffer (will return if nothing to be transmitted)
-
-	  Ax25_transmitCheck(); //check for pending transmission request
-
-	  if(USBint) //USB "interrupt"
+	  if(UartUsb.rxType != DATA_NOTHING)
 	  {
-		  USBint = 0; //clear
-
-		  if(USBmode == MODE_KISS) //is USB in KISS mode?
-			  usbKissTimer = ticks + 500; //set timeout to 5s
-
-		  term_handleSpecial(TERM_USB); //handle special characters (e.g. backspace)
-		  if((usbcdcdata[0] == 0xc0) && /*(usbcdcdata[1] == 0x00) &&*/ (usbcdcdata[usbcdcidx - 1] == 0xc0)) //probably a KISS frame
-		  {
-			  USBrcvd = DATA_KISS;
-			  usbKissTimer = 0;
-		  }
-
-		  if(((usbcdcdata[usbcdcidx - 1] == '\r') || (usbcdcdata[usbcdcidx - 1] == '\n'))) //proabably a command
-		  {
-			  USBrcvd = DATA_TERM;
-			  usbKissTimer = 0;
-		  }
+		  TermParse(&UartUsb);
+		  UartClearRx(&UartUsb);
 	  }
-
-	  if((usbKissTimer > 0) && (ticks >= usbKissTimer)) //USB KISS timer timeout
+	  if(Uart1.rxType != DATA_NOTHING)
 	  {
-		  usbcdcidx = 0;
-		  memset(usbcdcdata, 0, UARTBUFLEN);
-		  usbKissTimer = 0;
+		  TermParse(&Uart1);
+		  UartClearRx(&Uart1);
 	  }
-
-
-	  if(USBrcvd != DATA_NOTHING)
+	  if(Uart2.rxType != DATA_NOTHING)
 	  {
-		  term_parse(usbcdcdata, usbcdcidx, TERM_USB, USBrcvd, USBmode);
-		  USBrcvd = DATA_NOTHING;
-		  usbcdcidx = 0;
-		  memset(usbcdcdata, 0, UARTBUFLEN);
+		  TermParse(&Uart2);
+		  UartClearRx(&Uart2);
 	  }
-	  if(uart1.rxflag != DATA_NOTHING)
-	  {
-		  term_parse(uart1.bufrx, uart1.bufrxidx, TERM_UART1, uart1.rxflag, uart1.mode);
-		  uart1.rxflag = DATA_NOTHING;
-		  uart1.bufrxidx = 0;
-		  memset(uart1.bufrx, 0, UARTBUFLEN);
-	  }
-	  if(uart2.rxflag != DATA_NOTHING)
-	  {
-		  term_parse(uart2.bufrx, uart2.bufrxidx, TERM_UART2, uart2.rxflag, uart2.mode);
-		  uart2.rxflag = DATA_NOTHING;
-		  uart2.bufrxidx = 0;
-		  memset(uart2.bufrx, 0, UARTBUFLEN);
-	  }
+	  UartHandleKissTimeout(&UartUsb);
 
-	  Beacon_check(); //check beacons
+	  BeaconCheck(); //check beacons
 
 
-	  if(((autoResetTimer != 0) && (ticks > autoResetTimer)) || (ticks > 4294960000))
+	  if(ticks > 0xFFFFF000)
 		  NVIC_SystemReset();
-
-
-
   }
   /* USER CODE END 3 */
 }

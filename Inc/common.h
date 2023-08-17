@@ -18,20 +18,25 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define COMMON_H_
 
 #include <stdint.h>
+#include "drivers/uart.h"
 
+#define IS_UPPERCASE_ALPHANUMERIC(x) ((((x) >= '0') && ((x) <= '9')) || (((x) >= 'A') && ((x) <= 'Z')))
+#define IS_NUMBER(x) (((x) >= '0') && ((x) <= '9'))
 
 #define CRC32_INIT 0xFFFFFFFF
 
-uint8_t call[6]; //device callsign
-uint8_t callSsid; //device ssid
+struct _GeneralConfig
+{
+	uint8_t call[6]; //device callsign
+	uint8_t callSsid; //device ssid
+	uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
+	uint8_t kissMonitor;
+};
 
-uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
+extern struct _GeneralConfig GeneralConfig;
 
-const uint8_t *versionString; //version string
+extern const char versionString[]; //version string
 
-uint8_t autoReset;
-uint32_t autoResetTimer;
-uint8_t kissMonitor;
 
 /**
  * @brief Generate random number from min to max
@@ -39,7 +44,7 @@ uint8_t kissMonitor;
  * @param[in] max Higher boundary
  * @return Generated number
  */
-int16_t rando(int16_t min, int16_t max);
+int16_t Random(int16_t min, int16_t max);
 
 /**
  * @brief Convert string to int
@@ -47,15 +52,23 @@ int16_t rando(int16_t min, int16_t max);
  * @param[in] len String length or 0 to detect by strlen()
  * @return Converted int
  */
-int64_t strToInt(uint8_t *str, uint8_t len);
+int64_t StrToInt(const char *str, uint16_t len);
+
+///**
+// * @brief Convert AX25 frame to TNC2 (readable) format
+// * @param *from Input AX25 frame
+// * @param len Input frame length
+// * @param *to Destination buffer, will be NULL terminated
+// * @param limit Destination buffer size limit
+// */
+//void ConvertToTNC2(uint8_t *from, uint16_t fromlen, uint8_t *to, uint16_t limit);
 
 /**
- * @brief Convert AX25 frame to TNC2 (readable) format
- * @param[in] *from Input AX25 frame
- * @param[in] len Input frame length
- * @param[out] *to Destination buffer, will be NULL terminated
+ * @brief Convert AX25 frame to TNC2 (readable) format and send it through available ports
+ * @param *from Input AX25 frame
+ * @param len Input frame length
  */
-void common_toTNC2(uint8_t *from, uint16_t fromlen, uint8_t *to);
+void SendTNC2(uint8_t *from, uint16_t len);
 
 /**
  * @brief Calculate CRC32
@@ -64,13 +77,34 @@ void common_toTNC2(uint8_t *from, uint16_t fromlen, uint8_t *to);
  * @param[in] n Input data length
  * @return Calculated CRC32
  */
-uint32_t crc32(uint32_t crc0, uint8_t *s, uint64_t n);
+uint32_t Crc32(uint32_t crc0, uint8_t *s, uint64_t n);
 
 /**
- * @brief Send frame to available UARTs and USB in KISS format
- * @param[in] *buf Frame buffer
- * @param[in] len Frame buffer length
+ * @brief Check if callsign is correct and convert it to AX.25 format
+ * @param *in Input ASCII callsign
+ * @param size Input size, not bigger than 6
+ * @param *out Output buffer, exactly 6 bytes
+ * @return True if callsign is valid
  */
-void SendKiss(uint8_t *buf, uint16_t len);
+bool ParseCallsign(const char *in, uint16_t size, uint8_t *out);
+
+/**
+ * @brief Check if callsign with SSID is correct and convert it to AX.25 format
+ * @param *in Input ASCII callsign with SSID
+ * @param size Input size
+ * @param *out Output buffer, exactly 6 bytes
+ * @param *ssid Output SSID, exactly 1 byte
+ * @return True if callsign is valid
+ */
+bool ParseCallsignWithSsid(const char *in, uint16_t size, uint8_t *out, uint8_t *ssid);
+
+/**
+ * @brief Check if SSID is correct and convert it to uint8_t
+ * @param *in Input ASCII SSID
+ * @param size Input size
+ * @param *out Output buffer, exactly 1 byte
+ * @return True if SSID is valid
+ */
+bool ParseSsid(const char *in, uint16_t size, uint8_t *out);
 
 #endif /* COMMON_H_ */

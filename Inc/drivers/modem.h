@@ -20,98 +20,105 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
+//number of parallel demodulators
+//each demodulator must be explicitly configured in code
+#define MODEM_DEMODULATOR_COUNT 2
 
-typedef enum
+#define MODEM_BAUDRATE 1200.f
+#define MODEM_MARK_FREQUENCY 1200.f
+#define MODEM_SPACE_FREQUENCY 2200.f
+
+enum ModemTxTestMode
 {
 	TEST_DISABLED,
 	TEST_MARK,
 	TEST_SPACE,
 	TEST_ALTERNATING,
-} TxTestMode;
+};
 
 
-typedef struct
+struct ModemDemodConfig
 {
 	uint8_t usePWM : 1; //0 - use R2R, 1 - use PWM
 	uint8_t flatAudioIn : 1; //0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
-} Afsk_config;
+};
 
-Afsk_config afskCfg;
+extern struct ModemDemodConfig ModemConfig;
 
-typedef enum
+enum ModemEmphasis
 {
 	PREEMPHASIS,
 	DEEMPHASIS,
 	EMPHASIS_NONE
-}  Emphasis;
+};
+
 
 /**
- * @brief Get current DCD (channel busy) state
- * @return 0 if channel free, 1 if busy
+ * @brief Get filter type (preemphasis, deemphasis etc.) for given modem
+ * @param modem Modem number
+ * @return Filter type
  */
-uint8_t Afsk_dcdState(void);
+enum ModemEmphasis ModemGetFilterType(uint8_t modem);
 
 /**
- * @brief Check if there is an ongoing TX test
- * @return 0 if not, 1 if any TX test is enabled
+ * @brief Get current DCD state
+ * @return 1 if channel busy, 0 if free
  */
-uint8_t Afsk_isTxTestOngoing(void);
+uint8_t ModemDcdState(void);
 
 /**
- * @brief Clear RMS meter state for specified modem
- * @param[in] modemNo Modem number: 0 or 1
+ * @brief Check if there is a TX test mode enabled
+ * @return 1 if in TX test mode, 0 otherwise
  */
-void Afsk_clearRMS(uint8_t modemNo);
+uint8_t ModemIsTxTestOngoing(void);
 
 /**
- * @brief Clear RMS value from specified modem
- * @param[in] modemNo Modem number: 0 or 1
- * @return RMS
+ * @brief Clear modem RMS counter
+ * @param number Modem number
  */
-uint16_t Afsk_getRMS(uint8_t modemNo);
+void ModemClearRMS(uint8_t number);
 
 /**
- * @brief Current DCD state
- * @return 0 if no DCD (channel free), 1 if DCD
+ * @brief Get RMS value for modem
+ * @param number Modem number
+ * @return RMS value
  */
-uint8_t Afsk_dcdState(void);
+uint16_t ModemGetRMS(uint8_t number);
 
 /**
  * @brief Start or restart TX test mode
- * @param[in] type TX test type: TEST_MARK, TEST_SPACE or TEST_ALTERNATING
+ * @param type TX test type: TEST_MARK, TEST_SPACE or TEST_ALTERNATING
  */
-void Afsk_txTestStart(TxTestMode type);
+void ModemTxTestStart(enum ModemTxTestMode type);
 
 
 /**
  * @brief Stop TX test mode
  */
-void Afsk_txTestStop(void);
-
+void ModemTxTestStop(void);
 
 /**
  * @brief Configure and start TX
- * @warning Transmission should be started with Ax25_transmitBuffer
+ * @info This function is used internally by protocol module.
+ * @warning Use Ax25TransmitStart() to initialize transmission
  */
-void Afsk_transmitStart(void);
+void ModemTransmitStart(void);
 
 
 /**
  * @brief Stop TX and go back to RX
  */
-void Afsk_transmitStop(void);
+void ModemTransmitStop(void);
 
 
 /**
- * @brief Initialize AFSK module
+ * @brief Initialize modem module
  */
-void Afsk_init(void);
+void ModemInit(void);
 
 
-
-void DMA1_Channel2_IRQHandler(void) __attribute__ ((interrupt));
-void TIM3_IRQHandler(void) __attribute__ ((interrupt));
-void TIM2_IRQHandler(void) __attribute__ ((interrupt));
-
+#if (MODEM_DEMODULATOR_COUNT > 8)
+#error There may be at most 8 parallel demodulators/decoders
+#endif
 
 #endif

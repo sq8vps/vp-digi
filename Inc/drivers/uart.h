@@ -18,124 +18,102 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef UART_H_
 #define UART_H_
 
-#define UARTBUFLEN 250
-
 #include "stm32f1xx.h"
 #include <stdint.h>
 #include "usbd_cdc_if.h"
+#include "ax25.h"
 
-typedef enum
+#define UART_BUFFER_SIZE 250
+
+enum UartMode
 {
 	MODE_KISS,
 	MODE_TERM,
 	MODE_MONITOR,
-} Uart_mode;
+};
 
-typedef enum
+enum UartDataType
 {
+	DATA_NOTHING = 0,
 	DATA_KISS,
 	DATA_TERM,
-	DATA_NOTHING,
-} Uart_data_type;
+};
 
 typedef struct
 {
 	volatile USART_TypeDef *port; //UART peripheral
 	uint32_t baudrate; //baudrate 1200-115200
-	Uart_data_type rxflag; //rx status
-	uint8_t txflag; //tx status (1 when transmitting)
-	uint8_t bufrx[UARTBUFLEN]; //buffer for rx data
-	uint16_t bufrxidx; //rx data buffer index
-	uint8_t buftx[UARTBUFLEN]; //circular tx buffer
-	uint16_t buftxrd, buftxwr; //tx buffer indexes
-	Uart_mode mode; //uart mode
-	uint8_t enabled;
+	enum UartDataType rxType; //rx status
+	uint8_t enabled : 1;
+	uint8_t isUsb : 1;
+	uint8_t rxBuffer[UART_BUFFER_SIZE];
+	uint16_t rxBufferHead;
+	uint8_t txBuffer[UART_BUFFER_SIZE];
+	uint16_t txBufferHead, txBufferTail;
+	uint8_t txBufferFull : 1;
+	enum UartMode mode;
 	uint32_t kissTimer;
 } Uart;
 
-Uart uart1, uart2;
+extern Uart Uart1, Uart2, UartUsb;
 
-Uart_mode USBmode;
-Uart_data_type USBrcvd;
-uint8_t USBint; //USB "interrupt" flag
+
+///**
+// * \brief Copy KISS frame(s) from input buffer to APRS TX buffer
+// * \param[in] *buf Input buffer
+// * \param[in] len Input buffer size
+// */
+//uint8_t Uart_txKiss(uint8_t *buf, uint16_t len);
+
+/**
+ * @brief Send byte
+ * @param[in] *port UART
+ * @param[in] data Data
+ */
+void UartSendByte(Uart *port, uint8_t data);
+
+/**
+ * @brief Send string
+ * @param *port UART
+ * @param *data Buffer
+ * @param len Buffer length or 0 for null-terminated string
+ */
+void UartSendString(Uart *port, void *data, uint16_t datalen);
+
+/**
+ * @brief Send signed number
+ * @param *port UART
+ * @param n Number
+ */
+void UartSendNumber(Uart *port, int32_t n);
 
 
 /**
- * \brief Copy KISS frame(s) from input buffer to APRS TX buffer
- * \param[in] *buf Input buffer
- * \param[in] len Input buffer size
+ * @brief Initialize UART structures
+ * @param *port UART [prt
+ * @param *uart Physical UART peripheral. NULL if USB in CDC mode
+ * @param baud Baudrate
  */
-uint8_t Uart_txKiss(uint8_t *buf, uint16_t len);
-
+void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud);
 
 /**
- * \brief Send single byte using USB
- * \param[in] data Byte
+ * @brief Configure and enable/disable UART
+ * @param *port UART port
+ * @param state 0 - disable, 1 - enable
  */
-void uartUSB_sendByte(uint8_t data);
-
+void UartConfig(Uart *port, uint8_t state);
 
 /**
- * \brief Start buffer transmission
- * \param[in] *port UART
+ * @brief Clear RX buffer and flags
+ * @param *port UART port
  */
-void uart_transmitStart(Uart *port);
+void UartClearRx(Uart *port);
 
 /**
- * \brief Store byte in TX buffer
- * \param[in] *port UART
- * \param[in] data Data
+ * @brief Handle KISS timeout
+ * @param *port UART pointer
+ * @attention This function must be polled constantly in main loop for USB UART.
  */
-void uart_sendByte(Uart *port, uint8_t data);
-
-/**
- * \brief Store string in TX buffer
- * \apram[in] *port UART
- * \param[in] *data Buffer
- * \param[in] len Buffer length or 0 for null-terminated string
- */
-void uart_sendString(Uart *port, uint8_t *data, uint16_t datalen);
-
-/**
- * \brief Send string using USB
- * \param[in] *data Buffer
- * \param[in] len Buffer length or 0 for null-terminated string
- */
-void uartUSB_sendString(uint8_t* data, uint16_t len);
-
-/**
- * \brief Store number (in ASCII format) in TX buffer
- * \param[in] *port UART
- * \param[in] n Number
- */
-void uart_sendNumber(Uart *port, int32_t n);
-
-/**
- * \brief Send number (in ASCII format) using USB
- * \param[in] n Number
- */
-void uartUSB_sendNumber(int32_t n);
-
-
-/**
- * \brief Initialize UART structures
- * \param[in] *port UART
- * \param[in] *uart Physical UART peripheral
- * \param[in] baud Baudrate
- */
-void uart_init(Uart *port, USART_TypeDef *uart, uint32_t baud);
-
-/**
- * \brief Configure and enable/disable UART
- * \param[in] *port UART
- * \param[in] state 0 - disable, 1 - enable
- */
-void uart_config(Uart *port, uint8_t state);
-
-/**
- * \brief Clear RX buffer and flags
- * \param[in] *port UART
- */
-void uart_clearRx(Uart *port);
+void UartHandleKissTimeout(Uart *port);
 
 #endif

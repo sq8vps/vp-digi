@@ -16,6 +16,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "drivers/systick.h"
+#include "stm32f1xx.h"
 
 volatile uint32_t ticks = 0; //SysTick counter
 
@@ -25,7 +26,7 @@ volatile uint32_t ticks = 0; //SysTick counter
 	//ticks++;
 //}
 
-void SysTick_init(void)
+void SysTickInit(void)
 {
-	SysTick_Config(SystemCoreClock / 100); //SysTick every 10 ms
+	SysTick_Config(SystemCoreClock / SYSTICK_FREQUENCY); //SysTick every 10 ms
 }

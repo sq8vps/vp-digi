@@ -24,6 +24,7 @@
 
 /* USER CODE BEGIN INCLUDE */
 #include "drivers/uart.h"
+#include "drivers/systick.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -132,7 +133,7 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-
+static void handleUsbInterrupt(Uart *port);
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -264,32 +265,18 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
 
-	/**
-	 * Z tej funkcji zaraz po odebraniu danych chcemy wyjsc, bo pozostanie w niej zablokuje mozliwosc nadawania czegokolwiek przez USB.
-	 * Poza tym ta funkcja jest tak naprawde czescia ISR.
-	 * Ustawiamy wiec flage z informacja, co odebralismy i to przetwarzamy w innym miejscu (w petli glownej).
-	 */
-
 	USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
 	USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
 	//this function receives 64 bytes max.
 	//add them to the buffer and set USB "interrupt" flag
-	for(uint16_t cv = 0; cv < *Len; cv++)
+	for(uint16_t i = 0; i < *Len; i++)
 	{
-		usbcdcdata[usbcdcidx++] = *(Buf + cv);
-		if(usbcdcidx == UARTBUFLEN)
-	  	{
-			usbcdcidx = 0;
-			return USBD_FAIL;
-	  	}
-		USBint = 1;
+		UartUsb.rxBuffer[UartUsb.rxBufferHead++] = Buf[i];
+		UartUsb.rxBufferHead %= UART_BUFFER_SIZE;
 	}
 
-
-
-
-
+	handleUsbInterrupt(&UartUsb);
 
   return (USBD_OK);
   /* USER CODE END 6 */
@@ -312,15 +299,16 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   /* USER CODE BEGIN 7 */
   if(hUsbDeviceFS.dev_state != 3) return USBD_BUSY;
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
-  if (hcdc->TxState > 1){ //jesli cos wiekszego od 1, to USB nie jest podlaczone
+  if (hcdc->TxState > 1)
+  {
     return USBD_BUSY;
   }
   uint32_t to = 0;
   while(hcdc->TxState != 0)
   {
-	  //czekamy dopoki USB jest zajete, bo inaczej bedziemy tracic dane
 	  to++;
-	  if(to > 90000) return USBD_FAIL; //trzeba bylo zrobic jakis timeout
+	  if(to > 90000) //wait for a while if USB busy
+		  return USBD_FAIL;
   }
 
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
@@ -330,7 +318,30 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+static void handleUsbInterrupt(Uart *port)
+{
+//			if(port->port == USART1) //handle special functions and characters
+//				term_handleSpecial(TERM_UART1);
+//			else if(port->port == USART2)
+//				term_handleSpecial(TERM_UART2);
 
+	if(port->mode == MODE_KISS)
+		port->kissTimer = ticks + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
+
+	if(port->rxBufferHead != 0)
+	{
+		if((port->rxBuffer[0] == 0xC0) && (port->rxBuffer[port->rxBufferHead - 1] == 0xC0)) //data starts with 0xc0 and ends with 0xc0 - this is a KISS frame
+		{
+			port->rxType = DATA_KISS;
+			port->kissTimer = 0;
+		}
+		else if(((port->rxBuffer[port->rxBufferHead - 1] == '\r') || (port->rxBuffer[port->rxBufferHead - 1] == '\n'))) //data ends with \r or \n, process as data
+		{
+			port->rxType = DATA_TERM;
+			port->kissTimer = 0;
+		}
+	}
+}
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**

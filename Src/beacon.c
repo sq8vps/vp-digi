@@ -23,40 +23,40 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "terminal.h"
 #include "drivers/systick.h"
 
-uint32_t beaconDelay[8] = {0};
+struct Beacon beacon[8];
 
-
+static uint32_t beaconDelay[8] = {0};
+static uint8_t buf[150]; //frame buffer
 
 /**
  * @brief Send specified beacon
  * @param[in] no Beacon number (0-7)
  */
-void Beacon_send(uint8_t no)
+void BeaconSend(uint8_t number)
 {
-	if(beacon[no].enable == 0)
+	if(beacon[number].enable == 0)
 		return; //beacon disabled
 
-	uint8_t buf[150] = {0}; //frame buffer
 	uint16_t idx = 0;
 
-	for(uint8_t i = 0; i < 7; i++) //add destination address
-		buf[idx++] = dest[i];
+	for(uint8_t i = 0; i < sizeof(GeneralConfig.dest); i++) //add destination address
+		buf[idx++] = GeneralConfig.dest[i];
 
-	for(uint8_t i = 0; i < 6; i++) //add source address
-		buf[idx++] = call[i];
+	for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //add source address
+		buf[idx++] = GeneralConfig.call[i];
 
-	buf[idx++] = ((callSsid << 1) + 0b01100000); //add source ssid
+	buf[idx++] = ((GeneralConfig.callSsid << 1) + 0b01100000); //add source ssid
 
-	if(beacon[no].path[0] > 0) //this beacon has some path set
+	if(beacon[number].path[0] > 0) //this beacon has some path set
 	{
 		for(uint8_t i = 0; i < 14; i++) //loop through path
 		{
-			if((beacon[no].path[i] > 0) || (i == 6) || (i == 13)) //normal data, not a NULL symbol
+			if((beacon[number].path[i] > 0) || (i == 6) || (i == 13)) //normal data, not a NULL symbol
 			{
-				buf[idx] = (beacon[no].path[i] << 1); //copy path
+				buf[idx] = beacon[number].path[i]; //copy path
 				if((i == 6) || (i == 13)) //it was and ssid
 				{
-					buf[idx] += 0b01100000; //add appripriate bits for ssid
+					buf[idx] = ((buf[idx] << 1) + 0b01100000); //add appropriate bits for ssid
 				}
 				idx++;
 			}
@@ -67,47 +67,35 @@ void Beacon_send(uint8_t no)
 	buf[idx - 1] |= 1; //add c-bit on the last element
 	buf[idx++] = 0x03; //control
 	buf[idx++] = 0xF0; //pid
-	for(uint8_t i = 0; i < strlen((char*)beacon[no].data); i++)
+	for(uint8_t i = 0; i < strlen((char*)beacon[number].data); i++)
 	{
-		buf[idx++] = beacon[no].data[i]; //copy beacon comment
+		buf[idx++] = beacon[number].data[i]; //copy beacon comment
 	}
 
-	if((FRAMEBUFLEN - ax25.xmitIdx) > (idx + 2)) //check for free space in TX buffer
+	void *handle = NULL;
+	if(NULL != (handle = Ax25WriteTxFrame(buf, idx))) //try to write frame to TX buffer
 	{
-		uint16_t frameStart = ax25.xmitIdx; //store index
-
-		for(uint8_t i = 0; i < idx; i++)
-		{
-			ax25.frameXmit[ax25.xmitIdx++] = buf[i]; //copy frame to main TX buffer
-		}
-
-        if(kissMonitor) //monitoring mode, send own frames to KISS ports
+        if(GeneralConfig.kissMonitor) //monitoring mode, send own frames to KISS ports
         {
-        	SendKiss(ax25.frameXmit, ax25.xmitIdx);
+        	TermSendToAll(MODE_KISS, buf, idx);
         }
 
-		ax25.frameXmit[ax25.xmitIdx++] = 0xFF; //frame separator
-		Digi_storeDeDupeFromXmitBuf(frameStart); //store frame hash in duplicate protection buffer (to prevent from digipeating own packets)
+		DigiStoreDeDupe(buf, idx); //store frame hash in duplicate protection buffer (to prevent from digipeating own packets)
 
-		uint8_t bufto[200];
-		common_toTNC2((uint8_t *)&ax25.frameXmit[frameStart], ax25.xmitIdx - frameStart - 1, bufto);
+		TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Transmitting beacon ", 0);
 
-		term_sendMonitor((uint8_t*)"(AX.25) Transmitting beacon ", 0);
-
-		term_sendMonitorNumber(no);
-		term_sendMonitor((uint8_t*)": ", 0);
-		term_sendMonitor(bufto, 0);
-		term_sendMonitor((uint8_t*)"\r\n", 0);
+		TermSendNumberToAll(MODE_MONITOR, number);
+		TermSendToAll(MODE_MONITOR, (uint8_t*)": ", 0);
+		SendTNC2(buf, idx);
+		TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
 	}
-
-
 
 }
 
 /**
- * @brief Check if any beacon should be transmitted and transmit if neccessary
+ * @brief Check if any beacon should be transmitted and transmit if necessary
  */
-void Beacon_check(void)
+void BeaconCheck(void)
 {
 	for(uint8_t i = 0; i < 8; i++)
 	{
@@ -120,7 +108,7 @@ void Beacon_check(void)
 				return;
 			beacon[i].next = ticks + beacon[i].interval; //save next beacon timestamp
 			beaconDelay[i] = 0;
-			Beacon_send(i);
+			BeaconSend(i);
 		}
 	}
 }
@@ -129,11 +117,11 @@ void Beacon_check(void)
 /**
  * @brief Initialize beacon module
  */
-void Beacon_init(void)
+void BeaconInit(void)
 {
 	for(uint8_t i = 0; i < 8; i++)
 	{
-		beaconDelay[i] = (beacon[i].delay * 100) + ticks + 3000; //set delay for beacons and add constant 30 seconds of delay
+		beaconDelay[i] = (beacon[i].delay * SYSTICK_FREQUENCY) + ticks + (30000 / SYSTICK_INTERVAL); //set delay for beacons and add constant 30 seconds of delay
 		beacon[i].next = 0;
 	}
 }

@@ -21,35 +21,35 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
+#define BEACON_MAX_PAYLOAD_SIZE 100
 
-
-typedef struct
+struct Beacon
 {
 	uint8_t enable; //enable beacon
 	uint32_t interval; //interval in seconds
 	uint32_t delay; //delay in seconds
-	uint8_t data[101]; //information field
+	uint8_t data[BEACON_MAX_PAYLOAD_SIZE + 1]; //information field
 	uint8_t path[15]; //path, 2 parts max, e.g. WIDE1<sp>1SP2<sp><sp><sp>2<NUL>, <NUL> can be at byte 0, 7 and 14
 	uint32_t next; //next beacon timestamp
-} Beacon;
+};
 
-Beacon beacon[8];
+extern struct Beacon beacon[8];
 
 /**
  * @brief Send specified beacon
- * @param[in] no Beacon number (0-7)
+ * @param number Beacon number (0-7)
  */
-void Beacon_send(uint8_t no);
+void BeaconSend(uint8_t number);
 
 
 /**
- * @brief Check if any beacon should be transmitted and transmit if neccessary
+ * @brief Check if any beacon should be transmitted and transmit if necessary
  */
-void Beacon_check(void);
+void BeaconCheck(void);
 
 /**
  * @brief Initialize beacon module
  */
-void Beacon_init(void);
+void BeaconInit(void);
 
 #endif /* BEACON_H_ */

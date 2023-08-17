@@ -18,7 +18,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "drivers/watchdog.h"
 #include "stm32f1xx.h"
 
-void Wdog_init(void)
+void WdogInit(void)
 {
 	IWDG->KR = 0x5555; //configuration mode
 	IWDG->PR = 0b101; //prescaler
@@ -27,7 +27,7 @@ void Wdog_init(void)
 }
 
 
-void Wdog_reset(void)
+void WdogReset(void)
 {
 	IWDG->KR = 0xAAAA; //reset
 }
