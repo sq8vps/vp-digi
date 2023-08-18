@@ -21,11 +21,13 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "common.h"
 #include "drivers/systick.h"
 #include <stdbool.h>
+#include "digipeater.h"
 
 struct Ax25ProtoConfig Ax25Config;
 
 //values below must be kept consistent so that FRAME_BUFFER_SIZE >= FRAME_MAX_SIZE * FRAME_MAX_COUNT
-#define FRAME_MAX_SIZE (150) //single frame max length for RX
+#define FRAME_MAX_SIZE (308) //single frame max length for RX
+//308 bytes is the theoretical max size assuming 2-byte Control, 256-byte info field and 5 digi address fields
 #define FRAME_MAX_COUNT (10) //max count of frames in buffer
 #define FRAME_BUFFER_SIZE (FRAME_MAX_COUNT * FRAME_MAX_SIZE) //circular frame buffer length
 
@@ -111,6 +113,8 @@ static uint16_t rxMultiplexDelay = 0; //simple delay for decoder multiplexer to 
 static uint16_t txDelay; //number of TXDelay bytes to send
 static uint16_t txTail; //number of TXTail bytes to send
 
+static uint8_t outputFrameBuffer[FRAME_MAX_SIZE];
+
 #define GET_FREE_SIZE(max, head, tail) (((head) < (tail)) ? ((tail) - (head)) : ((max) - (head) + (tail)))
 #define GET_USED_SIZE(max, head, tail) (max - GET_FREE_SIZE(max, head, tail))
 
@@ -138,6 +142,32 @@ uint8_t Ax25GetReceivedFrameBitmap(void)
 void Ax25ClearReceivedFrameBitmap(void)
 {
 	frameReceived = 0;
+}
+
+void Ax25TxKiss(uint8_t *buf, uint16_t len)
+{
+	if(len < 18) //frame is too small
+	{
+		return;
+	}
+	for(uint16_t i = 0; i < len; i++)
+	{
+		if(buf[i] == 0xC0) //frame start marker
+		{
+			uint16_t end = i + 1;
+			while(end < len)
+			{
+				if(buf[end] == 0xC0)
+					break;
+				end++;
+			}
+			if(end == len) //no frame end marker found
+				return;
+			Ax25WriteTxFrame(&buf[i + 2], end - (i + 2)); //skip modem number and send frame
+			DigiStoreDeDupe(&buf[i + 2], end - (i + 2));
+			i = end; //move pointer to the next byte if there are more consecutive frames
+		}
+	}
 }
 
 void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
@@ -172,12 +202,7 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel)
 	if((rxFrameHead == rxFrameTail) && !rxFrameBufferFull)
 		return false;
 
-	*dst = malloc(rxFrame[rxFrameTail].size);
-	if(NULL == dst)
-	{
-		*size = 0;
-		return false;
-	}
+	*dst = outputFrameBuffer;
 
 	for(uint16_t i = 0; i < rxFrame[rxFrameTail].size; i++)
 	{
@@ -494,7 +519,7 @@ void Ax25TransmitBuffer(void)
 
 	if((txFrameHead != txFrameTail) || txFrameBufferFull)
 	{
-		txQuiet = (ticks + (Ax25Config.quietTime / SYSTICK_INTERVAL) + Random(0, 200 / SYSTICK_INTERVAL)); //calculate required delay
+		txQuiet = (SysTickGet() + (Ax25Config.quietTime / SYSTICK_INTERVAL) + Random(0, 200 / SYSTICK_INTERVAL)); //calculate required delay
 		txInitStage = TX_INIT_WAITING;
 	}
 }
@@ -530,7 +555,7 @@ void Ax25TransmitCheck(void)
 	if(ModemIsTxTestOngoing()) //TX test is enabled, wait for now
 		return;
 
-	if(txQuiet < ticks) //quit time has elapsed
+	if(txQuiet < SysTickGet()) //quit time has elapsed
 	{
 		if(!ModemDcdState()) //channel is free
 		{
@@ -548,7 +573,7 @@ void Ax25TransmitCheck(void)
 			}
 			else //still trying
 			{
-				txQuiet = ticks + Random(100 / SYSTICK_INTERVAL, 500 / SYSTICK_INTERVAL); //try again after some random time
+				txQuiet = SysTickGet() + Random(100 / SYSTICK_INTERVAL, 500 / SYSTICK_INTERVAL); //try again after some random time
 				txRetries++;
 			}
 		}

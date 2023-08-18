@@ -102,11 +102,11 @@ void BeaconCheck(void)
 		if(beacon[i].enable == 0)
 			continue;
 
-		if((beacon[i].interval > 0) && ((ticks >= beacon[i].next) || (beacon[i].next == 0)))
+		if((beacon[i].interval > 0) && ((SysTickGet() >= beacon[i].next) || (beacon[i].next == 0)))
 		{
-			if(beaconDelay[i] > ticks) //check for beacon delay (only for the very first transmission)
+			if(beaconDelay[i] > SysTickGet()) //check for beacon delay (only for the very first transmission)
 				return;
-			beacon[i].next = ticks + beacon[i].interval; //save next beacon timestamp
+			beacon[i].next = SysTickGet() + beacon[i].interval; //save next beacon timestamp
 			beaconDelay[i] = 0;
 			BeaconSend(i);
 		}
@@ -121,7 +121,7 @@ void BeaconInit(void)
 {
 	for(uint8_t i = 0; i < 8; i++)
 	{
-		beaconDelay[i] = (beacon[i].delay * SYSTICK_FREQUENCY) + ticks + (30000 / SYSTICK_INTERVAL); //set delay for beacons and add constant 30 seconds of delay
+		beaconDelay[i] = (beacon[i].delay * SYSTICK_FREQUENCY) + SysTickGet() + (30000 / SYSTICK_INTERVAL); //set delay for beacons and add constant 30 seconds of delay
 		beacon[i].next = 0;
 	}
 }

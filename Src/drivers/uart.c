@@ -21,48 +21,9 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include "common.h"
 #include <string.h>
-
 #include "digipeater.h"
 
 Uart Uart1, Uart2, UartUsb;
-
-//uint8_t Uart_txKiss(uint8_t *buf, uint16_t len)
-//{
-//	if(len < 10) //frame is too small
-//	{
-//		return 1;
-//	}
-//
-//	uint16_t framebegin = 0;
-//	uint8_t framestatus = 0; //0 - frame not started, 1 - frame start found, 2 - in a frame, 3 - frame end found
-//
-//	for(uint16_t i = 0; i < len; i++)
-//	{
-//		if(*(buf + i) == 0xc0) //found KISS frame delimiter
-//		{
-//			if((i > 2) && (framestatus == 2)) //we are already in frame, this is the ending marker
-//			{
-//				framestatus = 3;
-//				ax25.frameXmit[ax25.xmitIdx++] = 0xFF; //write frame separator
-//				Digi_storeDeDupeFromXmitBuf(framebegin); //store duplicate protection hash
-//		        if((FRAMEBUFLEN - ax25.xmitIdx) < (len - i + 2)) //there might be next frame in input buffer, but if there is no space for it, drop it
-//		        	break;
-//			}
-//		}
-//		else if((*(buf + i) == 0x00) && (*(buf + i - 1) == 0xC0) && ((framestatus == 0) || (framestatus == 3))) //found frame delimiter, modem number (0x00) and we are not in a frame yet or preceding frame has been processed
-//		{
-//			framestatus = 1; //copy next frame
-//			framebegin = ax25.xmitIdx;
-//		}
-//		else if((framestatus == 1) || (framestatus == 2)) //we are in a frame
-//		{
-//			ax25.frameXmit[ax25.xmitIdx++] = *(buf + i); //copy data
-//			framestatus = 2;
-//		}
-//	}
-//
-//	return 0;
-//}
 
 static void handleInterrupt(Uart *port)
 {
@@ -72,13 +33,10 @@ static void handleInterrupt(Uart *port)
 		port->rxBuffer[port->rxBufferHead++] = port->port->DR; //store it
 		port->rxBufferHead %= UART_BUFFER_SIZE;
 
-//			if(port->port == USART1) //handle special functions and characters
-//				term_handleSpecial(TERM_UART1);
-//			else if(port->port == USART2)
-//				term_handleSpecial(TERM_UART2);
+		TermHandleSpecial(port);
 
 		if(port->mode == MODE_KISS)
-			port->kissTimer = ticks + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
+			port->kissTimer = SysTickGet() + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
 	}
 	if(port->port->SR & USART_SR_IDLE) //line is idle, end of data reception
 	{
@@ -111,7 +69,7 @@ static void handleInterrupt(Uart *port)
 		}
 	}
 
-	if((port->kissTimer > 0) && (ticks >= port->kissTimer)) //KISS timer timeout
+	if((port->kissTimer > 0) && (SysTickGet() >= port->kissTimer)) //KISS timer timeout
 	{
 		port->kissTimer = 0;
 		port->rxBufferHead = 0;
@@ -203,6 +161,7 @@ void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 	port->mode = MODE_KISS;
 	port->enabled = 0;
 	port->kissTimer = 0;
+	port->lastRxBufferHead = 0;
 	memset(port->rxBuffer, 0, sizeof(port->rxBuffer));
 	memset(port->txBuffer, 0, sizeof(port->txBuffer));
 }
@@ -278,7 +237,7 @@ void UartClearRx(Uart *port)
 
 void UartHandleKissTimeout(Uart *port)
 {
-	if((port->kissTimer > 0) && (ticks >= port->kissTimer)) //KISS timer timeout
+	if((port->kissTimer > 0) && (SysTickGet() >= port->kissTimer)) //KISS timer timeout
 	{
 		port->kissTimer = 0;
 		port->rxBufferHead = 0;

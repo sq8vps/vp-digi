@@ -37,6 +37,7 @@ enum UartDataType
 	DATA_NOTHING = 0,
 	DATA_KISS,
 	DATA_TERM,
+	DATA_USB,
 };
 
 typedef struct
@@ -53,6 +54,7 @@ typedef struct
 	uint8_t txBufferFull : 1;
 	enum UartMode mode;
 	uint32_t kissTimer;
+	uint16_t lastRxBufferHead; //for special characters handling
 } Uart;
 
 extern Uart Uart1, Uart2, UartUsb;

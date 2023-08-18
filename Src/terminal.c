@@ -22,91 +22,40 @@ along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "drivers/modem.h"
 #include "ax25.h"
+#include "drivers/systick.h"
 
+void TermHandleSpecial(Uart *u)
+{
+	if(u->mode == MODE_KISS) //don't do anything in KISS mode
+	{
+		u->lastRxBufferHead = 0;
+		return;
+	}
+	if(u->lastRxBufferHead >= u->rxBufferHead) //UART RX buffer index was probably cleared
+		u->lastRxBufferHead = 0;
 
-//uint16_t spLastIdx[3] = {0, 0, 0}; //index buffer was "special" terminal cases
+	if(u->rxBuffer[u->rxBufferHead - 1] == '\b') //user entered backspace
+	{
+		if(u->rxBufferHead > 1) //there was some data in buffer
+		{
+			u->rxBufferHead -= 2; //remove backspace and preceding character
+			UartSendString(u, "\b \b", 3); //backspace (one character left), remove backspaced character (send space) and backspace again
+			if(u->lastRxBufferHead > 0)
+				u->lastRxBufferHead--; //1 character was removed
+		}
+		else //no preceding character
+			u->rxBufferHead = 0;
+	}
+	uint16_t t = u->rxBufferHead; //store last index
+	if(u->lastRxBufferHead < t) //local echo handling
+	{
+		UartSendString(u, &u->rxBuffer[u->lastRxBufferHead], t - u->lastRxBufferHead); //echo characters entered by user
+		if((u->rxBuffer[t - 1] == '\r') || (u->rxBuffer[t - 1] == '\n'))
+			UartSendString(u, "\r\n", 2);
+		u->lastRxBufferHead = t;
+	}
 
-/**
- * @brief Handle "special" terminal cases like backspace or local echo
- * @param[in] src Source: TERM_USB, TERM_UART1, TERM_UART2
- * @attention Must be called for every received data
- */
-//void term_handleSpecial(Terminal_stream src)
-//{
-//	if(src == TERM_USB)
-//	{
-//		if(USBmode == MODE_KISS) //don't do anything in KISS mode
-//		{
-//			spLastIdx[0] = 0;
-//			return;
-//		}
-//		if(spLastIdx[0] >= usbcdcidx) //USB RX buffer index was probably cleared
-//			spLastIdx[0] = 0;
-//
-//		if(usbcdcdata[usbcdcidx - 1] == '\b') //user entered backspace
-//		{
-//			if(usbcdcidx > 1) //there was some data in buffer
-//			{
-//				usbcdcidx -= 2; //remove backspace and preceding character
-//				CDC_Transmit_FS((uint8_t*)"\b \b", 3); //backspace (one character left), remove backspaced character (send space) and backspace again
-//				if(spLastIdx[0] > 0)
-//					spLastIdx[0]--; //1 character was removed
-//			}
-//			else //there was only a backspace
-//				usbcdcidx = 0;
-//		}
-//		uint16_t t = usbcdcidx; //store last index
-//		if(spLastIdx[0] < t) //local echo handling
-//		{
-//			CDC_Transmit_FS(&usbcdcdata[spLastIdx[0]], t - spLastIdx[0]); //echo characters entered by user
-//			if((usbcdcdata[t - 1] == '\r') || (usbcdcdata[t - 1] == '\n'))
-//				CDC_Transmit_FS((uint8_t*)"\r\n", 2);
-//			spLastIdx[0] = t;
-//		}
-//	}
-//	else if((src == TERM_UART1) || (src == TERM_UART2))
-//	{
-//		Uart *u = &uart1;
-//		uint8_t nr = 1;
-//		if(src == TERM_UART2)
-//		{
-//			u = &uart2;
-//			nr = 2;
-//		}
-//
-//
-//		if(u->mode == MODE_KISS) //don't do anything in KISS mode
-//		{
-//			spLastIdx[nr] = 0;
-//			return;
-//		}
-//		if(spLastIdx[nr] >= u->bufrxidx) //UART RX buffer index was probably cleared
-//			spLastIdx[nr] = 0;
-//
-//		if(u->bufrx[u->bufrxidx - 1] == '\b') //user entered backspace
-//		{
-//			if(u->bufrxidx > 1) //there was some data in buffer
-//			{
-//				u->bufrxidx -= 2; //remove backspace and preceding character
-//				uart_sendString(u, (uint8_t*)"\b \b", 3); //backspace (one character left), remove backspaced character (send space) and backspace again
-//				if(spLastIdx[nr] > 0)
-//					spLastIdx[nr]--; //1 character was removed
-//			}
-//			else //there was only a backspace
-//				u->bufrxidx = 0;
-//		}
-//		uint16_t t = u->bufrxidx; //store last index
-//		if(spLastIdx[nr] < t) //local echo handling
-//		{
-//			uart_sendString(u, &u->bufrx[spLastIdx[nr]], t - spLastIdx[nr]); //echo characters entered by user
-//			if((u->bufrx[t - 1] == '\r') || (u->bufrx[t - 1] == '\n'))
-//				uart_sendString(u, (uint8_t*)"\r\n", 2);
-//			spLastIdx[nr] = t;
-//		}
-//		uart_transmitStart(u);
-//	}
-//
-//}
+}
 
 
 static void sendKiss(Uart *port, uint8_t *buf, uint16_t len)
@@ -165,6 +114,7 @@ static const char monitorHelp[] = "\r\nCommans available in monitor mode:\r\n"
 		"kiss - switches to KISS mode\r\n"
 		"config - switches to config mode\r\n"
 		"reboot - reboots the device\r\n"
+		"time - show time since boot\r\n"
 		"version - shows full firmware version info\r\n\r\n\r\n";
 
 static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
@@ -174,6 +124,7 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 		"eraseall - erases all configurations and reboots the device\r\n"
 		"help - shows this help page\r\n"
 		"reboot - reboots the device\r\n"
+		"time - show time since boot\r\n"
 		"version - shows full firmware version info\r\n\r\n"
 		"call <callsign-SSID> - sets callsign with optional SSID\r\n"
 		"dest <address> - sets destination address\r\n"
@@ -381,6 +332,12 @@ static void printConfig(Uart *src)
 		UartSendString(src, "Off\r\n", 0);
 }
 
+static void sendTime(Uart *src)
+{
+	UartSendString(src, "Time since boot: ", 0);
+	UartSendNumber(src, SysTickGet() * SYSTICK_INTERVAL / 60000); //convert from ms to minutes
+	UartSendString(src, " minutes\r\n", 0);
+}
 
 void TermParse(Uart *src)
 {
@@ -414,7 +371,7 @@ void TermParse(Uart *src)
 	}
 	else if(!strncmp(cmd, "monitor", 7))
 	{
-		UartSendString(src, (uint8_t*)"USB switched to monitor mode\r\n", 0);
+		UartSendString(src, (uint8_t*)"Switched to monitor mode\r\n", 0);
 		src->mode = MODE_MONITOR;
 		return;
 	}
@@ -423,7 +380,7 @@ void TermParse(Uart *src)
 	 */
 	else if((src->mode == MODE_KISS) && (src->rxType == DATA_KISS))
 	{
-		//Uart_txKiss(cmd, len); //if received KISS data, transmit KISS frame
+		Ax25TxKiss(src->rxBuffer, src->rxBufferHead);
 		return;
 	}
 	/*
@@ -434,14 +391,21 @@ void TermParse(Uart *src)
 		if(!strncmp(cmd, "help", 4))
 		{
 			UartSendString(src, (char *)monitorHelp, 0);
+			return;
 		}
 		else if(!strncmp(cmd, "version", 7))
 		{
 			UartSendString(src, (char *)versionString, 0);
+			return;
 		}
 		else if(!strncmp(cmd, "reboot", 6))
 		{
 			NVIC_SystemReset();
+		}
+		else if(!strncmp(cmd, "time", 4))
+		{
+			sendTime(src);
+			return;
 		}
 		else if(!strncmp(cmd, "beacon ", 7))
 		{
@@ -509,10 +473,17 @@ void TermParse(Uart *src)
 	if(!strncmp(cmd, "help", 4))
 	{
 		UartSendString(src, (uint8_t*)configHelp, 0);
+		return;
 	}
 	else if(!strncmp(cmd, "version", 7))
 	{
 		UartSendString(src, (uint8_t*)versionString, 0);
+		return;
+	}
+	else if(!strncmp(cmd, "time", 4))
+	{
+		sendTime(src);
+		return;
 	}
 	else if(!strncmp(cmd, "reboot", 6))
 	{
@@ -531,6 +502,7 @@ void TermParse(Uart *src)
 	else if(!strncmp(cmd, "print", 5))
 	{
 		printConfig(src);
+		return;
 	}
 	else if(!strncmp(cmd, "list", 4)) //list calls in call filter table
 	{
@@ -542,56 +514,60 @@ void TermParse(Uart *src)
 			if(DigiConfig.callFilter[i][0] != 0)
 			{
                     uint8_t cl[10] = {0};
-                    uint8_t clidx = 0;
-                    for(uint8_t h = 0; h < 6; h++)
+                    uint8_t clIdx = 0;
+                    for(uint8_t j = 0; j < 6; j++)
                     {
-                        if(DigiConfig.callFilter[i][h] == 0xFF) //wildcard
+                        if(DigiConfig.callFilter[i][j] == 0xFF) //wildcard
                         {
-                            uint8_t g = h;
-                            uint8_t j = 0;
-                            while(g < 6)
+                            bool partialWildcard = false;
+                            for(uint8_t k = j; k < 6; k++) //check if there are all characters wildcarded
                             {
-                                if(DigiConfig.callFilter[i][g] != 0xFF)
-                                	j = 1;
-                                g++;
+                                if(DigiConfig.callFilter[i][k] != 0xFF)
+                                {
+                                	partialWildcard = true;
+                                	break;
+                                }
                             }
-                            if(j == 0)
+                            if(partialWildcard == false) //all characters wildcarded
                             {
-                                cl[clidx++] = '*';
+                                cl[clIdx++] = '*';
                                 break;
-                            } else
+                            }
+                            else
                             {
-                            	cl[clidx++] = '?';
+                            	cl[clIdx++] = '?';
                             }
                         }
                         else
                         {
-                            if(DigiConfig.callFilter[i][h] != ' ')
-                            	cl[clidx++] = DigiConfig.callFilter[i][h];
+                            if(DigiConfig.callFilter[i][j] != ' ')
+                            	cl[clIdx++] = DigiConfig.callFilter[i][j];
                         }
                     }
-                    if(DigiConfig.callFilter[i][6] == 0xFF)
+                    if(DigiConfig.callFilter[i][6] == 0xFF) //wildcard on SSID
                     {
-                    	cl[clidx++] = '-';
-                    	cl[clidx++] = '*';
+                    	cl[clIdx++] = '-';
+                    	cl[clIdx++] = '*';
                     }
                     else if(DigiConfig.callFilter[i][6] != 0)
                     {
-                    	cl[clidx++] = '-';
+                    	cl[clIdx++] = '-';
                         if(DigiConfig.callFilter[i][6] > 9)
                         {
-                        	cl[clidx++] = (DigiConfig.callFilter[i][6] / 10) + 48;
-                        	cl[clidx++] = (DigiConfig.callFilter[i][6] % 10) + 48;
+                        	cl[clIdx++] = (DigiConfig.callFilter[i][6] / 10) + '0';
+                        	cl[clIdx++] = (DigiConfig.callFilter[i][6] % 10) + '0';
                         }
-                        else cl[clidx++] = DigiConfig.callFilter[i][6] + 48;
+                        else
+                        	cl[clIdx++] = DigiConfig.callFilter[i][6] + '0';
                     }
                     UartSendString(src, cl, 0);
 			}
 			else
 				UartSendString(src, "empty", 0);
+
 			UartSendString(src, "\r\n", 0);
-			return;
 		}
+		return;
 	}
 	/*
 	 * Settings insertion handling
@@ -604,11 +580,6 @@ void TermParse(Uart *src)
 			UartSendString(src, "Incorrect callsign!\r\n", 0);
 			return;
 		}
-		else
-		{
-			UartSendString(src, "OK\r\n", 0);
-		}
-		return;
 	}
 	else if(!strncmp(cmd, "dest", 4))
 	{
@@ -616,10 +587,6 @@ void TermParse(Uart *src)
 		{
 			UartSendString(src, "Incorrect address!\r\n", 0);
 			return;
-		}
-		else
-		{
-			UartSendString(src, "OK\r\n", 0);
 		}
 	}
 	else if(!strncmp(cmd, "txdelay", 7))
@@ -633,7 +600,6 @@ void TermParse(Uart *src)
 		else
 		{
 			Ax25Config.txDelayLength = (uint16_t)t;
-			UartSendString(src, "OK\r\n", 0);
 		}
 	}
 	else if(!strncmp(cmd, "txtail", 6))
@@ -647,10 +613,8 @@ void TermParse(Uart *src)
 		else
 		{
 			Ax25Config.txTailLength = (uint16_t)t;
-			UartSendString(src, "OK\r\n", 0);
 		}
 	}
-
 	else if(!strncmp(cmd, "quiet", 5))
 	{
 		int64_t t = StrToInt(&cmd[6], len - 6);
@@ -778,8 +742,6 @@ void TermParse(Uart *src)
 		{
 			err = true;
 		}
-
-		UartSendString(src, "OK\r\n", 0);
 	}
 	else if(!strncmp(cmd, "digi", 4))
 	{
@@ -824,7 +786,6 @@ void TermParse(Uart *src)
 					UartSendString(src, "Incorrect alias!\r\n", 0);
 					return;
 				}
-				UartSendString(src, "OK\r\n", 0);
 			}
 			else if((!strncmp(&cmd[7], "max ", 4) || !strncmp(&cmd[7], "rep ", 4)) && (alno < 4))
 			{
@@ -949,7 +910,7 @@ void TermParse(Uart *src)
 				uint8_t tmp[7] = {0};
 				uint16_t tmpIdx = 0;
 
-				for(uint16_t i = 0; i < len; i++)
+				for(uint16_t i = 0; i < (len - shift); i++)
                 {
                       if(cmd[shift + i] == '-') //SSID separator
                       {
@@ -1042,7 +1003,10 @@ void TermParse(Uart *src)
 			err = true;
 	}
 	else
+	{
 		UartSendString(src, "Unknown command. For command list type \"help\"\r\n", 0);
+		return;
+	}
 
 
 	if(err)

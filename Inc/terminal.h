@@ -29,30 +29,24 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
  */
 void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size);
 
+/**
+ * @brief Send signed number to all available ports
+ * @param mode Output mode/data type
+ * @param n Number to send
+ */
 void TermSendNumberToAll(enum UartMode mode, int32_t n);
 
-//typedef enum
-//{
-//	TERM_ANY,
-//	TERM_USB,
-//	TERM_UART1,
-//	TERM_UART2
-//} Terminal_stream;
-//
-//#define TERMBUFLEN 300
-//
-///**
-// * @brief Handle "special" terminal cases like backspace or local echo
-// * @param[in] src Source: TERM_USB, TERM_UART1, TERM_UART2
-// * @attention Must be called for every received data
-// */
-//void term_handleSpecial(Terminal_stream src);
-//
-//
 
 /**
- * \brief Parse and process received data
- * \param *src UART structure
+ * @brief Handle "special" terminal cases like backspace or local echo
+ * @param *u UART structure
+ * @attention Must be called for every received data
+ */
+void TermHandleSpecial(Uart *u);
+
+/**
+ * @brief Parse and process received data
+ * @param *src UART structure
  */
 void TermParse(Uart *src);
 

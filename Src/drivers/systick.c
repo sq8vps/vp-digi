@@ -30,3 +30,15 @@ void SysTickInit(void)
 {
 	SysTick_Config(SystemCoreClock / SYSTICK_FREQUENCY); //SysTick every 10 ms
 }
+
+uint32_t SysTickGet(void)
+{
+	return ticks;
+}
+
+void Delay(uint32_t ms)
+{
+	uint32_t target = SysTickGet() + ms / SYSTICK_INTERVAL;
+	while(target > SysTickGet())
+		;
+}

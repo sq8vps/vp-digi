@@ -26,8 +26,10 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 extern volatile uint32_t ticks;
 
-//void SysTick_Handler(void);
-
 void SysTickInit(void);
+
+uint32_t SysTickGet(void);
+
+void Delay(uint32_t ms);
 
 #endif /* SYSTICK_H_ */

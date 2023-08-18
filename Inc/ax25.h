@@ -42,6 +42,13 @@ struct Ax25ProtoConfig
 extern struct Ax25ProtoConfig Ax25Config;
 
 /**
+ * @brief Transmit one or more frames encoded in KISS format
+ * @param *buf Inout buffer
+ * @param len Buffer size
+ */
+void Ax25TxKiss(uint8_t *buf, uint16_t len);
+
+/**
  * @brief Write frame to transmit buffer
  * @param *data Data to transmit
  * @param size Data size
@@ -63,7 +70,7 @@ void Ax25ClearReceivedFrameBitmap(void);
 
 /**
  * @brief Get next received frame (if available)
- * @param **dst Destination buffer that this function allocates and fills
+ * @param **dst Pointer to internal buffer
  * @param *size Actual frame size
  * @param *signalLevel Frame signal level (RMS)
  * @return True if frame was read, false if no more frames to read

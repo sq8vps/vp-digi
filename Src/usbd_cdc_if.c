@@ -25,6 +25,7 @@
 /* USER CODE BEGIN INCLUDE */
 #include "drivers/uart.h"
 #include "drivers/systick.h"
+#include "terminal.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -276,6 +277,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 		UartUsb.rxBufferHead %= UART_BUFFER_SIZE;
 	}
 
+	UartUsb.rxType = DATA_USB;
 	handleUsbInterrupt(&UartUsb);
 
   return (USBD_OK);
@@ -320,13 +322,8 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
 static void handleUsbInterrupt(Uart *port)
 {
-//			if(port->port == USART1) //handle special functions and characters
-//				term_handleSpecial(TERM_UART1);
-//			else if(port->port == USART2)
-//				term_handleSpecial(TERM_UART2);
-
 	if(port->mode == MODE_KISS)
-		port->kissTimer = ticks + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
+		port->kissTimer = SysTickGet() + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
 
 	if(port->rxBufferHead != 0)
 	{

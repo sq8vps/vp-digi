@@ -94,7 +94,7 @@ static void handleFrame(void)
 	uint8_t modemBitmap = Ax25GetReceivedFrameBitmap(); //store states
 	Ax25ClearReceivedFrameBitmap();
 
-	uint8_t *buf = NULL;
+	uint8_t *buf;
 	uint16_t size = 0;
 	uint16_t signalLevel = 0;
 
@@ -113,7 +113,7 @@ static void handleFrame(void)
 			//for pure square wave it should be equal to the amplitude (around 4095)
 			//real data contains lots of imperfections (especially mark/space amplitude imbalance) and this value is far smaller than 2900 for standard frames
 			//division by 9 was selected by trial and error to provide a value of 100(%) when the input signal had peak-peak voltage of 3.3V
-			//this probably should be done in a different way, like some peak amplitude tracing
+			//TODO: this probably should be done in a different way, like some peak amplitude tracing
 			signalLevel /= 9;
 
 			if(signalLevel > 100)
@@ -141,8 +141,10 @@ static void handleFrame(void)
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
 							break;
 						case EMPHASIS_NONE:
-						default:
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
+							break;
+						default:
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"*", 1);
 							break;
 					}
 				}
@@ -161,8 +163,6 @@ static void handleFrame(void)
 
 
 		DigiDigipeat(buf, size);
-
-		free(buf);
 	}
 }
 
@@ -200,9 +200,7 @@ int main(void)
   GPIOA->CRH |= GPIO_CRH_MODE12_1;
   GPIOA->CRH &= ~GPIO_CRH_CNF12;
   GPIOA->BSRR = GPIO_BSRR_BR12;
-  uint32_t t = ticks + (100 / SYSTICK_INTERVAL);
-  while(t > ticks)
-	  ;
+  Delay(100);
   GPIOA->CRH &= ~GPIO_CRH_MODE12;
   GPIOA->CRH |= GPIO_CRH_CNF12_0;
 
@@ -269,39 +267,16 @@ int main(void)
 
 	  Ax25TransmitCheck(); //check for pending transmission request
 
-//	  if(USBint) //USB "interrupt"
-//	  {
-//		  USBint = 0; //clear
-//
-//		  if(USBmode == MODE_KISS) //is USB in KISS mode?
-//			  usbKissTimer = ticks + 500; //set timeout to 5s
-//
-//		  term_handleSpecial(TERM_USB); //handle special characters (e.g. backspace)
-//		  if((usbcdcdata[0] == 0xc0) && /*(usbcdcdata[1] == 0x00) &&*/ (usbcdcdata[usbcdcidx - 1] == 0xc0)) //probably a KISS frame
-//		  {
-//			  USBrcvd = DATA_KISS;
-//			  usbKissTimer = 0;
-//		  }
-//
-//		  if(((usbcdcdata[usbcdcidx - 1] == '\r') || (usbcdcdata[usbcdcidx - 1] == '\n'))) //proabably a command
-//		  {
-//			  USBrcvd = DATA_TERM;
-//			  usbKissTimer = 0;
-//		  }
-//	  }
-//
-//	  if((usbKissTimer > 0) && (ticks >= usbKissTimer)) //USB KISS timer timeout
-//	  {
-//		  usbcdcidx = 0;
-//		  memset(usbcdcdata, 0, UARTBUFLEN);
-//		  usbKissTimer = 0;
-//	  }
-
 
 	  if(UartUsb.rxType != DATA_NOTHING)
 	  {
-		  TermParse(&UartUsb);
-		  UartClearRx(&UartUsb);
+		  TermHandleSpecial(&UartUsb);
+		  if(UartUsb.rxType != DATA_USB)
+		  {
+			  TermParse(&UartUsb);
+		  	  UartClearRx(&UartUsb);
+		  }
+		  UartUsb.rxType = DATA_NOTHING;
 	  }
 	  if(Uart1.rxType != DATA_NOTHING)
 	  {
@@ -318,7 +293,7 @@ int main(void)
 	  BeaconCheck(); //check beacons
 
 
-	  if(ticks > 0xFFFFF000)
+	  if(SysTickGet() > 0xFFFFF000)
 		  NVIC_SystemReset();
   }
   /* USER CODE END 3 */

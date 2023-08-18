@@ -26,14 +26,14 @@ along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 
 struct _DigiConfig DigiConfig;
 
-#define VISCOUS_MAX_FRAME_COUNT 20 //max frames in viscous-delay buffer
+#define VISCOUS_MAX_FRAME_COUNT 10 //max frames in viscous-delay buffer
 #define VISCOUS_MAX_FRAME_SIZE 150
 
 struct ViscousData
 {
 	uint32_t hash;
 	uint32_t timeLimit;
-	uint8_t *frame;
+	uint8_t frame[VISCOUS_MAX_FRAME_SIZE];
 	uint16_t size;
 };
 static struct ViscousData viscous[VISCOUS_MAX_FRAME_COUNT];
@@ -45,12 +45,12 @@ struct DeDupeData
 	uint32_t timeLimit;
 };
 
-#define DEDUPE_SIZE (40) //duplicate protection buffer size (number of hashes)
+#define DEDUPE_SIZE (50) //duplicate protection buffer size (number of hashes)
 static struct DeDupeData deDupe[DEDUPE_SIZE]; //duplicate protection hash buffer
 static uint8_t deDupeCount = 0; //duplicate protection buffer index
 
 
-#define DIGI_BUFFER_SIZE 200
+#define DIGI_BUFFER_SIZE 308 //308 is the theoretical max under some assumptions, see ax25.c
 static uint8_t buf[DIGI_BUFFER_SIZE];
 
 /**
@@ -66,9 +66,8 @@ static uint8_t viscousCheckAndRemove(uint32_t hash)
     	{
     		viscous[i].hash = 0; //clear slot
     		viscous[i].timeLimit = 0;
-    		free(viscous[i].frame);
     		viscous[i].size = 0;
-    		//term_sendMonitor((uint8_t*)"Digipeated frame received, dropping old frame from viscous-delay buffer\r\n", 0);
+    		TermSendToAll(MODE_MONITOR, (uint8_t*)"Digipeated frame received, dropping old frame from viscous-delay buffer\r\n", 0);
     		return 1;
     	}
     }
@@ -86,7 +85,7 @@ void DigiViscousRefresh(void)
 
 	for(uint8_t i = 0; i < VISCOUS_MAX_FRAME_COUNT; i++)
     {
-    	if((viscous[i].timeLimit > 0) && (ticks >= viscous[i].timeLimit)) //it's time to transmit this frame
+    	if((viscous[i].timeLimit > 0) && (SysTickGet() >= viscous[i].timeLimit)) //it's time to transmit this frame
         {
             void *handle = NULL;
             if(NULL != (handle = Ax25WriteTxFrame(viscous[i].frame, viscous[i].size)))
@@ -103,7 +102,6 @@ void DigiViscousRefresh(void)
 
     		viscous[i].hash = 0; //clear slot
     		viscous[i].timeLimit = 0;
-    		free(viscous[i].frame);
     		viscous[i].size = 0;
         }
     }
@@ -194,9 +192,6 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     	if((len + 7) > VISCOUS_MAX_FRAME_SIZE) //if frame length (+ 7 bytes for inserted call) is bigger than buffer size
     		return; //drop
 
-    	viscous[viscousSlot].frame = malloc(len + 7);
-    	if(NULL == viscous[viscousSlot].frame)
-    		return;
     	buffer = viscous[viscousSlot].frame;
     	index = &(viscous[viscousSlot].size);
     	*index = 0;
@@ -288,7 +283,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 	if((alias < 8) && (DigiConfig.viscous & (1 << alias)))
 	{
 		viscous[viscousSlot].hash = hash;
-    	viscous[viscousSlot].timeLimit = ticks + (VISCOUS_HOLD_TIME / SYSTICK_INTERVAL);
+    	viscous[viscousSlot].timeLimit = SysTickGet() + (VISCOUS_HOLD_TIME / SYSTICK_INTERVAL);
 		TermSendToAll(MODE_MONITOR, (uint8_t*)"Saving frame for viscous-delay digipeating\r\n", 0);
 	}
 	else
@@ -339,7 +334,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
     {
         if(deDupe[i].hash == hash)
         {
-            if(ticks < (deDupe[i].timeLimit))
+            if(SysTickGet() < (deDupe[i].timeLimit))
             	return; //filter out duplicate frame
         }
     }
@@ -466,7 +461,7 @@ void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
     deDupeCount %= DEDUPE_SIZE;
 
     deDupe[deDupeCount].hash = hash;
-    deDupe[deDupeCount].timeLimit = ticks + (DigiConfig.dupeTime * 10 / SYSTICK_INTERVAL);
+    deDupe[deDupeCount].timeLimit = SysTickGet() + (DigiConfig.dupeTime * 10 / SYSTICK_INTERVAL);
 
     deDupeCount++;
 }
