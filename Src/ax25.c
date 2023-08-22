@@ -105,7 +105,7 @@ struct RxState
 	uint8_t frameReceived; //frame received flag
 };
 
-static volatile struct RxState rxState[MODEM_DEMODULATOR_COUNT];
+static volatile struct RxState rxState[MODEM_MAX_DEMODULATOR_COUNT];
 
 static uint16_t lastCrc = 0; //CRC of the last received frame. If not 0, a frame was successfully received
 static uint16_t rxMultiplexDelay = 0; //simple delay for decoder multiplexer to avoid receiving the same frame twice
@@ -229,11 +229,11 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 	if(lastCrc != 0) //there was a frame received
 	{
 		rxMultiplexDelay++;
-		if(rxMultiplexDelay > (4 * MODEM_DEMODULATOR_COUNT)) //hold it for a while and wait for other decoders to receive the frame
+		if(rxMultiplexDelay > (4 * MODEM_MAX_DEMODULATOR_COUNT)) //hold it for a while and wait for other decoders to receive the frame
 		{
 			lastCrc = 0;
 			rxMultiplexDelay = 0;
-			for(uint8_t i = 0; i < MODEM_DEMODULATOR_COUNT; i++)
+			for(uint8_t i = 0; i < MODEM_MAX_DEMODULATOR_COUNT; i++)
 			{
 				frameReceived |= ((rxState[i].frameReceived > 0) << i);
 				rxState[i].frameReceived = 0;
@@ -588,6 +588,6 @@ void Ax25Init(void)
 	for(uint8_t i = 0; i < (sizeof(rxState) / sizeof(rxState[0])); i++)
 		rxState[i].crc = 0xFFFF;
 
-	txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / (float)MODEM_BAUDRATE)); //change milliseconds to byte count
-	txTail = ((float)Ax25Config.txTailLength / (8.f * 1000.f / (float)MODEM_BAUDRATE));
+	txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / ModemGetBaudrate())); //change milliseconds to byte count
+	txTail = ((float)Ax25Config.txTailLength / (8.f * 1000.f / ModemGetBaudrate()));
 }

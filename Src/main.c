@@ -127,24 +127,22 @@ static void handleFrame(void)
 
 			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0); //show which modem received the frame: [FP] (flat and preemphasized), [FD] (flat and deemphasized - in flat audio input mode)
 																	   //[F_] (only flat), [_P] (only preemphasized) or [_D] (only deemphasized - in flat audio input mode)
-			for(uint8_t i = 0; i < MODEM_DEMODULATOR_COUNT; i++)
+			for(uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
 			{
 				if(modemBitmap & (1 << i))
 				{
-					enum ModemEmphasis m = ModemGetFilterType(i);
+					enum ModemPrefilter m = ModemGetFilterType(i);
 					switch(m)
 					{
-						case PREEMPHASIS:
+						case PREFILTER_PREEMPHASIS:
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"P", 1);
 							break;
-						case DEEMPHASIS:
+						case PREFILTER_DEEMPHASIS:
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
 							break;
-						case EMPHASIS_NONE:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
-							break;
+						case PREFILTER_FLAT:
 						default:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"*", 1);
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
 							break;
 					}
 				}

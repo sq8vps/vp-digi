@@ -20,13 +20,18 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-//number of parallel demodulators
+//number of maximum parallel demodulators
 //each demodulator must be explicitly configured in code
-#define MODEM_DEMODULATOR_COUNT 2
+//currently used only for 1200 Bd modem
+#define MODEM_MAX_DEMODULATOR_COUNT 2
 
-#define MODEM_BAUDRATE 1200.f
-#define MODEM_MARK_FREQUENCY 1200.f
-#define MODEM_SPACE_FREQUENCY 2200.f
+enum ModemType
+{
+	MODEM_1200 = 0,
+	MODEM_1200_V23,
+	MODEM_300,
+	MODEM_9600,
+};
 
 enum ModemTxTestMode
 {
@@ -39,26 +44,39 @@ enum ModemTxTestMode
 
 struct ModemDemodConfig
 {
+	enum ModemType modem;
 	uint8_t usePWM : 1; //0 - use R2R, 1 - use PWM
 	uint8_t flatAudioIn : 1; //0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
 };
 
 extern struct ModemDemodConfig ModemConfig;
 
-enum ModemEmphasis
+enum ModemPrefilter
 {
-	PREEMPHASIS,
-	DEEMPHASIS,
-	EMPHASIS_NONE
+	PREFILTER_PREEMPHASIS,
+	PREFILTER_DEEMPHASIS,
+	PREFILTER_FLAT,
+	PREFILTER_NONE,
 };
 
+/**
+ * @brief Get current modem baudrate
+ * @return Baudrate
+ */
+float ModemGetBaudrate(void);
 
 /**
- * @brief Get filter type (preemphasis, deemphasis etc.) for given modem
+ * @brief Get count of demodulators running in parallel
+ * @return Count of demodulators
+ */
+uint8_t ModemGetDemodulatorCount(void);
+
+/**
+ * @brief Get prefilter type (preemphasis, deemphasis etc.) for given modem
  * @param modem Modem number
  * @return Filter type
  */
-enum ModemEmphasis ModemGetFilterType(uint8_t modem);
+enum ModemPrefilter ModemGetFilterType(uint8_t modem);
 
 /**
  * @brief Get current DCD state
