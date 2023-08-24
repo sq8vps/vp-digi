@@ -69,13 +69,13 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define PLL300_LOCKED_TUNE 0.74f
 #define PLL300_NOT_LOCKED_TUNE 0.50f
 
+#define AGC9600_ATTACK 0.08f
+#define AGC9600_DECAY 0.0008f
+
 #define DAC_SINE_SIZE 32 //DAC sine table size
 
 
-#define PTT_ON GPIOB->BSRR = GPIO_BSRR_BS7
-#define PTT_OFF GPIOB->BSRR = GPIO_BSRR_BR7
-#define DCD_ON (GPIOC->BSRR = GPIO_BSRR_BR13)
-#define DCD_OFF (GPIOC->BSRR = GPIO_BSRR_BS13)
+
 
 struct ModemDemodConfig ModemConfig;
 
@@ -92,9 +92,9 @@ static float baudRate; //baudrate
 static uint8_t markStep; //mark timer step
 static uint8_t spaceStep; //space timer step
 static uint16_t baudRateStep; //baudrate timer step
-static int32_t coeffHiI[NMAX], coeffLoI[NMAX], coeffHiQ[NMAX], coeffLoQ[NMAX]; //correlator IQ coefficients
+static int16_t coeffHiI[NMAX], coeffLoI[NMAX], coeffHiQ[NMAX], coeffLoQ[NMAX]; //correlator IQ coefficients
 static uint8_t dcd = 0; //multiplexed DCD state from both demodulators
-
+static uint32_t lfsr = 0; //LFSR for 9600 Bd
 
 /**
  * @brief BPF filter with 2200 Hz tone 6 dB preemphasis (it actually attenuates 1200 Hz tone by 6 dB)
@@ -193,7 +193,7 @@ struct DemodState
 
 	enum ModemPrefilter prefilter;
 	struct Filter bpf;
-	int32_t correlatorSamples[NMAX];
+	int16_t correlatorSamples[NMAX];
 	uint8_t correlatorSamplesIdx;
 	struct Filter lpf;
 
@@ -214,6 +214,9 @@ struct DemodState
 	int32_t dcdInc;
 	int32_t dcdDec;
 	float dcdAdjust;
+
+	int16_t peak;
+	int16_t valley;
 };
 
 static struct DemodState demodState[MODEM_MAX_DEMODULATOR_COUNT];
@@ -296,6 +299,15 @@ static void setDcd(uint8_t state)
 	}
 }
 
+static inline uint8_t scramble(uint8_t in)
+{
+	//G3RUH scrambling (x^17+x^12+1)
+	uint8_t bit = ((lfsr & 0x10000) > 0) ^ ((lfsr & 0x800) > 0) ^ (in > 0);
+
+	lfsr <<= 1;
+	lfsr |= bit;
+	return bit;
+}
 
 /**
  * @brief ISR for demodulator
@@ -343,18 +355,34 @@ void TIM1_UP_IRQHandler(void)
 {
 	TIM1->SR &= ~TIM_SR_UIF;
 
+	int32_t sample = 0;
+
+	if(ModemConfig.modem == MODEM_9600)
+	{
+		if(ModemConfig.usePWM)
+			sample = currentSymbol ? 90 : 0;
+		else
+			sample = currentSymbol ? 15 : 1;
+
+		sample = filter(&demodState[0].lpf, sample);
+	}
+	else
+	{
+		sample = dacSine[dacSineIdx];
+		dacSineIdx++;
+		dacSineIdx &= (DAC_SINE_SIZE - 1);
+	}
+
 	if(ModemConfig.usePWM)
 	{
-		TIM4->CCR1 = dacSine[dacSineIdx];
+		TIM4->CCR1 = sample;
 	}
 	else
 	{
 		GPIOB->ODR &= ~0xF000; //zero 4 oldest bits
-		GPIOB->ODR |= (dacSine[dacSineIdx] << 12); //write sample to 4 oldest bits
+		GPIOB->ODR |= (sample << 12); //write sample to 4 oldest bits
 	}
 
-	dacSineIdx++;
-	dacSineIdx &= (DAC_SINE_SIZE - 1);
 }
 
 
@@ -381,10 +409,17 @@ void TIM3_IRQHandler(void)
 
 	TIM1->CNT = 0;
 
-	if(currentSymbol) //current symbol is space
-		TIM1->ARR = spaceStep;
-	else //mark
-		TIM1->ARR = markStep;
+	if(ModemConfig.modem == MODEM_9600)
+	{
+		currentSymbol = scramble(currentSymbol);
+	}
+	else
+	{
+		if(currentSymbol) //current symbol is space
+			TIM1->ARR = spaceStep;
+		else //mark
+			TIM1->ARR = markStep;
+	}
 
 }
 
@@ -400,34 +435,38 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 	dem->RMSenergy += ((sample >> 1) * (sample >> 1)); //square the sample and add it to the sum
 	dem->RMSsampleCount++; //increment number of samples
 
-	if(dem->prefilter != PREFILTER_NONE) //filter is used
+	if(ModemConfig.modem != MODEM_9600)
 	{
-		dem->correlatorSamples[dem->correlatorSamplesIdx++] = filter(&dem->bpf, sample);
+		if(dem->prefilter != PREFILTER_NONE) //filter is used
+		{
+			dem->correlatorSamples[dem->correlatorSamplesIdx++] = filter(&dem->bpf, sample);
+		}
+		else //no pre/deemphasis
+		{
+			dem->correlatorSamples[dem->correlatorSamplesIdx++] = sample;
+		}
+
+		dem->correlatorSamplesIdx %= N;
+
+		int32_t outLoI = 0, outLoQ = 0, outHiI = 0, outHiQ = 0; //output values after correlating
+
+		for(uint8_t i = 0; i < N; i++)
+		{
+			int16_t t = dem->correlatorSamples[(dem->correlatorSamplesIdx + i) % N]; //read sample
+			outLoI += t * coeffLoI[i]; //correlate sample
+			outLoQ += t * coeffLoQ[i];
+			outHiI += t * coeffHiI[i];
+			outHiQ += t * coeffHiQ[i];
+		}
+
+		outHiI >>= 12;
+		outHiQ >>= 12;
+		outLoI >>= 12;
+		outLoQ >>= 12;
+
+		sample = ABS(outHiI) + ABS(outHiQ) - ABS(outLoI) - ABS(outLoQ);
 	}
-	else //no pre/deemphasis
-	{
-		dem->correlatorSamples[dem->correlatorSamplesIdx++] = sample;
-	}
 
-	dem->correlatorSamplesIdx %= N;
-
-	int64_t outLoI = 0, outLoQ = 0, outHiI = 0, outHiQ = 0; //output values after correlating
-
-	for(uint8_t i = 0; i < N; i++)
-	{
-		int32_t t = dem->correlatorSamples[(dem->correlatorSamplesIdx + i) % N]; //read sample
-		outLoI += t * coeffLoI[i]; //correlate sample
-		outLoQ += t * coeffLoQ[i];
-		outHiI += t * coeffHiI[i];
-		outHiQ += t * coeffHiQ[i];
-	}
-
-	outHiI >>= 12;
-	outHiQ >>= 12;
-	outLoI >>= 12;
-	outLoQ >>= 12;
-	uint64_t hi = (outHiI * outHiI) + (outHiQ * outHiQ); //calculate output tone levels
-	uint64_t lo = (outLoI * outLoI) + (outLoQ * outLoQ);
 
 	//DCD using PLL
 	//PLL is running nominally at 1200 Hz (= baudrate)
@@ -443,9 +482,7 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 
 	dem->dcdPll = (signed)((unsigned)(dem->dcdPll) + ((unsigned)dem->pll)); //keep PLL ticking at the frequency equal to baudrate
 
-	uint8_t dcdSymbol = (hi > lo); //get current symbol
-
-	if(dcdSymbol != dem->dcdLastSymbol) //tone changed
+	if((sample > 0) != dem->dcdLastSymbol) //tone changed
 	{
 		if(abs(dem->dcdPll) < dem->dcdInc) //tone change occurred near zero
 			dem->dcdCounter += dem->dcdInc; //increase DCD counter
@@ -457,7 +494,7 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 		dem->dcdPll = (int)(dem->dcdPll * dem->dcdAdjust); //adjust PLL
 	}
 
-	dem->dcdLastSymbol = dcdSymbol; //store last symbol for symbol change detection
+	dem->dcdLastSymbol = sample > 0; //store last symbol for symbol change detection
 
 	if(dem->dcdCounter > dem->dcdMax) //maximum DCD counter value reached
 		dem->dcdCounter = dem->dcdMax; //avoid "sticky" DCD and counter overflow
@@ -467,10 +504,41 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 	else //below DCD threshold
 		dem->dcd = 0; //no DCD
 
-	return filter(&dem->lpf, hi - lo) > 0;
+	//TODO: check if demodulator works well after all changes
+	sample = filter(&dem->lpf, sample);
+
+	if(ModemConfig.modem == MODEM_9600)
+	{
+		//AGC
+		if(sample >= dem->peak)
+		{
+			dem->peak += (((int32_t)(AGC9600_ATTACK * (float)32768) * (int32_t)(sample - dem->peak)) >> 15);
+		}
+		else
+		{
+			dem->peak += (((int32_t)(AGC9600_DECAY * (float)32768) * (int32_t)(sample - dem->peak)) >> 15);
+		}
+
+		if(sample <= dem->valley)
+		{
+			dem->valley += (((int32_t)(AGC9600_ATTACK * (float)32768) * (int32_t)(sample - dem->valley)) >> 15);
+		}
+		else
+		{
+			dem->valley += (((int32_t)(AGC9600_DECAY * (float)32768) * (int32_t)(sample - dem->valley)) >> 15);
+		}
+
+		//remove DC component (subtract average value of peaks)
+		//and normalize to 32768 peak-to-peak (-16384:16384)
+		//32768 is equal to 1 << 15
+		if(dem->peak > dem->valley)
+		{
+			sample = ((((int32_t)(sample) - ((int32_t)(dem->peak + dem->valley) >> 1)) << 15) / (int32_t)(dem->peak - dem->valley));
+		}
+	}
+
+	return sample > 0;
 }
-
-
 
 
 /**
@@ -497,12 +565,16 @@ static void decode(uint8_t symbol, uint8_t demod)
 	{
 		dem->syncSymbols <<= 1;	//shift recovered (received, synchronized) bit register
 
-		uint8_t t = dem->rawSymbols & 0x07; //take last three symbols for sampling. Seems that 1 symbol is not enough, but 3 symbols work well
-		if(t == 0b111 || t == 0b110 || t == 0b101 || t == 0b011) //if there are 2 or 3 ones, then the received symbol is 1
-		{
-			dem->syncSymbols |= 1; //push to recovered symbols register
-		}
-		//if there 2 or 3 zeros, no need to add anything to the register
+		uint8_t sym = dem->rawSymbols & 0x07; //take last three symbols for sampling. Seems that 1 symbol is not enough, but 3 symbols work well
+		if(sym == 0b111 || sym == 0b110 || sym == 0b101 || sym == 0b011) //if there are 2 or 3 ones, then the received symbol is 1
+			sym = 1;
+		else
+			sym = 0;
+
+		if(ModemConfig.modem == MODEM_9600)
+			sym = scramble(sym); //descramble
+
+		dem->syncSymbols |= sym;
 
 		//NRZI decoding
 		if (((dem->syncSymbols & 0x03) == 0b11) || ((dem->syncSymbols & 0x03) == 0b00)) //two last symbols are the same - no symbol transition - decoded bit 1
@@ -540,29 +612,23 @@ void ModemTxTestStart(enum ModemTxTestMode type)
 	setPtt(1); //PTT on
 	txTestState = type;
 
-	//DAC timer
-	TIM1->PSC = 17; //72/18=4 MHz
-	TIM1->DIER = TIM_DIER_UIE; //enable interrupt
-	TIM1->CR1 |= TIM_CR1_CEN; //enable timer
-
 	TIM2->CR1 &= ~TIM_CR1_CEN; //disable RX timer
+	TIM1->CR1 |= TIM_CR1_CEN; //enable DAC timer
 
 	NVIC_DisableIRQ(DMA1_Channel2_IRQn); //disable RX DMA interrupt
-	NVIC_EnableIRQ(TIM1_UP_IRQn); //enable timer 1 for PWM
+	NVIC_EnableIRQ(TIM1_UP_IRQn); //enable DAC interrupt
 
 	if(type == TEST_MARK)
 	{
 		TIM1->ARR = markStep;
-	} else if(type == TEST_SPACE)
+	}
+	else if(type == TEST_SPACE)
 	{
 		TIM1->ARR = spaceStep;
 	}
 	else //alternating tones
 	{
 		//enable baudrate generator
-		TIM3->PSC = 71; //72/72=1 MHz
-		TIM3->DIER = TIM_DIER_UIE; //enable interrupt
-		TIM3->ARR = baudRateStep; //set timer interval
 		TIM3->CR1 = TIM_CR1_CEN; //enable timer
 		NVIC_EnableIRQ(TIM3_IRQn); //enable interrupt in NVIC
 	}
@@ -573,8 +639,8 @@ void ModemTxTestStop(void)
 {
 	txTestState = TEST_DISABLED;
 
-	TIM3->CR1 &= ~TIM_CR1_CEN; //turn off timers
-	TIM1->CR1 &= ~TIM_CR1_CEN;
+	TIM3->CR1 &= ~TIM_CR1_CEN; //disable baudrate timer
+	TIM1->CR1 &= ~TIM_CR1_CEN; //disable DAC timer
 	TIM2->CR1 |= TIM_CR1_CEN; //enable RX timer
 
 	NVIC_DisableIRQ(TIM3_IRQn);
@@ -588,14 +654,6 @@ void ModemTxTestStop(void)
 void ModemTransmitStart(void)
 {
 	setPtt(1); //PTT on
-
-	TIM1->PSC = 17;
-	TIM1->DIER |= TIM_DIER_UIE;
-
-
-	TIM3->PSC = 71;
-	TIM3->DIER |= TIM_DIER_UIE;
-	TIM3->ARR = baudRateStep;
 
 	TIM3->CR1 = TIM_CR1_CEN;
 	TIM1->CR1 = TIM_CR1_CEN;
@@ -612,7 +670,6 @@ void ModemTransmitStart(void)
  */
 void ModemTransmitStop(void)
 {
-
 	TIM2->CR1 |= TIM_CR1_CEN;
 	TIM3->CR1 &= ~TIM_CR1_CEN;
 	TIM1->CR1 &= ~TIM_CR1_CEN;
@@ -628,14 +685,14 @@ void ModemTransmitStop(void)
 
 /**
  * @brief Controls PTT output
- * @param[in] state 0 - PTT off, 1 - PTT on
+ * @param state 0 - PTT off, 1 - PTT on
  */
 static void setPtt(uint8_t state)
 {
 	if(state)
-		PTT_ON;
+		GPIOB->BSRR = GPIO_BSRR_BS7;
 	else
-		PTT_OFF;
+		GPIOB->BSRR = GPIO_BSRR_BR7;
 }
 
 
@@ -646,98 +703,9 @@ void ModemInit(void)
 {
 	memset(demodState, 0, sizeof(demodState));
 
-	if((ModemConfig.modem == MODEM_1200) || (ModemConfig.modem == MODEM_1200_V23))
-	{
-		demodCount = 2;
-		N = N1200;
-		baudRate = 1200.f;
-
-		demodState[0].pllStep = PLL1200_STEP;
-		demodState[0].pllLockedAdjust = PLL1200_LOCKED_TUNE;
-		demodState[0].pllNotLockedAdjust = PLL1200_NOT_LOCKED_TUNE;
-		demodState[0].dcdMax = DCD1200_MAXPULSE;
-		demodState[0].dcdThres = DCD1200_THRES;
-		demodState[0].dcdInc = DCD1200_INC;
-		demodState[0].dcdDec = DCD1200_DEC;
-		demodState[0].dcdAdjust = DCD1200_PLLTUNE;
-
-		demodState[1].pllStep = PLL1200_STEP;
-		demodState[1].pllLockedAdjust = PLL1200_LOCKED_TUNE;
-		demodState[1].pllNotLockedAdjust = PLL1200_NOT_LOCKED_TUNE;
-		demodState[1].dcdMax = DCD1200_MAXPULSE;
-		demodState[1].dcdThres = DCD1200_THRES;
-		demodState[1].dcdInc = DCD1200_INC;
-		demodState[1].dcdDec = DCD1200_DEC;
-		demodState[1].dcdAdjust = DCD1200_PLLTUNE;
-
-		demodState[0].prefilter = PREFILTER_NONE;
-		demodState[0].lpf.coeffs = lpf1200;
-		demodState[0].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
-		demodState[0].lpf.gainShift = 0; //not important, output is always compared with 0
-		demodState[1].lpf.coeffs = lpf1200;
-		demodState[1].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
-		demodState[1].lpf.gainShift = 0; //not important, output is always compared with 0
-
-		if(ModemConfig.flatAudioIn) //when used with flat audio input, use deemphasis and flat modems
-		{
-			demodState[1].prefilter = PREFILTER_DEEMPHASIS;
-			demodState[1].bpf.coeffs = bpf1200Inv;
-			demodState[1].bpf.taps = sizeof(bpf1200Inv) / sizeof(*bpf1200Inv);
-			demodState[1].bpf.gainShift = 15;
-		}
-		else //when used with normal (filtered) audio input, use flat and preemphasis modems
-		{
-			demodState[1].prefilter = PREFILTER_PREEMPHASIS;
-			demodState[1].bpf.coeffs = bpf1200;
-			demodState[1].bpf.taps = sizeof(bpf1200) / sizeof(*bpf1200);
-			demodState[1].bpf.gainShift = 15;
-		}
-
-		if(ModemConfig.modem == MODEM_1200) //Bell 202
-		{
-			markFreq = 1200.f;
-			spaceFreq = 2200.f;
-		}
-		else //V.23
-		{
-			markFreq = 1300.f;
-			spaceFreq = 2100.f;
-		}
-	}
-	else if(ModemConfig.modem == MODEM_300)
-	{
-		demodCount = 1;
-		N = N300;
-		baudRate = 300.f;
-		markFreq = 1600.f;
-		markFreq = 1800.f;
-
-		demodState[0].pllStep = PLL300_STEP;
-		demodState[0].pllLockedAdjust = PLL300_LOCKED_TUNE;
-		demodState[0].pllNotLockedAdjust = PLL300_NOT_LOCKED_TUNE;
-		demodState[0].dcdMax = DCD300_MAXPULSE;
-		demodState[0].dcdThres = DCD300_THRES;
-		demodState[0].dcdInc = DCD300_INC;
-		demodState[0].dcdDec = DCD300_DEC;
-		demodState[0].dcdAdjust = DCD300_PLLTUNE;
-
-		demodState[0].prefilter = PREFILTER_FLAT;
-		demodState[0].bpf.coeffs = bpf300;
-		demodState[0].bpf.taps = sizeof(bpf300) / sizeof(*bpf300);
-		demodState[0].bpf.gainShift = 16;
-		demodState[0].lpf.coeffs = lpf300;
-		demodState[0].lpf.taps = sizeof(lpf300) / sizeof(*lpf300);
-		demodState[0].lpf.gainShift = 0; //not important, output is always compared with 0
-	}
-
-	markStep = 4000000 / (DAC_SINE_SIZE * markFreq) - 1;
-	spaceStep = 4000000 / (DAC_SINE_SIZE * spaceFreq) - 1;
-	baudRateStep = 1000000 / baudRate - 1;
-
-
 	/**
-	 * TIM1 is used for pushing samples to DAC (R2R or PWM) at 4 MHz
-	 * TIM3 is the baudrate generator for TX running at 1 MHz
+	 * TIM1 is used for pushing samples to DAC (R2R or PWM) (clocked at 4 MHz)
+	 * TIM3 is the baudrate generator for TX (clocked at 1 MHz)
 	 * TIM4 is the PWM generator with no software interrupt
 	 * TIM2 is the RX sampling timer with no software interrupt, but it directly calls DMA
 	 */
@@ -806,10 +774,138 @@ void ModemInit(void)
 
 	NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 
-	TIM2->PSC = 17; //72/18=4 MHz
+
+	//RX sampling timer
+	TIM2->PSC = 8; //72/9=8 MHz
 	TIM2->DIER |= TIM_DIER_UDE; //enable calling DMA on timer tick
-	TIM2->ARR = 103; //4MHz / 104 =~38400 Hz (4*9600 Hz for 4x oversampling)
-	TIM2->CR1 |= TIM_CR1_CEN; //enable timer
+
+	//TX DAC timer
+	TIM1->PSC = 17; //72/18=4 MHz
+	TIM1->DIER |= TIM_DIER_UIE;
+
+	//baudrate timer
+	TIM3->PSC = 71; //72/72=1 MHz
+	TIM3->DIER |= TIM_DIER_UIE;
+
+	if((ModemConfig.modem == MODEM_1200) || (ModemConfig.modem == MODEM_1200_V23))
+	{
+		demodCount = 2;
+		N = N1200;
+		baudRate = 1200.f;
+
+		demodState[0].pllStep = PLL1200_STEP;
+		demodState[0].pllLockedAdjust = PLL1200_LOCKED_TUNE;
+		demodState[0].pllNotLockedAdjust = PLL1200_NOT_LOCKED_TUNE;
+		demodState[0].dcdMax = DCD1200_MAXPULSE;
+		demodState[0].dcdThres = DCD1200_THRES;
+		demodState[0].dcdInc = DCD1200_INC;
+		demodState[0].dcdDec = DCD1200_DEC;
+		demodState[0].dcdAdjust = DCD1200_PLLTUNE;
+
+		demodState[1].pllStep = PLL1200_STEP;
+		demodState[1].pllLockedAdjust = PLL1200_LOCKED_TUNE;
+		demodState[1].pllNotLockedAdjust = PLL1200_NOT_LOCKED_TUNE;
+		demodState[1].dcdMax = DCD1200_MAXPULSE;
+		demodState[1].dcdThres = DCD1200_THRES;
+		demodState[1].dcdInc = DCD1200_INC;
+		demodState[1].dcdDec = DCD1200_DEC;
+		demodState[1].dcdAdjust = DCD1200_PLLTUNE;
+
+		demodState[0].prefilter = PREFILTER_NONE;
+		demodState[0].lpf.coeffs = lpf1200;
+		demodState[0].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
+		demodState[0].lpf.gainShift = 0; //not important, output is always compared with 0
+		demodState[1].lpf.coeffs = lpf1200;
+		demodState[1].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
+		demodState[1].lpf.gainShift = 0; //not important, output is always compared with 0
+
+		if(ModemConfig.flatAudioIn) //when used with flat audio input, use deemphasis and flat modems
+		{
+			demodState[1].prefilter = PREFILTER_DEEMPHASIS;
+			demodState[1].bpf.coeffs = bpf1200Inv;
+			demodState[1].bpf.taps = sizeof(bpf1200Inv) / sizeof(*bpf1200Inv);
+			demodState[1].bpf.gainShift = 15;
+		}
+		else //when used with normal (filtered) audio input, use flat and preemphasis modems
+		{
+			demodState[1].prefilter = PREFILTER_PREEMPHASIS;
+			demodState[1].bpf.coeffs = bpf1200;
+			demodState[1].bpf.taps = sizeof(bpf1200) / sizeof(*bpf1200);
+			demodState[1].bpf.gainShift = 15;
+		}
+
+		if(ModemConfig.modem == MODEM_1200) //Bell 202
+		{
+			markFreq = 1200.f;
+			spaceFreq = 2200.f;
+		}
+		else //V.23
+		{
+			markFreq = 1300.f;
+			spaceFreq = 2100.f;
+		}
+
+		TIM2->ARR = 207; //8MHz / 208 =~38400 Hz (4*9600 Hz for 4x oversampling)
+	}
+	else if(ModemConfig.modem == MODEM_300)
+	{
+		demodCount = 1;
+		N = N300;
+		baudRate = 300.f;
+		markFreq = 1600.f;
+		spaceFreq = 1800.f;
+
+		demodState[0].pllStep = PLL300_STEP;
+		demodState[0].pllLockedAdjust = PLL300_LOCKED_TUNE;
+		demodState[0].pllNotLockedAdjust = PLL300_NOT_LOCKED_TUNE;
+		demodState[0].dcdMax = DCD300_MAXPULSE;
+		demodState[0].dcdThres = DCD300_THRES;
+		demodState[0].dcdInc = DCD300_INC;
+		demodState[0].dcdDec = DCD300_DEC;
+		demodState[0].dcdAdjust = DCD300_PLLTUNE;
+
+		demodState[0].prefilter = PREFILTER_FLAT;
+		demodState[0].bpf.coeffs = bpf300;
+		demodState[0].bpf.taps = sizeof(bpf300) / sizeof(*bpf300);
+		demodState[0].bpf.gainShift = 16;
+		demodState[0].lpf.coeffs = lpf300;
+		demodState[0].lpf.taps = sizeof(lpf300) / sizeof(*lpf300);
+		demodState[0].lpf.gainShift = 0; //not important, output is always compared with 0
+
+		TIM2->ARR = 416; //8MHz / 416 =~19200 Hz (4*4800 Hz for 4x oversampling)
+	}
+	else if(ModemConfig.modem == MODEM_9600)
+	{
+		demodCount = 1;
+		N = N9600;
+		baudRate = 9600.f;
+
+		demodState[0].pllStep = PLL9600_STEP;
+		demodState[0].pllLockedAdjust = PLL9600_LOCKED_TUNE;
+		demodState[0].pllNotLockedAdjust = PLL9600_NOT_LOCKED_TUNE;
+		demodState[0].dcdMax = DCD9600_MAXPULSE;
+		demodState[0].dcdThres = DCD9600_THRES;
+		demodState[0].dcdInc = DCD9600_INC;
+		demodState[0].dcdDec = DCD9600_DEC;
+		demodState[0].dcdAdjust = DCD9600_PLLTUNE;
+
+		demodState[0].prefilter = PREFILTER_NONE;
+		//this filter will be used for RX and TX
+		demodState[0].lpf.coeffs = lpf9600;
+		demodState[0].lpf.taps = sizeof(lpf9600) / sizeof(*lpf9600);
+		demodState[0].lpf.gainShift = 16;
+
+		TIM2->ARR = 51; //8MHz / 52 =~153600 Hz (4*38400 Hz for 4x oversampling)
+	}
+
+	TIM2->CR1 |= TIM_CR1_CEN; //enable DMA timer
+
+	markStep = 4000000 / (DAC_SINE_SIZE * markFreq) - 1;
+	spaceStep = 4000000 / (DAC_SINE_SIZE * spaceFreq) - 1;
+	baudRateStep = 1000000 / baudRate - 1;
+
+
+	TIM3->ARR = baudRateStep;
 
 	for(uint8_t i = 0; i < N; i++) //calculate correlator coefficients
 	{
