@@ -213,16 +213,6 @@ int main(void)
 
   SysTick_init();
 
-  //force usb re-enumeration after reset
-  RCC->APB2ENR |= RCC_APB2ENR_IOPAEN; //pull D+ to ground for a moment
-  GPIOA->CRH |= GPIO_CRH_MODE12_1;
-  GPIOA->CRH &= ~GPIO_CRH_CNF12;
-  GPIOA->BSRR = GPIO_BSRR_BR12;
-  uint32_t t = ticks + 10;
-  while(t > ticks);;
-  GPIOA->CRH &= ~GPIO_CRH_MODE12;
-  GPIOA->CRH |= GPIO_CRH_CNF12_0;
-
 
   /* USER CODE END SysInit */
 
