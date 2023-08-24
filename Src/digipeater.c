@@ -23,6 +23,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include <math.h>
 #include "drivers/systick.h"
+#include <stdlib.h>
 
 #define VISCOUS_DATA_LEN (6) //max frames in viscous-delay buffer
 uint8_t viscousBuf[VISCOUS_DATA_LEN][FRAMELEN]; //viscous-delay frames buffer
@@ -34,6 +35,7 @@ uint32_t viscousData[VISCOUS_DATA_LEN][2]; //viscous-delay hash and timestamp bu
 uint32_t deDupeBuf[DEDUPE_LEN][2]; //duplicate protection hash buffer
 uint8_t deDupeIndex = 0; //duplicate protection buffer index
 
+Digi digi; //digipeater state
 
 /**
  * @brief Check if frame with specified hash is alread in viscous-delay buffer and delete it if so

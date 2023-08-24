@@ -53,6 +53,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define DCD_ON (GPIOC->BSRR = GPIO_BSRR_BR13)
 #define DCD_OFF (GPIOC->BSRR = GPIO_BSRR_BS13)
 
+Afsk_config afskCfg;
 
 struct ModState
 {
@@ -195,16 +196,16 @@ uint16_t Afsk_getRMS(uint8_t modemNo)
  */
 static void afsk_dcd(uint8_t state)
 {
-	if(state)
-	{
-		GPIOC->BSRR = GPIO_BSRR_BR13;
-		GPIOB->BSRR = GPIO_BSRR_BS5;
-	}
-	else
-	{
-		GPIOC->BSRR = GPIO_BSRR_BS13;
-		GPIOB->BSRR = GPIO_BSRR_BR5;
-	}
+//	if(state)
+//	{
+//		GPIOC->BSRR = GPIO_BSRR_BR13;
+//		GPIOB->BSRR = GPIO_BSRR_BS5;
+//	}
+//	else
+//	{
+//		GPIOC->BSRR = GPIO_BSRR_BS13;
+//		GPIOB->BSRR = GPIO_BSRR_BR5;
+//	}
 }
 
 
@@ -493,7 +494,7 @@ void Afsk_txTestStart(TxTestMode type)
 	modState.txTestState = type;
 
 	//DAC timer
-	TIM1->PSC = 17; //72/18=4 MHz
+	TIM1->PSC = 15; //64/16=4 MHz
 	TIM1->DIER = TIM_DIER_UIE; //enable interrupt
 	TIM1->CR1 |= TIM_CR1_CEN; //enable timer
 
@@ -514,7 +515,7 @@ void Afsk_txTestStart(TxTestMode type)
 	else //alternating tones
 	{
 		//enable baudrate generator
-		TIM3->PSC = 71; //72/72=1 MHz
+		TIM3->PSC = 63; //64/64=1 MHz
 		TIM3->DIER = TIM_DIER_UIE; //enable interrupt
 		TIM3->ARR = modState.baudRate; //set timer interval
 		TIM3->CR1 = TIM_CR1_CEN; //enable timer
@@ -548,11 +549,11 @@ void Afsk_transmitStart(void)
 {
 	afsk_ptt(1); //PTT on
 
-	TIM1->PSC = 17;
+	TIM1->PSC = 15;
 	TIM1->DIER |= TIM_DIER_UIE;
 
 
-	TIM3->PSC = 71;
+	TIM3->PSC = 63;
 	TIM3->DIER |= TIM_DIER_UIE;
 	TIM3->ARR = modState.baudRate;
 
@@ -623,9 +624,9 @@ void Afsk_init(void)
 
 
 
-	GPIOC->CRH |= GPIO_CRH_MODE13_1; //DCD LED on PC13
-	GPIOC->CRH &= ~GPIO_CRH_MODE13_0;
-	GPIOC->CRH &= ~GPIO_CRH_CNF13;
+//	GPIOC->CRH |= GPIO_CRH_MODE13_1; //DCD LED on PC13
+//	GPIOC->CRH &= ~GPIO_CRH_MODE13_0;
+//	GPIOC->CRH &= ~GPIO_CRH_CNF13;
 
 	GPIOB->CRH &= ~4294901760; //R2R output on PB12-PB15
 	GPIOB->CRH |= 572653568;
@@ -638,9 +639,9 @@ void Afsk_init(void)
 	GPIOB->CRL &= ~GPIO_CRL_MODE7_0;
 	GPIOB->CRL &= ~GPIO_CRL_CNF7;
 
-	GPIOB->CRL |= GPIO_CRL_MODE5_1; //2nd DCD LED on PB5
-	GPIOB->CRL &= ~GPIO_CRL_MODE5_0;
-	GPIOB->CRL &= ~GPIO_CRL_CNF5;
+//	GPIOB->CRL |= GPIO_CRL_MODE5_1; //2nd DCD LED on PB5
+//	GPIOB->CRL &= ~GPIO_CRL_MODE5_0;
+//	GPIOB->CRL &= ~GPIO_CRL_CNF5;
 
 
 	RCC->CFGR |= RCC_CFGR_ADCPRE_1; //ADC prescaler /6
@@ -675,7 +676,7 @@ void Afsk_init(void)
 
 	NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 
-	TIM2->PSC = 17; //72/18=4 MHz
+	TIM2->PSC = 15; //64/16=4 MHz
 	TIM2->DIER |= TIM_DIER_UDE; //enable calling DMA on timer tick
 	TIM2->ARR = 103; //4MHz / 104 =~38400 Hz (4*9600 Hz for 4x oversampling)
 	TIM2->CR1 |= TIM_CR1_CEN; //enable timer
@@ -724,8 +725,8 @@ void Afsk_init(void)
 		GPIOB->CRL &= ~GPIO_CRL_CNF6_0;
 
 		//set up PWM generation
-		TIM4->PSC = 7; //72MHz/8=9MHz
-		TIM4->ARR = 90; //9MHz/90=100kHz
+		TIM4->PSC = 7; //64MHz/8=8MHz
+		TIM4->ARR = 80; //8MHz/90=100kHz
 
 		TIM4->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
 		TIM4->CCER |= TIM_CCER_CC1E;

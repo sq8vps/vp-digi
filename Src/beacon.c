@@ -25,7 +25,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 uint32_t beaconDelay[8] = {0};
 
-
+Beacon beacon[8];
 
 /**
  * @brief Send specified beacon

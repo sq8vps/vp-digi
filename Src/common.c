@@ -20,7 +20,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <stdlib.h>
 #include "drivers/uart.h"
-#include "usbd_cdc_if.h"
 
 uint8_t call[6] = {'N' << 1, '0' << 1, 'C' << 1, 'A' << 1, 'L' << 1, 'L' << 1};
 uint8_t callSsid = 0;
@@ -203,20 +202,5 @@ void SendKiss(uint8_t *buf, uint16_t len)
 			uart_transmitStart(u);
 		}
 		u = &uart2;
-	}
-
-	if(USBmode == MODE_KISS) //check if USB in KISS mode
-	{
-		uint8_t t[2] = {0xc0, 0};
-
-		CDC_Transmit_FS(&t[0], 1);
-		CDC_Transmit_FS(&t[1], 1);
-
-		for(uint16_t i = 0; i < len; i++)
-		{
-			CDC_Transmit_FS(&buf[i], 1);
-
-		}
-		CDC_Transmit_FS(&t[0], 1);
 	}
 }

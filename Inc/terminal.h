@@ -25,7 +25,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 typedef enum
 {
 	TERM_ANY,
-	TERM_USB,
 	TERM_UART1,
 	TERM_UART2
 } Terminal_stream;

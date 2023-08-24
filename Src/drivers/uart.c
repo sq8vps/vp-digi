@@ -24,9 +24,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "digipeater.h"
 
-uint8_t USBmode = MODE_KISS;
-uint8_t USBrcvd = DATA_NOTHING;
-uint8_t USBint = 0; /**< Flaga "przerwania" USB dla obslugi w petli glownej */
+Uart uart1, uart2;
 
 
 uint8_t Uart_txKiss(uint8_t *buf, uint16_t len)
@@ -151,15 +149,6 @@ void uart_transmitStart(Uart *port)
 }
 
 
-void uartUSB_sendByte(uint8_t data)
-{
-	uint8_t a[1];
-	a[0] = data;
-	CDC_Transmit_FS(a, 1);
-}
-
-
-
 void uart_sendByte(Uart *port, uint8_t data)
 {
 	while(port->txflag == 1);;
@@ -205,51 +194,6 @@ void uart_sendNumber(Uart *port, int32_t n)
 	if(n > 9) uart_sendByte(port, ((n % 100) / 10) + 48);
 	uart_sendByte(port, (n % 10) + 48);
 }
-
-
-void uartUSB_sendString(uint8_t *data, uint16_t len)
-{
-
-	if(len == 0)
-	{
-		len = strlen((char*)data);
-	}
-	uint16_t i = 0;
-	uint8_t j = 0;
-	uint16_t k = len;
-	//USB is quite specific and data must be send in small packets, say in 40-byte packets
-	while(i < len)
-	{
-		if((k / 40) >= 1)
-		{
-			CDC_Transmit_FS(&data[j * 40], 40);
-			j++;
-			k -= 40;
-			i += 40;
-		}
-		else
-		{
-			CDC_Transmit_FS(&data[i], len - i);
-			break;
-		}
-	}
-}
-
-
-void uartUSB_sendNumber(int32_t n)
-{
-	if(n < 0)
-		uartUSB_sendByte('-');
-	n = abs(n);
-	if(n > 999999) uartUSB_sendByte((n / 1000000) + 48);
-	if(n > 99999) uartUSB_sendByte(((n % 1000000) / 100000) + 48);
-	if(n > 9999) uartUSB_sendByte(((n % 100000) / 10000) + 48);
-	if(n > 999) uartUSB_sendByte(((n % 10000) / 1000) + 48);
-	if(n > 99) uartUSB_sendByte(((n % 1000) / 100) + 48);
-	if(n > 9) uartUSB_sendByte(((n % 100) / 10) + 48);
-	uartUSB_sendByte((n % 10) + 48);
-}
-
 
 void uart_init(Uart *port, USART_TypeDef *uart, uint32_t baud)
 {
@@ -303,7 +247,7 @@ void uart_config(Uart *port, uint8_t state)
 		GPIOA->CRL |= GPIO_CRL_CNF3_0;
 		GPIOA->CRL &= ~GPIO_CRL_CNF3_1;
 
-		USART2->BRR = (SystemCoreClock / (port->baudrate * 2));
+		USART2->BRR = (SystemCoreClock / (port->baudrate * 2)); // clk/2, APB1 runs at clk/2 (apb1clk/2)
 		if(state)
 			USART2->CR1 |= USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_IDLEIE;
 		else

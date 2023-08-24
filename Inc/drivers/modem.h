@@ -36,7 +36,7 @@ typedef struct
 	uint8_t flatAudioIn : 1; //0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
 } Afsk_config;
 
-Afsk_config afskCfg;
+extern Afsk_config afskCfg;
 
 typedef enum
 {

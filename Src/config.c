@@ -18,13 +18,13 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "common.h"
 #include "drivers/uart.h"
-#include "usbd_cdc_if.h"
 #include "digipeater.h"
 #include "drivers/uart.h"
 #include "ax25.h"
 #include "beacon.h"
 #include "stm32f1xx.h"
 #include "drivers/modem.h"
+#include <string.h>
 
 /**
  * @brief Write word to configuration part in flash

@@ -22,16 +22,16 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CRC32_INIT 0xFFFFFFFF
 
-uint8_t call[6]; //device callsign
-uint8_t callSsid; //device ssid
+extern uint8_t call[6]; //device callsign
+extern uint8_t callSsid; //device ssid
 
-uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
+extern uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
 
-const uint8_t *versionString; //version string
+extern const uint8_t *versionString; //version string
 
-uint8_t autoReset;
-uint32_t autoResetTimer;
-uint8_t kissMonitor;
+extern uint8_t autoReset;
+extern uint32_t autoResetTimer;
+extern uint8_t kissMonitor;
 
 /**
  * @brief Generate random number from min to max

@@ -36,7 +36,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -52,6 +51,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "beacon.h"
 #include "terminal.h"
 #include "config.h"
+#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -122,7 +122,7 @@ void handleFrame(void)
 	SendKiss(buf, bufidx); //send KISS frames if ports available
 
 
-	if(((USBmode == MODE_MONITOR) || (uart1.mode == MODE_MONITOR) || (uart2.mode == MODE_MONITOR)))
+	if(((uart1.mode == MODE_MONITOR) || (uart2.mode == MODE_MONITOR)))
 	{
 		common_toTNC2(buf, bufidx, bufto); //convert to TNC2 format
 
@@ -228,7 +228,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -267,7 +266,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-	static uint32_t usbKissTimer = 0;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -285,42 +283,6 @@ int main(void)
 
 	  Ax25_transmitCheck(); //check for pending transmission request
 
-	  if(USBint) //USB "interrupt"
-	  {
-		  USBint = 0; //clear
-
-		  if(USBmode == MODE_KISS) //is USB in KISS mode?
-			  usbKissTimer = ticks + 500; //set timeout to 5s
-
-		  term_handleSpecial(TERM_USB); //handle special characters (e.g. backspace)
-		  if((usbcdcdata[0] == 0xc0) && /*(usbcdcdata[1] == 0x00) &&*/ (usbcdcdata[usbcdcidx - 1] == 0xc0)) //probably a KISS frame
-		  {
-			  USBrcvd = DATA_KISS;
-			  usbKissTimer = 0;
-		  }
-
-		  if(((usbcdcdata[usbcdcidx - 1] == '\r') || (usbcdcdata[usbcdcidx - 1] == '\n'))) //proabably a command
-		  {
-			  USBrcvd = DATA_TERM;
-			  usbKissTimer = 0;
-		  }
-	  }
-
-	  if((usbKissTimer > 0) && (ticks >= usbKissTimer)) //USB KISS timer timeout
-	  {
-		  usbcdcidx = 0;
-		  memset(usbcdcdata, 0, UARTBUFLEN);
-		  usbKissTimer = 0;
-	  }
-
-
-	  if(USBrcvd != DATA_NOTHING)
-	  {
-		  term_parse(usbcdcdata, usbcdcidx, TERM_USB, USBrcvd, USBmode);
-		  USBrcvd = DATA_NOTHING;
-		  usbcdcidx = 0;
-		  memset(usbcdcdata, 0, UARTBUFLEN);
-	  }
 	  if(uart1.rxflag != DATA_NOTHING)
 	  {
 		  term_parse(uart1.bufrx, uart1.bufrxidx, TERM_UART1, uart1.rxflag, uart1.mode);
@@ -356,17 +318,15 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the CPU, AHB and APB busses clocks
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -384,12 +344,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
-  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
-    Error_Handler();
-  }
 }
 
 /**
@@ -401,7 +355,6 @@ static void MX_GPIO_Init(void)
 {
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 

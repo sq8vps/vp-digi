@@ -22,7 +22,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "stm32f1xx.h"
 #include <stdint.h>
-#include "usbd_cdc_if.h"
 
 typedef enum
 {
@@ -53,11 +52,7 @@ typedef struct
 	uint32_t kissTimer;
 } Uart;
 
-Uart uart1, uart2;
-
-Uart_mode USBmode;
-Uart_data_type USBrcvd;
-uint8_t USBint; //USB "interrupt" flag
+extern Uart uart1, uart2;
 
 
 /**
@@ -66,13 +61,6 @@ uint8_t USBint; //USB "interrupt" flag
  * \param[in] len Input buffer size
  */
 uint8_t Uart_txKiss(uint8_t *buf, uint16_t len);
-
-
-/**
- * \brief Send single byte using USB
- * \param[in] data Byte
- */
-void uartUSB_sendByte(uint8_t data);
 
 
 /**
@@ -96,12 +84,6 @@ void uart_sendByte(Uart *port, uint8_t data);
  */
 void uart_sendString(Uart *port, uint8_t *data, uint16_t datalen);
 
-/**
- * \brief Send string using USB
- * \param[in] *data Buffer
- * \param[in] len Buffer length or 0 for null-terminated string
- */
-void uartUSB_sendString(uint8_t* data, uint16_t len);
 
 /**
  * \brief Store number (in ASCII format) in TX buffer
@@ -109,12 +91,6 @@ void uartUSB_sendString(uint8_t* data, uint16_t len);
  * \param[in] n Number
  */
 void uart_sendNumber(Uart *port, int32_t n);
-
-/**
- * \brief Send number (in ASCII format) using USB
- * \param[in] n Number
- */
-void uartUSB_sendNumber(int32_t n);
 
 
 /**

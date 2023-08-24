@@ -40,7 +40,7 @@ typedef struct
 	uint8_t filterPolarity : 1; //filter polarity: 0 - blacklist, 1- whitelist
 } Digi;
 
-Digi digi; //digipeater state
+extern Digi digi; //digipeater state
 
 
 

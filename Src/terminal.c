@@ -22,6 +22,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "drivers/modem.h"
 #include "ax25.h"
+#include <stdlib.h>
 
 uint8_t termBuf[TERMBUFLEN]; //terminal mode TX buffer
 uint16_t termBufIdx = 0; //terminal mode TX buffer index
@@ -36,38 +37,7 @@ uint16_t spLastIdx[3] = {0, 0, 0}; //index buffer was "special" terminal cases
  */
 void term_handleSpecial(Terminal_stream src)
 {
-	if(src == TERM_USB)
-	{
-		if(USBmode == MODE_KISS) //don't do anything in KISS mode
-		{
-			spLastIdx[0] = 0;
-			return;
-		}
-		if(spLastIdx[0] >= usbcdcidx) //USB RX buffer index was probably cleared
-			spLastIdx[0] = 0;
-
-		if(usbcdcdata[usbcdcidx - 1] == '\b') //user entered backspace
-		{
-			if(usbcdcidx > 1) //there was some data in buffer
-			{
-				usbcdcidx -= 2; //remove backspace and preceding character
-				CDC_Transmit_FS((uint8_t*)"\b \b", 3); //backspace (one character left), remove backspaced character (send space) and backspace again
-				if(spLastIdx[0] > 0)
-					spLastIdx[0]--; //1 character was removed
-			}
-			else //there was only a backspace
-				usbcdcidx = 0;
-		}
-		uint16_t t = usbcdcidx; //store last index
-		if(spLastIdx[0] < t) //local echo handling
-		{
-			CDC_Transmit_FS(&usbcdcdata[spLastIdx[0]], t - spLastIdx[0]); //echo characters entered by user
-			if((usbcdcdata[t - 1] == '\r') || (usbcdcdata[t - 1] == '\n'))
-				CDC_Transmit_FS((uint8_t*)"\r\n", 2);
-			spLastIdx[0] = t;
-		}
-	}
-	else if((src == TERM_UART1) || (src == TERM_UART2))
+	if((src == TERM_UART1) || (src == TERM_UART2))
 	{
 		Uart *u = &uart1;
 		uint8_t nr = 1;
@@ -118,10 +88,6 @@ void term_handleSpecial(Terminal_stream src)
  */
 void term_sendMonitor(uint8_t *data, uint16_t len)
 {
-	if(USBmode == MODE_MONITOR)
-	{
-		uartUSB_sendString(data, len);
-	}
 	if((uart1.enabled) && (uart1.mode == MODE_MONITOR))
 	{
 		uart_sendString(&uart1, data, len);
@@ -140,10 +106,6 @@ void term_sendMonitor(uint8_t *data, uint16_t len)
  */
 void term_sendMonitorNumber(int32_t data)
 {
-	if(USBmode == MODE_MONITOR)
-	{
-		uartUSB_sendNumber(data);
-	}
 	if((uart1.enabled) && (uart1.mode == MODE_MONITOR))
 	{
 		uart_sendNumber(&uart1, data);
@@ -162,10 +124,6 @@ void term_sendMonitorNumber(int32_t data)
 */
 void term_sendBuf(Terminal_stream way)
 {
-	if((way == TERM_USB) || (way == TERM_ANY))
-	{
-		uartUSB_sendString(termBuf, termBufIdx);
-	}
 	if((way == TERM_UART1) || (way == TERM_ANY))
 	{
 		for(uint16_t d = 0; d < termBufIdx; d++)
@@ -273,13 +231,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 
 	if(checkcmd(cmd, 4, (uint8_t*)"kiss"))
 	{
-		if(src == TERM_USB)
-		{
-			term_sendString((uint8_t*)"USB switched to KISS mode\r\n", 0);
-			term_sendBuf(TERM_USB);
-			USBmode = MODE_KISS;
-		}
-		else if(src == TERM_UART1)
+		if(src == TERM_UART1)
 		{
 			term_sendString((uint8_t*)"UART1 switched to KISS mode\r\n", 0);
 			term_sendBuf(TERM_UART1);
@@ -299,12 +251,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 		term_sendString((uint8_t*)"Switched to configuration mode\r\n"
 				"Most settings will take effect immidiately, but\r\n"
 				"remember to save the configuration using \"save\"\r\n", 0);
-		if(src == TERM_USB)
-		{
-			term_sendBuf(TERM_USB);
-			USBmode = MODE_TERM;
-		}
-		else if(src == TERM_UART1)
+		if(src == TERM_UART1)
 		{
 			term_sendBuf(TERM_UART1);
 			uart1.mode = MODE_TERM;
@@ -319,13 +266,7 @@ void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type 
 
 	if(checkcmd(cmd, 7, (uint8_t*)"monitor"))
 	{
-		if(src == TERM_USB)
-		{
-			term_sendString((uint8_t*)"USB switched to monitor mode\r\n", 0);
-			term_sendBuf(TERM_USB);
-			USBmode = MODE_MONITOR;
-		}
-		else if(src == TERM_UART1)
+		if(src == TERM_UART1)
 		{
 			term_sendString((uint8_t*)"UART1 switched to monitor mode\r\n", 0);
 			term_sendBuf(TERM_UART1);

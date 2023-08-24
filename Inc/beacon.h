@@ -33,7 +33,7 @@ typedef struct
 	uint32_t next; //next beacon timestamp
 } Beacon;
 
-Beacon beacon[8];
+extern Beacon beacon[8];
 
 /**
  * @brief Send specified beacon

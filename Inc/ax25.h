@@ -42,7 +42,7 @@ typedef struct
 
 } Ax25_config;
 
-Ax25_config ax25Cfg;
+extern Ax25_config ax25Cfg;
 
 
 typedef struct
@@ -57,7 +57,7 @@ typedef struct
 
 } Ax25;
 
-Ax25 ax25;
+extern Ax25 ax25;
 
 /**
  * @brief Get current RX stage

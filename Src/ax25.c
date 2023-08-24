@@ -78,6 +78,10 @@ volatile RxState rxState1, rxState2;
 uint16_t lastCrc = 0; //CRC of the last received frame. If not 0, a frame was successfully received
 uint16_t rxMultiplexDelay = 0; //simple delay for decoder multiplexer to avoid receiving the same frame twice
 
+
+Ax25_config ax25Cfg;
+Ax25 ax25;
+
 RxStage Ax25_getRxStage(uint8_t modemNo)
 {
 	if(modemNo == 0)
