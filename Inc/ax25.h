@@ -21,9 +21,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include <stdbool.h>
 
-
-
-
 enum Ax25RxStage
 {
 	RX_STAGE_IDLE = 0,
@@ -36,7 +33,8 @@ struct Ax25ProtoConfig
 	uint16_t txDelayLength; //TXDelay length in ms
 	uint16_t txTailLength; //TXTail length in ms
 	uint16_t quietTime; //Quiet time in ms
-	uint8_t allowNonAprs; //allow non-APRS packets
+	uint8_t allowNonAprs : 1; //allow non-APRS packets
+	uint8_t fx25 : 1; //enable FX.25 (AX.25 + FEC)
 };
 
 extern struct Ax25ProtoConfig Ax25Config;

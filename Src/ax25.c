@@ -22,12 +22,21 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "drivers/systick.h"
 #include <stdbool.h>
 #include "digipeater.h"
+#include "fx25.h"
 
 struct Ax25ProtoConfig Ax25Config;
 
 //values below must be kept consistent so that FRAME_BUFFER_SIZE >= FRAME_MAX_SIZE * FRAME_MAX_COUNT
-#define FRAME_MAX_SIZE (308) //single frame max length for RX
-//308 bytes is the theoretical max size assuming 2-byte Control, 256-byte info field and 5 digi address fields
+#ifndef ENABLE_FX25
+//for AX.25 308 bytes is the theoretical max size assuming 2-byte Control, 256-byte info field and 5 digi address fields
+#define FRAME_MAX_SIZE (308) //single frame max length
+#else
+//in FX.25 mode the block can be 255 bytes long at most, and the AX.25 frame itself must be even smaller
+//frames that are too long are sent as standard AX.25 frames
+//Reed-Solomon library needs a bit of memory and the frame buffer must be smaller
+//otherwise we run out of RAM
+#define FRAME_MAX_SIZE (280) //single frame max length
+#endif
 #define FRAME_MAX_COUNT (10) //max count of frames in buffer
 #define FRAME_BUFFER_SIZE (FRAME_MAX_COUNT * FRAME_MAX_SIZE) //circular frame buffer length
 
@@ -41,6 +50,9 @@ struct FrameHandle
 	uint16_t start;
 	uint16_t size;
 	uint16_t signalLevel;
+#ifdef ENABLE_FX25
+	struct Fx25Mode *fx25Mode;
+#endif
 };
 
 static uint8_t rxBuffer[FRAME_BUFFER_SIZE]; //circular buffer for received frames
@@ -58,18 +70,28 @@ static uint8_t txFrameHead = 0;
 static uint8_t txFrameTail = 0;
 static bool txFrameBufferFull = false;
 
+#ifdef ENABLE_FX25
+static uint8_t txFx25Buffer[FX25_MAX_BLOCK_SIZE];
+static uint8_t txTagByteIdx = 0;
+#endif
+
 static uint8_t frameReceived; //a bitmap of receivers that received the frame
 
 
 enum TxStage
 {
-	TX_STAGE_IDLE,
+	TX_STAGE_IDLE = 0,
 	TX_STAGE_PREAMBLE,
 	TX_STAGE_HEADER_FLAGS,
 	TX_STAGE_DATA,
 	TX_STAGE_CRC,
 	TX_STAGE_FOOTER_FLAGS,
 	TX_STAGE_TAIL,
+
+#ifdef ENABLE_FX25
+	//stages used in FX.25 mode additionally
+	TX_STAGE_CORRELATION_TAG,
+#endif
 };
 
 enum TxInitStage
@@ -170,24 +192,172 @@ void Ax25TxKiss(uint8_t *buf, uint16_t len)
 	}
 }
 
+#ifdef ENABLE_FX25
+static void *writeFx25Frame(uint8_t *data, uint16_t size)
+{
+	//first calculate how big the frame can be
+	//this includes 2 flags, 2 CRC bytes and all bits added by bitstuffing
+	//bitstuffing occurs after 5 consecutive ones, so in worst scenario
+	//bits inserted by bitstuffing can occupy up to frame size / 5 additional bytes
+	//also add 1 in case there is a remainder when dividing
+	const struct Fx25Mode *fx25Mode = fx25Mode = Fx25GetMode(size + 4 + (size / 5) + 1);
+	uint16_t requiredSize = size;
+	if(NULL != fx25Mode)
+		requiredSize = fx25Mode->K + fx25Mode->T;
+	else
+		return NULL; //frame will not fit in FX.25
+
+	uint16_t freeSize = GET_FREE_SIZE(FRAME_BUFFER_SIZE, txBufferHead, txBufferTail);
+	if(freeSize < requiredSize) //check if there is enough size to store full FX.25 (or AX.25) frame
+	{
+		return NULL; //if not, it may fit in standard AX.25
+	}
+
+	txFrame[txFrameHead].size = requiredSize;
+	txFrame[txFrameHead].start = txBufferHead;
+	txFrame[txFrameHead].fx25Mode = (struct Fx25Mode*)fx25Mode;
+
+	uint16_t index = 0;
+	//header flag
+	txFx25Buffer[index++] = 0x7E;
+
+	uint16_t crc = 0xFFFF;
+
+	uint8_t bits = 0; //bit counter within a byte
+	uint8_t bitstuff = 0;
+	for(uint16_t i = 0; i < size + 2; i++)
+	{
+		for(uint8_t k = 0; k < 8; k++)
+		{
+			txFx25Buffer[index] >>= 1;
+			bits++;
+			if(i < size) //frame data
+			{
+				if(data[i] >> k)
+				{
+					calculateCRC(1, &crc);
+					bitstuff++;
+					txFx25Buffer[index] |= 0x80;
+				}
+				else
+				{
+					calculateCRC(0, &crc);
+					bitstuff = 0;
+				}
+			}
+			else //crc
+			{
+				uint8_t c = 0;
+				if(i == size)
+					c = (crc & 0xFF) ^ 0xFF;
+				else
+					c = (crc >> 8) ^ 0xFF;
+
+				if(c >> k)
+				{
+					bitstuff++;
+					txFx25Buffer[index] |= 0x80;
+				}
+				else
+				{
+					bitstuff = 0;
+				}
+			}
+
+			if(bits == 8)
+			{
+				bits = 0;
+				index++;
+			}
+			if(bitstuff == 5)
+			{
+				bits++;
+				bitstuff = 0;
+				txFx25Buffer[index] >>= 1;
+				if(bits == 8)
+				{
+					bits = 0;
+					index++;
+				}
+			}
+		}
+	}
+
+	//pad with flags
+	while(index < fx25Mode->K)
+	{
+		for(uint8_t k = 0; k < 8; k++)
+		{
+			txFx25Buffer[index] >>= 1;
+			bits++;
+
+			if(0x7E >> k)
+			{
+				txFx25Buffer[index] |= 0x80;
+			}
+
+			if(bits == 8)
+			{
+				bits = 0;
+				index++;
+			}
+		}
+	}
+
+	Fx25AddParity(txFx25Buffer, fx25Mode);
+
+	for(uint16_t i = 0; i < (fx25Mode->K + fx25Mode->T); i++)
+	{
+		txBuffer[txBufferHead++] = txFx25Buffer[i];
+		txBufferHead %= FRAME_BUFFER_SIZE;
+	}
+
+	void *ret = &txFrame[txFrameHead];
+	txFrameHead++;
+	txFrameHead %= FRAME_MAX_COUNT;
+	if(txFrameHead == txFrameTail)
+		txFrameBufferFull = true;
+	return ret;
+}
+#endif
+
 void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
 {
 	while(txStage != TX_STAGE_IDLE)
 		;
 
-	if((GET_FREE_SIZE(FRAME_BUFFER_SIZE, txBufferHead, txBufferTail) < size) || txFrameBufferFull)
+	if(txFrameBufferFull)
+		return NULL;
+
+#ifdef ENABLE_FX25
+	if(Ax25Config.fx25)
+	{
+		void *ret = writeFx25Frame(data, size);
+		if(ret)
+			return ret;
+	}
+#endif
+
+	if(GET_FREE_SIZE(FRAME_BUFFER_SIZE, txBufferHead, txBufferTail) < size)
 	{
 		return NULL;
 	}
 
-
 	txFrame[txFrameHead].size = size;
 	txFrame[txFrameHead].start = txBufferHead;
+
+#ifdef ENABLE_FX25
+	txFrame[txFrameHead].fx25Mode = NULL;
+#endif
+
+
 	for(uint16_t i = 0; i < size; i++)
 	{
 		txBuffer[txBufferHead++] = data[i];
 		txBufferHead %= FRAME_BUFFER_SIZE;
 	}
+
+
 	void *ret = &txFrame[txFrameHead];
 	txFrameHead++;
 	txFrameHead %= FRAME_MAX_COUNT;
@@ -366,18 +536,33 @@ uint8_t Ax25GetTxBit(void)
 		txBitIdx = 0;
 		if(txStage == TX_STAGE_PREAMBLE) //transmitting preamble (TXDelay)
 		{
-			if(txDelayElapsed < txDelay) //still transmitting
+			if(txDelayElapsed < txDelay)
 			{
 				txByte = 0x7E;
 				txDelayElapsed++;
 			}
-			else //now transmit initial flags
+			else
 			{
 				txDelayElapsed = 0;
-				txStage = TX_STAGE_HEADER_FLAGS;
+				if(NULL != txFrame[txFrameTail].fx25Mode)
+				{
+					txStage = TX_STAGE_CORRELATION_TAG;
+					txTagByteIdx = 0;
+				}
+				else
+					txStage = TX_STAGE_HEADER_FLAGS;
 			}
-
 		}
+#ifdef ENABLE_FX25
+transmitTag:
+		if(txStage == TX_STAGE_CORRELATION_TAG) //FX.25 correlation tag
+		{
+			if(txTagByteIdx < 8)
+				txByte = (txFrame[txFrameTail].fx25Mode->tag >> (8 * txTagByteIdx)) & 0xFF;
+			else
+				txStage = TX_STAGE_DATA;
+		}
+#endif
 		if(txStage == TX_STAGE_HEADER_FLAGS) //transmitting initial flags
 		{
 			if(txFlagsElapsed < STATIC_HEADER_FLAG_COUNT)
@@ -401,7 +586,29 @@ transmitNormalData:
 					txByte = txBuffer[(txFrame[txFrameTail].start + txByteIdx) % FRAME_BUFFER_SIZE];
 					txByteIdx++;
 				}
-				else //end of buffer, send CRC
+#ifdef ENABLE_FX25
+				else if(txFrame[txFrameTail].fx25Mode != NULL)
+				{
+					txFrameBufferFull = false;
+					txFrameTail++;
+					txFrameTail %= FRAME_MAX_COUNT;
+					txByteIdx = 0;
+					if((txFrameHead != txFrameTail) || txFrameBufferFull)
+					{
+						if(txFrame[txFrameTail].fx25Mode != NULL)
+						{
+							txStage = TX_STAGE_CORRELATION_TAG;
+							txTagByteIdx = 0;
+							goto transmitTag;
+						}
+						else
+							goto transmitNormalData;
+					}
+					else
+						goto transmitTail;
+				}
+#endif
+				else
 				{
 					txStage = TX_STAGE_CRC; //transmit CRC
 					txCrcByteIdx = 0;
@@ -409,6 +616,7 @@ transmitNormalData:
 			}
 			else //no more frames
 			{
+transmitTail:
 				txByteIdx = 0;
 				txBitIdx = 0;
 				txStage = TX_STAGE_TAIL;
@@ -440,10 +648,19 @@ transmitNormalData:
 			else
 			{
 				txFlagsElapsed = 0;
-				txStage = TX_STAGE_DATA; //return to normal data transmission stage. There might be a next frame to transmit
 				txFrameBufferFull = false;
 				txFrameTail++;
 				txFrameTail %= FRAME_MAX_COUNT;
+				txByteIdx = 0;
+#ifdef ENABLE_FX25
+				if(((txFrameHead != txFrameTail) || txFrameBufferFull) && (txFrame[txFrameTail].fx25Mode != NULL))
+				{
+					txStage = TX_STAGE_CORRELATION_TAG;
+					txTagByteIdx = 0;
+					goto transmitTag;
+				}
+#endif
+				txStage = TX_STAGE_DATA; //return to normal data transmission stage. There might be a next frame to transmit
 				goto transmitNormalData;
 			}
 		}
@@ -471,8 +688,8 @@ transmitNormalData:
 	}
 
 	uint8_t txBit = 0;
-
-	if((txStage == TX_STAGE_DATA) || (txStage == TX_STAGE_CRC)) //transmitting normal data or CRC
+	//transmitting normal data or CRC in AX.25 mode
+	if((NULL != txFrame[txFrameTail].fx25Mode) || (txStage == TX_STAGE_DATA) || (txStage == TX_STAGE_CRC))
 	{
 		if(txBitstuff == 5) //5 consecutive ones transmitted
 		{
@@ -498,7 +715,8 @@ transmitNormalData:
 			txBitIdx++;
 		}
 	}
-	else //transmitting preamble or flags, don't calculate CRC, don't use bit stuffing
+	//transmitting in FX.25 mode or in AX.25 mode, but these are preamble or flags, don't calculate CRC, don't use bit stuffing
+	else
 	{
 		txBit = txByte & 1;
 		txByte >>= 1;

@@ -1,0 +1,3 @@
+[submodule "lwfec"]
+	path = lwfec
+	url = https://github.com/sq8vps/lwfec

@@ -52,7 +52,9 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "beacon.h"
 #include "terminal.h"
 #include "config.h"
-
+#ifdef ENABLE_FX25
+#include "fx25.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -232,6 +234,9 @@ int main(void)
 	ConfigRead();
 
 	Ax25Init();
+#ifdef ENABLE_FX25
+	Fx25Init();
+#endif
 
 	UartInit(&Uart1, USART1, Uart1.baudrate);
 	UartInit(&Uart2, USART2, Uart2.baudrate);
@@ -265,7 +270,6 @@ int main(void)
 
 	  Ax25TransmitCheck(); //check for pending transmission request
 
-
 	  if(UartUsb.rxType != DATA_NOTHING)
 	  {
 		  TermHandleSpecial(&UartUsb);
@@ -290,8 +294,7 @@ int main(void)
 
 	  BeaconCheck(); //check beacons
 
-
-	  if(SysTickGet() > 0xFFFFF000)
+	  if(SysTickGet() > 0xFFFFF000) //going to wrap around soon - hard reset the device
 		  NVIC_SystemReset();
   }
   /* USER CODE END 3 */
