@@ -1,0 +1,7 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BP
+F https://www.electronicshub.org/getting-started-with-stm32f103c8t6-blue-pill/
+$ENDCMP
+#
+#End Doc Library
