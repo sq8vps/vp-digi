@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -440,6 +442,7 @@ transmitNormalData:
 			else
 			{
 				txFlagsElapsed = 0;
+				txByteIdx = 0;
 				txStage = TX_STAGE_DATA; //return to normal data transmission stage. There might be a next frame to transmit
 				txFrameBufferFull = false;
 				txFrameTail++;

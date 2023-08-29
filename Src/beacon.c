@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -105,7 +107,7 @@ void BeaconCheck(void)
 		if((beacon[i].interval > 0) && ((SysTickGet() >= beacon[i].next) || (beacon[i].next == 0)))
 		{
 			if(beaconDelay[i] > SysTickGet()) //check for beacon delay (only for the very first transmission)
-				return;
+				continue;
 			beacon[i].next = SysTickGet() + beacon[i].interval; //save next beacon timestamp
 			beaconDelay[i] = 0;
 			BeaconSend(i);
