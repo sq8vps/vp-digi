@@ -117,7 +117,7 @@ void Beacon_check(void)
 		if((beacon[i].interval > 0) && ((ticks >= beacon[i].next) || (beacon[i].next == 0)))
 		{
 			if(beaconDelay[i] > ticks) //check for beacon delay (only for the very first transmission)
-				return;
+				continue;
 			beacon[i].next = ticks + beacon[i].interval; //save next beacon timestamp
 			beaconDelay[i] = 0;
 			Beacon_send(i);
