@@ -14,7 +14,7 @@ VP-Digi is a functional, cheap, easy to assemble and configure STM32-based APRS 
 If you are not interested in source code, this repository is not for you. You can find full project description, schematics, compiled firmware and instructions [on my website](https://sq8l.pzk.pl/index.php/vp-digi-cheap-and-functional-aprs-digipeater-controller-with-kiss-modem/).
 
 ## Source code usage
-The firmware was written using System Workbench for STM32 (SW4STM32) and you should be able to import this repository directly to the IDE. The source code is publicly available since version 1.3.0.
+The firmware was written using System Workbench for STM32 (SW4STM32) and you should be able to import this repository directly to the IDE. The source code is publicly available since version 1.2.0.
 
 ## Technical description
 The project was designed to be running on a Blue Pill board (STM32F103C8T6) with 8MHz crystal. The firmware was written using only register operations (with ST headers) and CMSIS libraries. The HAL is there only for USB. The code is (quite) extensively commented where needed, so it shouldn't be very hard to understand.
