@@ -32,18 +32,18 @@ const struct Fx25Mode* Fx25GetModeForTag(uint64_t tag);
 const struct Fx25Mode* Fx25GetModeForSize(uint16_t size);
 
 /**
- * @brief Encode AX.25 packet using FX.25
- * @param *buffer Input full AX.25 packets with flags and output FX.25 packet
- * @param *mode FEC mode to use
+ * @brief Encode AX.25 message in FX.25
+ * @param *buffer AX.25 message (bit-stuffed, with CRC and padding)
+ * @param *mode FX.25 mode
  */
 void Fx25Encode(uint8_t *buffer, const struct Fx25Mode *mode);
 
 /**
- * @brief Decode FX.25 packet to AX.25
- * @param *buffer Input FX.25 packet and output AX.25 packet
- * @param *mode FEC mode to use
- * @param *fixed Number of bytes corrected
- * @return True on success, false on failure
+ * @brief Decode/fix FX.25 packet
+ * @param *buffer Input buffer
+ * @param *mode FX.25 mode
+ * @param *fixed Number of bytes fixed
+ * @return True if message is valid, false if uncorrectable
  */
 bool Fx25Decode(uint8_t *buffer, const struct Fx25Mode *mode, uint8_t *fixed);
 

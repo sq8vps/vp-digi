@@ -31,6 +31,11 @@ enum ModemType
 	MODEM_1200_V23,
 	MODEM_300,
 	MODEM_9600,
+
+#ifdef ENABLE_PSK
+	MODEM_BPSK_1200,
+	MODEM_QPSK_1200,
+#endif
 };
 
 enum ModemTxTestMode
@@ -53,11 +58,13 @@ extern struct ModemDemodConfig ModemConfig;
 
 enum ModemPrefilter
 {
+	PREFILTER_NONE = 0,
 	PREFILTER_PREEMPHASIS,
 	PREFILTER_DEEMPHASIS,
 	PREFILTER_FLAT,
-	PREFILTER_NONE,
 };
+
+void pushSample(float s);
 
 /**
  * @brief Get measured signal level

@@ -136,8 +136,7 @@ static void handleFrame(void)
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
 							break;
 						case PREFILTER_NONE:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"*", 1);
-							break;
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"|", 1);
 					}
 				}
 				else
@@ -230,6 +229,7 @@ int main(void)
 	Ax25Config.quietTime = 300;
 	Ax25Config.txDelayLength = 300;
 	Ax25Config.txTailLength = 30;
+	Ax25Config.fx25 = 0;
 	DigiConfig.dupeTime = 30;
 
 	ConfigRead();

@@ -37,7 +37,7 @@ struct Ax25ProtoConfig Ax25Config;
 //frames that are too long are sent as standard AX.25 frames
 //Reed-Solomon library needs a bit of memory and the frame buffer must be smaller
 //otherwise we run out of RAM
-#define FRAME_MAX_SIZE (280) //single frame max length
+#define FRAME_MAX_SIZE (265) //single frame max length
 #include "fx25.h"
 #endif
 
@@ -56,9 +56,9 @@ struct FrameHandle
 	int8_t peak;
 	int8_t valley;
 	uint8_t level;
+	uint8_t corrected;
 #ifdef ENABLE_FX25
 	struct Fx25Mode *fx25Mode;
-	uint8_t corrected;
 #endif
 };
 
@@ -136,7 +136,6 @@ struct RxState
 	struct Fx25Mode *fx25Mode;
 	uint64_t tag; //received correlation tag
 	uint8_t tagBit;
-	uint8_t corrected;
 #endif
 };
 
@@ -501,6 +500,7 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *va
 #endif
 
 	rxFrameBufferFull = false;
+
 	rxFrameTail++;
 	rxFrameTail %= FRAME_MAX_COUNT;
 	return true;
@@ -511,7 +511,6 @@ enum Ax25RxStage Ax25GetRxStage(uint8_t modem)
 	return rxState[modem].rx;
 }
 
-#include <stdio.h>
 
 void Ax25BitParse(uint8_t bit, uint8_t modem)
 {
@@ -653,6 +652,12 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 	if((rx->rx != RX_STAGE_FX25_FRAME) && (rx->rx != RX_STAGE_FX25_TAG))
 	{
 #else
+<<<<<<< HEAD
+	{
+		//this condition must not be checked when FX.25 is enabled
+		//because FX.25 parity bytes and tags contain >= 7 consecutive ones
+		if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error (sometimes called "escape byte")
+=======
 	{
 		//this condition must not be checked when FX.25 is enabled
 		//because FX.25 parity bytes and tags contain >= 7 consecutive ones
@@ -957,7 +962,7 @@ void Ax25TransmitBuffer(void)
  * @brief Start transmission immediately
  * @warning Transmission should be initialized using Ax25_transmitBuffer
  */
-static void transmitStart(void)
+/*static */void transmitStart(void)
 {
 	txCrc = 0xFFFF; //initial CRC value
 	txStage = TX_STAGE_PREAMBLE;

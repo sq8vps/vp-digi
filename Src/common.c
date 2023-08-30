@@ -30,7 +30,11 @@ struct _GeneralConfig GeneralConfig =
 		.kissMonitor = 0,
 };
 
-const char versionString[] = "VP-Digi v. 1.3.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
+const char versionString[] = "VP-Digi v. 2.0.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
+#ifdef ENABLE_FX25
+		"with FX.25 support compiled-in\r\n"
+#endif
+		;
 
 static uint64_t pow10i(uint16_t exp)
 {

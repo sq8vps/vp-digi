@@ -15,12 +15,14 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "drivers/systick.h"
 #include "drivers/modem.h"
 #include "ax25.h"
 #include <math.h>
 #include <stdlib.h>
 #include "common.h"
 #include <string.h>
+#include "stm32f1xx.h"
 
 
 /*
@@ -67,7 +69,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define PLL9600_NOT_LOCKED_TUNE 0.50f //I have 0.67 noted somewhere as possibly better value
 #define PLL300_LOCKED_TUNE 0.74f
 #define PLL300_NOT_LOCKED_TUNE 0.50f
-
 
 #define AMP_TRACKING_ATTACK 0.16f //0.16
 #define AMP_TRACKING_DECAY 0.00004f //0.00004
@@ -304,7 +305,6 @@ static inline uint8_t scramble(uint8_t in)
 
 /**
  * @brief ISR for demodulator
- * Called at 9600 Hz by DMA
  */
 void DMA1_Channel2_IRQHandler(void) __attribute__ ((interrupt));
 void DMA1_Channel2_IRQHandler(void)
@@ -352,11 +352,15 @@ void DMA1_Channel2_IRQHandler(void)
  	if(ModemConfig.modem == MODEM_9600)
  	{
  		if(ModemConfig.usePWM)
- 			sample = scrambledSymbol ? 90 : 0;
+ 			sample = scrambledSymbol ? 89 : 0;
  		else
- 			sample = scrambledSymbol ? 15 : 1;
+ 			sample = scrambledSymbol ? 15 : 0;
 
  		sample = filter(&demodState[0].lpf, sample);
+ 		if(sample < 0)
+ 			sample = 0;
+ 		else if(sample > 15)
+ 			sample = 15;
  	}
  	else
  	{
@@ -375,7 +379,19 @@ void DMA1_Channel2_IRQHandler(void)
  		GPIOB->ODR |= (sample << 12); //write sample to 4 oldest bits
  	}
 
- }
+}
+
+void txBit()
+{
+	if(Ax25GetTxBit() == 0) //get next bit and check if it's 0
+	{
+		currentSymbol ^= 1; //change symbol - NRZI encoding
+	}
+	//if 1, no symbol change
+
+	scrambledSymbol = scramble(currentSymbol);
+}
+
 
 /**
  * @brief ISR for baudrate generator timer. NRZI encoding is done here.
@@ -412,7 +428,7 @@ void DMA1_Channel2_IRQHandler(void)
  			TIM1->ARR = markStep;
  	}
 
- }
+}
 
 /**
  * @brief Demodulate received sample (4x oversampling)
@@ -810,12 +826,16 @@ void ModemInit(void)
 		demodState[1].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
 		demodState[1].lpf.gainShift = 15;
 
+
 		demodState[0].lpf.coeffs = (int16_t*)lpf1200;
 		demodState[0].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
 		demodState[0].lpf.gainShift = 15;
 		demodState[0].prefilter = PREFILTER_NONE;
 
-
+#ifdef ENABLE_PSK
+		if((ModemConfig.modem != MODEM_BPSK_1200) && (ModemConfig.modem != MODEM_QPSK_1200))
+		{
+#endif
 		if(ModemConfig.flatAudioIn) //when used with flat audio input, use deemphasis and flat modems
 		{
 #ifdef ENABLE_FX25
@@ -847,6 +867,13 @@ void ModemInit(void)
 			markFreq = 1300.f;
 			spaceFreq = 2100.f;
 		}
+#ifdef ENABLE_PSK
+		}
+		else
+		{
+			markFreq = 1700.f; //use as center frequency in PSK
+		}
+#endif
 
 		TIM2->ARR = 207; //8MHz / 208 =~38400 Hz (4*9600 Hz for 4x oversampling)
 	}
