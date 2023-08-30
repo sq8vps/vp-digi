@@ -234,6 +234,7 @@ int main(void)
 
 	ConfigRead();
 
+	ModemInit();
 	Ax25Init();
 #ifdef ENABLE_FX25
 	Fx25Init();
@@ -247,7 +248,6 @@ int main(void)
 	UartConfig(&Uart2, 1);
 	UartConfig(&UartUsb, 1);
 
-	ModemInit();
 	BeaconInit();
 
   /* USER CODE END 2 */

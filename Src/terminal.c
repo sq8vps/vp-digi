@@ -104,8 +104,6 @@ void TermSendNumberToAll(enum UartMode mode, int32_t n)
 }
 
 
-
-
 static const char monitorHelp[] = "\r\nCommans available in monitor mode:\r\n"
 		"help - shows this help page\r\n"
 		"cal {low|high|alt|stop} - transmits/stops transmitter calibration pattern\r\n"
@@ -126,6 +124,7 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 		"reboot - reboots the device\r\n"
 		"time - show time since boot\r\n"
 		"version - shows full firmware version info\r\n\r\n"
+		"modem <type> - sets modem type: 1200, 1200_V23, 300 or 9600\r\n"
 		"call <callsign-SSID> - sets callsign with optional SSID\r\n"
 		"dest <address> - sets destination address\r\n"
 		"txdelay <50-2550> - sets TXDelay time (ms)\r\n"
@@ -158,7 +157,23 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 
 static void printConfig(Uart *src)
 {
-	UartSendString(src, "Callsign: ", 0);
+	UartSendString(src, "Modem: ", 0);
+	switch(ModemConfig.modem)
+	{
+		case MODEM_1200:
+			UartSendString(src, "AFSK Bell 202 1200 Bd 1200/2200 Hz", 0);
+			break;
+		case MODEM_1200_V23:
+			UartSendString(src, "AFSK V.23 1200 Bd 1300/2100 Hz", 0);
+			break;
+		case MODEM_300:
+			UartSendString(src, "AFSK Bell 103 300 Bd 1600/1800 Hz", 0);
+			break;
+		case MODEM_9600:
+			UartSendString(src, "GFSK G3RUH 9600 Bd", 0);
+			break;
+	}
+	UartSendString(src, "\r\nCallsign: ", 0);
 	for(uint8_t i = 0; i < 6; i++)
 	{
 		if(GeneralConfig.call[i] != (' ' << 1))
@@ -376,8 +391,9 @@ void TermParse(Uart *src)
 	else if(!strncmp(cmd, "config", 6))
 	{
 		UartSendString(src, (uint8_t*)"Switched to configuration mode\r\n"
-				"Most settings will take effect immediately, but\r\n"
-				"remember to save the configuration using \"save\"\r\n", 0);
+				"Some settings require the device to be rebooted\r\n"
+				"in order to behave correctly"
+				"Always use \"save\" to save and reboot", 0);
 		src->mode = MODE_TERM;
 		return;
 	}
@@ -584,9 +600,24 @@ void TermParse(Uart *src)
 	/*
 	 * Settings insertion handling
 	 */
+	else if(!strncmp(cmd, "modem", 5))
+	{
+		if(!strncmp(&cmd[6], "1200", 4))
+			ModemConfig.modem = MODEM_1200;
+		else if(!strncmp(&cmd[6], "1200_V23", 8))
+			ModemConfig.modem = MODEM_1200_V23;
+		else if(!strncmp(&cmd[6], "300", 3))
+			ModemConfig.modem = MODEM_300;
+		else if(!strncmp(&cmd[6], "9600", 4))
+			ModemConfig.modem = MODEM_9600;
+		else
+		{
+			UartSendString(src, "Incorrect modem type!\r\n", 0);
+			return;
+		}
+	}
 	else if(!strncmp(cmd, "call", 4))
 	{
-
 		if(!ParseCallsignWithSsid(&cmd[5], len - 5, GeneralConfig.call, &GeneralConfig.callSsid))
 		{
 			UartSendString(src, "Incorrect callsign!\r\n", 0);

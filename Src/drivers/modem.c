@@ -775,6 +775,9 @@ void ModemInit(void)
 	 TIM3->PSC = 71; //72/72=1 MHz
 	 TIM3->DIER |= TIM_DIER_UIE;
 
+	 if(ModemConfig.modem > MODEM_9600)
+		 ModemConfig.modem = MODEM_1200;
+
 	if((ModemConfig.modem == MODEM_1200) || (ModemConfig.modem == MODEM_1200_V23)
 #ifdef ENABLE_PSK
 		|| (ModemConfig.modem == MODEM_BPSK_1200) || (ModemConfig.modem == MODEM_QPSK_1200)

@@ -95,7 +95,8 @@ along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_DEST 1208
 #define CONFIG_ALLOWNONAPRS 1214
 #define CONFIG_FX25 1216
-#define CONFIG_XXX 1218 //next address (not used)
+#define CONFIG_MODEM 1218
+#define CONFIG_XXX 1220 //next address (not used)
 
 
 /**
@@ -264,6 +265,7 @@ void ConfigWrite(void)
 	write(CONFIG_KISSMONITOR, GeneralConfig.kissMonitor);
 	write(CONFIG_ALLOWNONAPRS, Ax25Config.allowNonAprs);
 	write(CONFIG_FX25, Ax25Config.fx25 | (Ax25Config.fx25Tx << 1));
+	write(CONFIG_MODEM, ModemConfig.modem);
 
 	write(CONFIG_FLAG, CONFIG_FLAG_WRITTEN);
 
@@ -355,6 +357,7 @@ uint8_t ConfigRead(void)
 	t = (uint8_t)read(CONFIG_FX25);
 	Ax25Config.fx25 = t & 1;
 	Ax25Config.fx25Tx = (t & 2) > 0;
+	ModemConfig.modem = read(CONFIG_MODEM);
 
 	return 1;
 }
