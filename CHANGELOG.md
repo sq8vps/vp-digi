@@ -1,3 +1,12 @@
+# 1.3.1 (2023-08-30)
+## New features
+* none
+## Bug fixes
+* Non-APRS switch was not stored in memory
+## Other
+* PWM is now the default option
+## Known bugs
+* none
 # 1.3.0 (2023-08-30)
 ## New features
 * Callsign is now set together with SSID using ```call <call-SSID>```

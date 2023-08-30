@@ -226,7 +226,7 @@ int main(void)
 	//set some initial values in case there is no configuration saved in memory
 	Uart1.baudrate = 9600;
 	Uart2.baudrate = 9600;
-	ModemConfig.usePWM = 0;
+	ModemConfig.usePWM = 1; //use PWM by default
 	ModemConfig.flatAudioIn = 0;
 	Ax25Config.quietTime = 300;
 	Ax25Config.txDelayLength = 300;

@@ -199,9 +199,9 @@ void ConfigWrite(void)
 {
 	ConfigErase();
 
-	writeString(CONFIG_CALL, GeneralConfig.call, sizeof(GeneralConfig.call));
+	writeString(CONFIG_CALL, GeneralConfig.call, 6);
 	write(CONFIG_SSID, GeneralConfig.callSsid);
-	writeString(CONFIG_DEST, GeneralConfig.dest, sizeof(GeneralConfig.dest));
+	writeString(CONFIG_DEST, GeneralConfig.dest, 6);
 	write(CONFIG_TXDELAY, Ax25Config.txDelayLength);
 	write(CONFIG_TXTAIL, Ax25Config.txTailLength);
 	write(CONFIG_TXQUIET, Ax25Config.quietTime);
@@ -281,10 +281,10 @@ uint8_t ConfigRead(void)
 	readString(CONFIG_CALL, GeneralConfig.call, sizeof(GeneralConfig.call));
 	GeneralConfig.callSsid = (uint8_t)read(CONFIG_SSID);
 	uint8_t temp[6];
-	readString(CONFIG_DEST, temp, sizeof(temp));
+	readString(CONFIG_DEST, temp, 6);
 	if((temp[0] >= ('A' << 1)) && (temp[0] <= ('Z' << 1)) && ((temp[0] & 1) == 0)) //check if stored destination address is correct (we just assume it by reading the first byte)
 	{
-		memcpy(GeneralConfig.dest, temp, sizeof(temp));
+		memcpy(GeneralConfig.dest, temp, 6);
 	}
 	Ax25Config.txDelayLength = read(CONFIG_TXDELAY);
 	Ax25Config.txTailLength = read(CONFIG_TXTAIL);
