@@ -95,8 +95,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_PWM_FLAT 1204
 #define CONFIG_KISSMONITOR 1206
 #define CONFIG_DEST 1208
-#define CONFIG_ALLOWNONAPRS 1214
-#define CONFIG_XXX 1216 //next address (not used)
+#define CONFIG_ALLOWNONAPRS 1216
+#define CONFIG_XXX 1218 //next address (not used)
 
 
 /**
