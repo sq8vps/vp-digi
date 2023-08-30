@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -15,14 +17,14 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "ax25.h"
 #include <stdlib.h>
 #include "drivers/modem.h"
 #include "common.h"
-#include "drivers/systick.h"
 #include <stdbool.h>
-#include "digipeater.h"
-#include "fx25.h"
+#include <string.h>
+#include "drivers/systick.h"
 
 struct Ax25ProtoConfig Ax25Config;
 
@@ -36,7 +38,9 @@ struct Ax25ProtoConfig Ax25Config;
 //Reed-Solomon library needs a bit of memory and the frame buffer must be smaller
 //otherwise we run out of RAM
 #define FRAME_MAX_SIZE (280) //single frame max length
+#include "fx25.h"
 #endif
+
 #define FRAME_MAX_COUNT (10) //max count of frames in buffer
 #define FRAME_BUFFER_SIZE (FRAME_MAX_COUNT * FRAME_MAX_SIZE) //circular frame buffer length
 
@@ -49,9 +53,12 @@ struct FrameHandle
 {
 	uint16_t start;
 	uint16_t size;
-	uint16_t signalLevel;
+	int8_t peak;
+	int8_t valley;
+	uint8_t level;
 #ifdef ENABLE_FX25
 	struct Fx25Mode *fx25Mode;
+	uint8_t corrected;
 #endif
 };
 
@@ -125,6 +132,12 @@ struct RxState
 	uint8_t rawData; //raw data being currently received
 	enum Ax25RxStage rx; //current RX stage
 	uint8_t frameReceived; //frame received flag
+#ifdef ENABLE_FX25
+	struct Fx25Mode *fx25Mode;
+	uint64_t tag; //received correlation tag
+	uint8_t tagBit;
+	uint8_t corrected;
+#endif
 };
 
 static volatile struct RxState rxState[MODEM_MAX_DEMODULATOR_COUNT];
@@ -186,13 +199,24 @@ void Ax25TxKiss(uint8_t *buf, uint16_t len)
 			if(end == len) //no frame end marker found
 				return;
 			Ax25WriteTxFrame(&buf[i + 2], end - (i + 2)); //skip modem number and send frame
-			DigiStoreDeDupe(&buf[i + 2], end - (i + 2));
+			//DigiStoreDeDupe(&buf[i + 2], end - (i + 2));
 			i = end; //move pointer to the next byte if there are more consecutive frames
 		}
 	}
 }
 
+static void removeLastFrameFromRxBuffer(void)
+{
+	rxBufferHead = rxFrame[rxFrameHead].start;
+	if(rxFrameHead == 0)
+		rxFrameHead = FRAME_MAX_COUNT - 1;
+	else
+		rxFrameHead--;
+	rxFrameBufferFull = false;
+}
+
 #ifdef ENABLE_FX25
+
 static void *writeFx25Frame(uint8_t *data, uint16_t size)
 {
 	//first calculate how big the frame can be
@@ -200,7 +224,7 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 	//bitstuffing occurs after 5 consecutive ones, so in worst scenario
 	//bits inserted by bitstuffing can occupy up to frame size / 5 additional bytes
 	//also add 1 in case there is a remainder when dividing
-	const struct Fx25Mode *fx25Mode = fx25Mode = Fx25GetMode(size + 4 + (size / 5) + 1);
+	const struct Fx25Mode *fx25Mode = fx25Mode = Fx25GetModeForSize(size + 4 + (size / 5) + 1);
 	uint16_t requiredSize = size;
 	if(NULL != fx25Mode)
 		requiredSize = fx25Mode->K + fx25Mode->T;
@@ -216,6 +240,8 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 	txFrame[txFrameHead].size = requiredSize;
 	txFrame[txFrameHead].start = txBufferHead;
 	txFrame[txFrameHead].fx25Mode = (struct Fx25Mode*)fx25Mode;
+
+	memset(txFx25Buffer, 0, sizeof(txFx25Buffer));
 
 	uint16_t index = 0;
 	//header flag
@@ -233,7 +259,7 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 			bits++;
 			if(i < size) //frame data
 			{
-				if(data[i] >> k)
+				if((data[i] >> k) & 1)
 				{
 					calculateCRC(1, &crc);
 					bitstuff++;
@@ -253,7 +279,7 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 				else
 					c = (crc >> 8) ^ 0xFF;
 
-				if(c >> k)
+				if((c >> k) & 1)
 				{
 					bitstuff++;
 					txFx25Buffer[index] |= 0x80;
@@ -291,7 +317,7 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 			txFx25Buffer[index] >>= 1;
 			bits++;
 
-			if(0x7E >> k)
+			if((0x7E >> k) & 1)
 			{
 				txFx25Buffer[index] |= 0x80;
 			}
@@ -304,7 +330,7 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 		}
 	}
 
-	Fx25AddParity(txFx25Buffer, fx25Mode);
+	Fx25Encode(txFx25Buffer, fx25Mode);
 
 	for(uint16_t i = 0; i < (fx25Mode->K + fx25Mode->T); i++)
 	{
@@ -319,6 +345,93 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 		txFrameBufferFull = true;
 	return ret;
 }
+
+static struct FrameHandle* parseFx25Frame(uint8_t *frame, uint16_t size, uint16_t *crc)
+{
+	struct FrameHandle *h = &rxFrame[rxFrameHead];
+	uint16_t initialRxBufferHead = rxBufferHead;
+	if(!rxFrameBufferFull)
+	{
+		rxFrame[rxFrameHead++].start = rxBufferHead;
+		rxFrameHead %= FRAME_MAX_COUNT;
+		if(rxFrameHead == txFrameHead)
+			rxFrameBufferFull = true;
+	}
+	else
+		return NULL;
+
+	uint16_t i = 0; //input data index
+	uint16_t k = 0; //output data size
+	while(frame[i] == 0x7E)
+		i++;
+
+	uint8_t bitstuff = 0;
+	uint8_t outBit = 0;
+	for(; i < size; i++)
+	{
+		for(uint8_t b = 0; b < 8; b++)
+		{
+			if(frame[i] & (1 << b))
+			{
+				rxBuffer[rxBufferHead] >>= 1;
+				rxBuffer[rxBufferHead] |= 0x80;
+				bitstuff++;
+			}
+			else
+			{
+				if(bitstuff == 5) //zero after 5 ones, normal bitstuffing
+				{
+					bitstuff = 0;
+					continue;
+				}
+				else if(bitstuff == 6) //zero after 6 ones, this is a flag
+				{
+					goto endParseFx25Frame;
+				}
+				else if(bitstuff >= 7) //zero after 7 ones, illegal byte
+				{
+					removeLastFrameFromRxBuffer();
+					return NULL;
+				}
+				bitstuff = 0;
+				rxBuffer[rxBufferHead] >>= 1;
+			}
+			outBit++;
+			if(outBit == 8)
+			{
+				k++;
+				rxBufferHead++;
+				rxBufferHead %= FRAME_BUFFER_SIZE;
+				outBit = 0;
+			}
+		}
+	}
+
+endParseFx25Frame:
+	*crc = 0xFFFF;
+	i = initialRxBufferHead;
+	for(uint16_t j = 0; j < (k - 2); j++)
+	{
+		for(uint8_t b = 0; b < 8; b++)
+			calculateCRC((rxBuffer[i] >> b) & 1, crc);
+
+		i++;
+		i %= FRAME_BUFFER_SIZE;
+	}
+
+	*crc ^= 0xFFFF;
+	if((rxBuffer[i] == (*crc & 0xFF) )
+		&& (rxBuffer[(i + 1) % FRAME_BUFFER_SIZE] == ((*crc >> 8) & 0xFF))) //check CRC
+	{
+		h->size = k - 2;
+		return h;
+	}
+	else
+	{
+		removeLastFrameFromRxBuffer();
+		return NULL;
+	}
+}
 #endif
 
 void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
@@ -330,7 +443,7 @@ void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
 		return NULL;
 
 #ifdef ENABLE_FX25
-	if(Ax25Config.fx25)
+	if(Ax25Config.fx25 && Ax25Config.fx25Tx)
 	{
 		void *ret = writeFx25Frame(data, size);
 		if(ret)
@@ -367,7 +480,7 @@ void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
 }
 
 
-bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel)
+bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *valley, uint8_t *level, uint8_t *corrected)
 {
 	if((rxFrameHead == rxFrameTail) && !rxFrameBufferFull)
 		return false;
@@ -379,8 +492,13 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel)
 		(*dst)[i] = rxBuffer[(rxFrame[rxFrameTail].start + i) % FRAME_BUFFER_SIZE];
 	}
 
-	*signalLevel = rxFrame[rxFrameTail].signalLevel;
+	*peak = rxFrame[rxFrameTail].peak;
+	*valley = rxFrame[rxFrameTail].valley;
+	*level = rxFrame[rxFrameTail].level;
 	*size = rxFrame[rxFrameTail].size;
+#ifdef ENABLE_FX25
+	*corrected = rxFrame[rxFrameTail].corrected;
+#endif
 
 	rxFrameBufferFull = false;
 	rxFrameTail++;
@@ -393,6 +511,7 @@ enum Ax25RxStage Ax25GetRxStage(uint8_t modem)
 	return rxState[modem].rx;
 }
 
+#include <stdio.h>
 
 void Ax25BitParse(uint8_t bit, uint8_t modem)
 {
@@ -408,103 +527,138 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 				frameReceived |= ((rxState[i].frameReceived > 0) << i);
 				rxState[i].frameReceived = 0;
 			}
+
+			rxFrameTail++;
+			rxFrameTail %= FRAME_MAX_COUNT;
+			rxFrameBufferFull = false;
 		}
 
 	}
-
 
 	struct RxState *rx = (struct RxState*)&(rxState[modem]);
 
 	rx->rawData <<= 1; //store incoming bit
 	rx->rawData |= (bit > 0);
 
+#ifdef ENABLE_FX25
+	rx->tag >>= 1;
+	if(bit)
+		rx->tag |= 0x8000000000000000;
+	rx->tagBit++;
 
-	if(rx->rawData == 0x7E) //HDLC flag received
+
+	if((rx->rx == RX_STAGE_FX25_TAG) || (rx->rx == RX_STAGE_FX25_FRAME))
 	{
-		if(rx->rx == RX_STAGE_FRAME) //if we are in frame, this is the end of the frame
+		if((rx->rx == RX_STAGE_FX25_TAG) && (rx->tagBit == 64))
 		{
-    		if((rx->frameIdx > 15)) //correct frame must be at least 16 bytes long
-    		{
-        		uint16_t i = 0;
-				for(; i < rx->frameIdx - 2; i++) //look for path end bit
-        		{
-        			if(rx->frame[i] & 1)
-        				break;
-        		}
-
-				//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
-
-				if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xf0))))
+			if(Ax25Config.fx25)
+			{
+				rx->fx25Mode = (struct Fx25Mode*)Fx25GetModeForTag(rx->tag);
+				if(Ax25Config.fx25 && (rx->fx25Mode != NULL))
 				{
-					if((rx->frame[rx->frameIdx - 2] == ((rx->crc & 0xFF) ^ 0xFF)) && (rx->frame[rx->frameIdx - 1] == (((rx->crc >> 8) & 0xFF) ^ 0xFF))) //check CRC
+					rx->rx = RX_STAGE_FX25_FRAME;
+					rx->frameIdx = 0;
+					rx->receivedBitIdx = 0;
+					rx->receivedByte = 0;
+					return;
+				}
+			}
+			rx->rx = RX_STAGE_FRAME;
+		}
+	}
+	else
+	{
+			if(rx->rawData != 0x7E)
+			{
+				if(Ax25Config.fx25)
+				{
+					if((rx->rx == RX_STAGE_FLAG) && (rx->tagBit == 8))
+						rx->rx = RX_STAGE_FX25_TAG;
+				}
+				else
+					rx->rx = RX_STAGE_FRAME;
+			}
+			else
+				rx->tagBit = 0;
+#endif
+
+		if(rx->rawData == 0x7E) //HDLC flag received
+		{
+			if(rx->rx == RX_STAGE_FRAME) //if we are in frame, this is the end of the frame
+			{
+				if((rx->frameIdx > 15)) //correct frame must be at least 16 bytes long
+				{
+					uint16_t i = 0;
+					for(; i < rx->frameIdx - 2; i++) //look for path end bit
 					{
-						rx->frameReceived = 1;
-						rx->frameIdx -= 2; //remove CRC
-						if(rx->crc != lastCrc) //the other decoder has not received this frame yet, so store it in main frame buffer
+						if(rx->frame[i] & 1)
+							break;
+					}
+
+					//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
+					if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xF0))))
+					{
+						rx->crc = 0xFFFF;
+						for(i = 0; i < rx->frameIdx - 2; i++)
 						{
-							lastCrc = rx->crc; //store CRC of this frame
-
-							if(!rxFrameBufferFull) //if enough space, store the frame
+							for(uint8_t k = 0; k < 8; k++)
 							{
-								rxFrame[rxFrameHead].start = rxBufferHead;
-								rxFrame[rxFrameHead].signalLevel = ModemGetRMS(modem);
-								rxFrame[rxFrameHead++].size = rx->frameIdx;
-								rxFrameHead %= FRAME_MAX_COUNT;
-								if(rxFrameHead == txFrameHead)
-									rxFrameBufferFull = true;
+								calculateCRC((rx->frame[i] >> k) & 1, &(rx->crc));
+							}
+						}
+						rx->crc ^= 0xFFFF;
+						if((rx->frame[rx->frameIdx - 2] == (rx->crc & 0xFF)) && (rx->frame[rx->frameIdx - 1] == ((rx->crc >> 8) & 0xFF))) //check CRC
+						{
+							rx->frameReceived = 1;
+							rx->frameIdx -= 2; //remove CRC
+							if(rx->crc != lastCrc) //the other decoder has not received this frame yet, so store it in main frame buffer
+							{
+								lastCrc = rx->crc; //store CRC of this frame
 
-								for(uint16_t i = 0; i < rx->frameIdx; i++)
+								if(!rxFrameBufferFull) //if enough space, store the frame
 								{
-									rxBuffer[rxBufferHead++] = rx->frame[i];
-									rxBufferHead %= FRAME_BUFFER_SIZE;
-								}
+									rxFrame[rxFrameHead].start = rxBufferHead;
+									ModemGetSignalLevel(modem, &rxFrame[rxFrameHead].peak, &rxFrame[rxFrameHead].valley, &rxFrame[rxFrameHead].level);
+#ifdef ENABLE_FX25
+									rxFrame[rxFrameHead].fx25Mode = NULL;
+#endif
+									rxFrame[rxFrameHead].corrected = AX25_NOT_FX25;
+									rxFrame[rxFrameHead++].size = rx->frameIdx;
+									rxFrameHead %= FRAME_MAX_COUNT;
+									if(rxFrameHead == txFrameHead)
+										rxFrameBufferFull = true;
 
+									for(uint16_t i = 0; i < rx->frameIdx; i++)
+									{
+										rxBuffer[rxBufferHead++] = rx->frame[i];
+										rxBufferHead %= FRAME_BUFFER_SIZE;
+									}
+								}
 							}
 						}
 					}
 				}
-
-    		}
-
+			}
+			rx->rx = RX_STAGE_FLAG;
+			rx->receivedByte = 0;
+			rx->receivedBitIdx = 0;
+			rx->frameIdx = 0;
+			return;
 		}
-		rx->rx = RX_STAGE_FLAG;
-		ModemClearRMS(modem);
-		rx->receivedByte = 0;
-		rx->receivedBitIdx = 0;
-		rx->frameIdx = 0;
-		rx->crc = 0xFFFF;
-		return;
+
+#ifdef ENABLE_FX25
 	}
 
 
-	if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error (sometimes called "escape byte")
+	if((rx->rx != RX_STAGE_FX25_FRAME) && (rx->rx != RX_STAGE_FX25_TAG))
 	{
-		rx->rx = RX_STAGE_FLAG;
-		ModemClearRMS(modem);
-		rx->receivedByte = 0;
-		rx->receivedBitIdx = 0;
-		rx->frameIdx = 0;
-		rx->crc = 0xFFFF;
-		return;
-	}
-
-
-
-	if(rx->rx == RX_STAGE_IDLE) //not in a frame, don't go further
-		return;
-
-
-	if((rx->rawData & 0x3F) == 0x3E) //dismiss bit 0 added by bit stuffing
-		return;
-
-	if(rx->rawData & 0x01) //received bit 1
-		rx->receivedByte |= 0x80; //store it
-
-	if(++rx->receivedBitIdx >= 8) //received full byte
+#else
 	{
-		if(rx->frameIdx > FRAME_MAX_SIZE) //frame is too long
+		//this condition must not be checked when FX.25 is enabled
+		//because FX.25 parity bytes and tags contain >= 7 consecutive ones
+		if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error (sometimes called "escape byte")
 		{
-			rx->rx = RX_STAGE_IDLE;
+			rx->rx = RX_STAGE_FLAG;
 			ModemClearRMS(modem);
 			rx->receivedByte = 0;
 			rx->receivedBitIdx = 0;
@@ -512,14 +666,61 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 			rx->crc = 0xFFFF;
 			return;
 		}
-		if(rx->frameIdx >= 2) //more than 2 bytes received, calculate CRC
+#endif
+		if((rx->rawData & 0x3F) == 0x3E) //dismiss bit 0 added by bit stuffing
+			return;
+	}
+
+	if(rx->rawData & 0x01) //received bit 1
+		rx->receivedByte |= 0x80; //store it
+
+	if(++rx->receivedBitIdx >= 8) //received full byte
+	{
+#ifdef ENABLE_FX25
+		//end of FX.25 reception, that is received full block
+		if((rx->fx25Mode != NULL) && (rx->frameIdx == (rx->fx25Mode->K + rx->fx25Mode->T)))
 		{
-			for(uint8_t i = 0; i < 8; i++)
+			uint8_t fixed = 0;
+			if(Fx25Decode(rx->frame, rx->fx25Mode, &fixed))
 			{
-				calculateCRC((rx->frame[rx->frameIdx - 2] >> i) & 1, &(rx->crc));
+				uint16_t crc;
+				struct FrameHandle *h = parseFx25Frame(rx->frame, rx->frameIdx, &crc);
+				if(h != NULL)
+				{
+					rx->frameReceived = 1;
+					ModemGetSignalLevel(modem, &h->peak, &h->valley, &h->level);
+					h->corrected = fixed;
+					//FX.25 (RS) decoding is not reentrant/interrupt safe
+					//use only one modem when FX.25 is enabled
+					// if(crc != lastCrc)
+					// {
+//						h->signalLevel = ModemGetRMS(modem);
+						h->fx25Mode = rx->fx25Mode;
+						lastCrc = crc;
+					// }
+					// else
+					// 	removeLastFrameFromRxBuffer();
+				}
 			}
+			rx->rx = RX_STAGE_FX25_TAG;
+			rx->tagBit = 0;
+			rx->receivedByte = 0;
+			rx->receivedBitIdx = 0;
+			rx->frameIdx = 0;
+			return;
 		}
+#else
 		rx->rx = RX_STAGE_FRAME;
+#endif
+		if(rx->frameIdx >= FRAME_MAX_SIZE) //frame is too long
+		{
+			rx->rx = RX_STAGE_IDLE;
+			rx->receivedByte = 0;
+			rx->receivedBitIdx = 0;
+			rx->frameIdx = 0;
+			rx->crc = 0xFFFF;
+			return;
+		}
 		rx->frame[rx->frameIdx++] = rx->receivedByte; //store received byte
 		rx->receivedByte = 0;
 		rx->receivedBitIdx = 0;
@@ -544,12 +745,14 @@ uint8_t Ax25GetTxBit(void)
 			else
 			{
 				txDelayElapsed = 0;
+#ifdef ENABLE_FX25
 				if(NULL != txFrame[txFrameTail].fx25Mode)
 				{
 					txStage = TX_STAGE_CORRELATION_TAG;
 					txTagByteIdx = 0;
 				}
 				else
+#endif
 					txStage = TX_STAGE_HEADER_FLAGS;
 			}
 		}
@@ -561,6 +764,8 @@ transmitTag:
 				txByte = (txFrame[txFrameTail].fx25Mode->tag >> (8 * txTagByteIdx)) & 0xFF;
 			else
 				txStage = TX_STAGE_DATA;
+
+			txTagByteIdx++;
 		}
 #endif
 		if(txStage == TX_STAGE_HEADER_FLAGS) //transmitting initial flags
@@ -689,7 +894,11 @@ transmitTail:
 
 	uint8_t txBit = 0;
 	//transmitting normal data or CRC in AX.25 mode
-	if((NULL != txFrame[txFrameTail].fx25Mode) || (txStage == TX_STAGE_DATA) || (txStage == TX_STAGE_CRC))
+	if(
+#ifdef ENABLE_FX25
+		(NULL == txFrame[txFrameTail].fx25Mode) &&
+#endif
+		((txStage == TX_STAGE_DATA) || (txStage == TX_STAGE_CRC)))
 	{
 		if(txBitstuff == 5) //5 consecutive ones transmitted
 		{
@@ -730,16 +939,16 @@ transmitTail:
  */
 void Ax25TransmitBuffer(void)
 {
-	if(txInitStage == TX_INIT_WAITING)
-		return;
-	if(txInitStage == TX_INIT_TRANSMITTING)
-		return;
+	 if(txInitStage == TX_INIT_WAITING)
+	 	return;
+	 if(txInitStage == TX_INIT_TRANSMITTING)
+	 	return;
 
-	if((txFrameHead != txFrameTail) || txFrameBufferFull)
-	{
-		txQuiet = (SysTickGet() + (Ax25Config.quietTime / SYSTICK_INTERVAL) + Random(0, 200 / SYSTICK_INTERVAL)); //calculate required delay
-		txInitStage = TX_INIT_WAITING;
-	}
+	 if((txFrameHead != txFrameTail) || txFrameBufferFull)
+	 {
+	 	txQuiet = (SysTickGet() + (Ax25Config.quietTime / SYSTICK_INTERVAL) + Random(0, 200 / SYSTICK_INTERVAL)); //calculate required delay
+	 	txInitStage = TX_INIT_WAITING;
+	 }
 }
 
 
@@ -765,37 +974,37 @@ static void transmitStart(void)
  */
 void Ax25TransmitCheck(void)
 {
-	if(txInitStage == TX_INIT_OFF) //TX not initialized at all, nothing to transmit
-		return;
-	if(txInitStage == TX_INIT_TRANSMITTING) //already transmitting
-		return;
+	 if(txInitStage == TX_INIT_OFF) //TX not initialized at all, nothing to transmit
+	 	return;
+	 if(txInitStage == TX_INIT_TRANSMITTING) //already transmitting
+	 	return;
 
-	if(ModemIsTxTestOngoing()) //TX test is enabled, wait for now
-		return;
+	 if(ModemIsTxTestOngoing()) //TX test is enabled, wait for now
+	 	return;
 
-	if(txQuiet < SysTickGet()) //quit time has elapsed
-	{
-		if(!ModemDcdState()) //channel is free
-		{
-			txInitStage = TX_INIT_TRANSMITTING; //transmit right now
-			txRetries = 0;
-			transmitStart();
-		}
-		else //channel is busy
-		{
-			if(txRetries == MAX_TRANSMIT_RETRY_COUNT) //timeout
-			{
-				txInitStage = TX_INIT_TRANSMITTING; //transmit right now
-				txRetries = 0;
-				transmitStart();
-			}
-			else //still trying
-			{
-				txQuiet = SysTickGet() + Random(100 / SYSTICK_INTERVAL, 500 / SYSTICK_INTERVAL); //try again after some random time
-				txRetries++;
-			}
-		}
-	}
+	 if(txQuiet < SysTickGet()) //quit time has elapsed
+	 {
+	 	if(!ModemDcdState()) //channel is free
+	 	{
+	 		txInitStage = TX_INIT_TRANSMITTING; //transmit right now
+	 		txRetries = 0;
+	 		transmitStart();
+	 	}
+	 	else //channel is busy
+	 	{
+	 		if(txRetries == MAX_TRANSMIT_RETRY_COUNT) //timeout
+	 		{
+	 			txInitStage = TX_INIT_TRANSMITTING; //transmit right now
+	 			txRetries = 0;
+	 			transmitStart();
+	 		}
+	 		else //still trying
+	 		{
+	 			txQuiet = SysTickGet() + Random(100 / SYSTICK_INTERVAL, 500 / SYSTICK_INTERVAL); //try again after some random time
+	 			txRetries++;
+	 		}
+	 	}
+	 }
 }
 
 void Ax25Init(void)

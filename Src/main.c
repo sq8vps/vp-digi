@@ -98,37 +98,27 @@ static void handleFrame(void)
 
 	uint8_t *buf;
 	uint16_t size = 0;
-	uint16_t signalLevel = 0;
+	int8_t peak = 0;
+	int8_t valley = 0;
+	uint8_t signalLevel = 0;
+	uint8_t fixed = 0;
 
-	while(Ax25ReadNextRxFrame(&buf, &size, &signalLevel))
+	while(Ax25ReadNextRxFrame(&buf, &size, &peak, &valley, &signalLevel, &fixed))
 	{
-
 		TermSendToAll(MODE_KISS, buf, size);
-
-
 
 		if(((UartUsb.mode == MODE_MONITOR) || (Uart1.mode == MODE_MONITOR) || (Uart2.mode == MODE_MONITOR)))
 		{
-			//in general, the RMS of the frame is calculated (excluding preamble!)
-			//it it calculated from samples ranging from -4095 to 4095 (amplitude of 4095)
-			//that should give a RMS of around 2900 for pure sine wave
-			//for pure square wave it should be equal to the amplitude (around 4095)
-			//real data contains lots of imperfections (especially mark/space amplitude imbalance) and this value is far smaller than 2900 for standard frames
-			//division by 9 was selected by trial and error to provide a value of 100(%) when the input signal had peak-peak voltage of 3.3V
-			//TODO: this probably should be done in a different way, like some peak amplitude tracing
-			signalLevel /= 9;
-
-			if(signalLevel > 100)
+			if(signalLevel > 70)
 			{
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 50-70%.\r\n", 0);
+				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 30-50%.\r\n", 0);
 			}
-			else if(signalLevel < 10)
+			else if(signalLevel < 5)
 			{
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too low! Please increase so most stations are around 50-70%.\r\n", 0);
+				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too low! Please increase so most stations are around 30-50%.\r\n", 0);
 			}
 
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0); //show which modem received the frame: [FP] (flat and preemphasized), [FD] (flat and deemphasized - in flat audio input mode)
-																	   //[F_] (only flat), [_P] (only preemphasized) or [_D] (only deemphasized - in flat audio input mode)
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0);
 			for(uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
 			{
 				if(modemBitmap & (1 << i))
@@ -143,8 +133,10 @@ static void handleFrame(void)
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
 							break;
 						case PREFILTER_FLAT:
-						default:
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
+							break;
+						case PREFILTER_NONE:
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"*", 1);
 							break;
 					}
 				}
@@ -152,13 +144,22 @@ static void handleFrame(void)
 					TermSendToAll(MODE_MONITOR, (uint8_t*)"_", 1);
 			}
 
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"], signal level ", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"], ", 0);
+			if(fixed != AX25_NOT_FX25)
+			{
+				TermSendNumberToAll(MODE_MONITOR, fixed);
+				TermSendToAll(MODE_MONITOR, (uint8_t*)" bytes fixed, ", 0);
+			}
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"signal level ", 0);
 			TermSendNumberToAll(MODE_MONITOR, signalLevel);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"%: ", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"% (", 0);
+			TermSendNumberToAll(MODE_MONITOR, peak);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"%/", 0);
+			TermSendNumberToAll(MODE_MONITOR, valley);
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"%): ", 0);
 
 			SendTNC2(buf, size);
 			TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
-
 		}
 
 

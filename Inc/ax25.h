@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -21,11 +23,17 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include <stdbool.h>
 
+#define AX25_NOT_FX25 255
+
 enum Ax25RxStage
 {
 	RX_STAGE_IDLE = 0,
 	RX_STAGE_FLAG,
 	RX_STAGE_FRAME,
+#ifdef ENABLE_FX25
+	RX_STAGE_FX25_TAG,
+	RX_STAGE_FX25_FRAME,
+#endif
 };
 
 struct Ax25ProtoConfig
@@ -35,6 +43,7 @@ struct Ax25ProtoConfig
 	uint16_t quietTime; //Quiet time in ms
 	uint8_t allowNonAprs : 1; //allow non-APRS packets
 	uint8_t fx25 : 1; //enable FX.25 (AX.25 + FEC)
+	uint8_t fx25Tx : 1; //enable TX in FX.25
 };
 
 extern struct Ax25ProtoConfig Ax25Config;
@@ -70,10 +79,13 @@ void Ax25ClearReceivedFrameBitmap(void);
  * @brief Get next received frame (if available)
  * @param **dst Pointer to internal buffer
  * @param *size Actual frame size
- * @param *signalLevel Frame signal level (RMS)
+ * @param *peak Signak positive peak value in %
+ * @param *valley Signal negative peak value in %
+ * @param *level Signal level in %
+ * @param *corrected Number of bytes corrected in FX.25 mode. 255 is returned if not a FX.25 packet.
  * @return True if frame was read, false if no more frames to read
  */
-bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel);
+bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *valley, uint8_t *level, uint8_t *corrected);
 
 /**
  * @brief Get current RX stage
