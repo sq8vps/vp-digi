@@ -198,9 +198,9 @@ void ConfigWrite(void)
 {
 	ConfigErase();
 
-	writeString(CONFIG_CALL, GeneralConfig.call, sizeof(GeneralConfig.call));
+	writeString(CONFIG_CALL, GeneralConfig.call, 6);
 	write(CONFIG_SSID, GeneralConfig.callSsid);
-	writeString(CONFIG_DEST, GeneralConfig.dest, sizeof(GeneralConfig.dest));
+	writeString(CONFIG_DEST, GeneralConfig.dest, 6);
 	write(CONFIG_TXDELAY, Ax25Config.txDelayLength);
 	write(CONFIG_TXTAIL, Ax25Config.txTailLength);
 	write(CONFIG_TXQUIET, Ax25Config.quietTime);
