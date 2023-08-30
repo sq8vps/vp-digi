@@ -1,3 +1,24 @@
+# 1.3.0 (2023-08-30)
+## New features
+* Callsign is now set together with SSID using ```call <call-SSID>```
+* ```time``` command to show uptime
+## Removed features
+* ```ssid``` command is removed
+* Auto-reset functionality and ```autoreset``` command is removed
+## Bug fixes
+* When beacon *n* delay hadn't passed yet, beacon *n+1*, *n+2*, ... were not sent regardless of their delay
+* Bugs with line ending parsing
+## Other
+* Major code refactoring and rewrite
+* Got rid of *uart_transmitStart()* routine
+* USB sending is handled the same way as UART
+* New way of TX and RX frame handling to improve non-APRS compatibility
+* Much bigger frame buffer
+* Minimized number of temporary buffers
+* All *malloc()*s removed
+* Added copyright notice as required by GNU GPL
+## Known bugs
+* none
 # 1.2.6 (2023-07-29)
 ## New features
 * Added ```nonaprs [on/off]``` command that enables reception of non-APRS frames, e.g. for full Packet Radio use
@@ -34,15 +55,6 @@
 * none
 ## Known bugs
 * none
-# 1.2.2 (2022-06-11)
-## New features
-* none
-## Bug fixes
-* Default de-dupe time was 0, backspace was sometimes stored in config, frame length was not checked in viscous delay mode
-## Other
-* none
-## Known bugs
-* USB in KISS mode has problem with TX frames
 # 1.2.2 (2022-06-11)
 ## New features
 * none

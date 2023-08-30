@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -22,152 +24,148 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "drivers/uart.h"
 #include "usbd_cdc_if.h"
 
-uint8_t call[6] = {'N' << 1, '0' << 1, 'C' << 1, 'A' << 1, 'L' << 1, 'L' << 1};
-uint8_t callSsid = 0;
+struct _GeneralConfig GeneralConfig =
+{
+		.call = {'N' << 1, '0' << 1, 'C' << 1, 'A' << 1, 'L' << 1, 'L' << 1},
+		.callSsid = 0,
+		.dest = {130, 160, 156, 172, 96, 98, 96}, //destination address: APNV01-0 by default. SSID MUST remain 0.
+		.kissMonitor = 0,
+};
 
-uint8_t dest[7] = {130, 160, 156, 172, 96, 98, 96}; //destination address: APNV01-0 by default. SSID MUST remain 0.
+const char versionString[] = "VP-Digi v. 1.3.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
 
-const uint8_t *versionString = (const uint8_t*)"VP-Digi v. 1.2.6\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
+static uint64_t pow10i(uint16_t exp)
+{
+	if(exp == 0)
+		return 1;
+	uint64_t n = 1;
+	while(exp--)
+		n *= 10;
+	return n;
+}
 
-uint8_t autoReset = 0;
-uint32_t autoResetTimer = 0;
-uint8_t kissMonitor = 0;
-
-
-int64_t strToInt(uint8_t *str, uint8_t len)
+int64_t StrToInt(const char *str, uint16_t len)
 {
 	if(len == 0)
-	{
-		while(1)
-		{
-			if(((str[len] > 47) && (str[len] < 58)))
-				len++;
-			else
-				break;
-			if(len >= 100)
-				return 0;
-		}
-	}
+		len = strlen(str);
+
 	int64_t tmp = 0;
-	for(int16_t i = (len - 1); i >= 0; i--)
+	for(int32_t i = (len - 1); i >= 0; i--)
 	{
-		if((i == 0) && (str[i] == '-'))
-			tmp = -tmp;
+		if((i == 0) && (str[0] == '-'))
+		{
+			return -tmp;
+		}
+		else if(IS_NUMBER(str[i]))
+			tmp += ((str[i] - '0') * pow10i(len - 1 - i));
 		else
-			tmp += ((str[i] - 48) * pow(10, len - 1 - i));
+			return 0;
 	}
 	return tmp;
 }
 
 
-int16_t rando(int16_t min, int16_t max)
+int16_t Random(int16_t min, int16_t max)
 {
     int16_t tmp;
-    if (max>=min)
-        max-= min;
+    if (max >= min)
+        max -= min;
     else
     {
-        tmp= min - max;
-        min= max;
-        max= tmp;
+        tmp = min - max;
+        min = max;
+        max = tmp;
     }
     return max ? (rand() % max + min) : min;
 }
 
-
-
-void common_toTNC2(uint8_t *from, uint16_t len, uint8_t *to)
+static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 {
-
 	for(uint8_t i = 0; i < 6; i++) //source call
 	{
-		if((*(from + 7 + i) >> 1) != ' ') //skip spaces
+		if((from[7 + i] >> 1) != ' ') //skip spaces
 		{
-			*(to++) = *(from + 7 + i) >> 1;
+			UartSendByte(uart, from[7 + i] >> 1);
 		}
 	}
 
-	uint8_t ssid = ((*(from + 13) >> 1) & 0b00001111); //store ssid
+	uint8_t ssid = ((from[13] >> 1) & 0b00001111); //store ssid
 	if(ssid > 0) //SSID >0
 	{
-		*(to++) = '-'; //add -
-		if(ssid > 9)
-			*(to++) = '1'; //ssid >9, so will be -1x
-		*(to++) = (ssid % 10) + 48;
+		UartSendByte(uart, '-'); //add -
+		UartSendNumber(uart, ssid);
 	}
 
-	*(to++) = '>'; //first separator
-
+	UartSendByte(uart, '>'); //first separator
 
 	for(uint8_t i = 0; i < 6; i++) //destination call
 	{
-		if((*(from + i) >> 1) != ' ') //skip spaces
+		if((from[i] >> 1) != ' ') //skip spaces
 		{
-			*(to++) = *(from + i) >> 1;
+			UartSendByte(uart, from[i] >> 1);
 		}
 	}
-	ssid = ((*(from + 6) >> 1) & 0b00001111); //store ssid
+	ssid = ((from[6] >> 1) & 0b00001111); //store ssid
 
 	if(ssid > 0) //SSID >0
 	{
-		*(to++) = '-'; //add -
-		if(ssid > 9)
-			*(to++) = '1'; //ssid >9, so will be -1x
-		*(to++) = (ssid % 10) + 48;
+		UartSendByte(uart, '-'); //add -
+		UartSendNumber(uart, ssid);
 	}
 
 	uint16_t nextPathEl = 14; //next path element index
 
-    if(!(*(from + 13) & 1)) //no c-bit in source address, there is a digi path
+    if(!(from[13] & 1)) //no c-bit in source address, there is a digi path
     {
-
-        do //analize all path elements
+        do //analyze all path elements
         {
-            *(to++) = ','; //path separator
+            UartSendByte(uart, ','); //path separator
 
         	for(uint8_t i = 0; i < 6; i++) //copy element
         	{
-        		if((*(from + nextPathEl + i) >> 1) != ' ') //skip spaces
+        		if((from[nextPathEl + i] >> 1) != ' ') //skip spaces
         		{
-        			*(to++) = *(from + nextPathEl + i) >> 1;
+        			UartSendByte(uart, from[nextPathEl + i] >> 1);
         		}
         	}
 
-            ssid = ((*(from + nextPathEl + 6) >> 1) & 0b00001111); //store ssid
+            ssid = ((from[nextPathEl + 6] >> 1) & 0b00001111); //store ssid
         	if(ssid > 0) //SSID >0
         	{
-        		*(to++) = '-'; //add -
-        		if(ssid > 9)
-        			*(to++) = '1'; //ssid >9, so will be -1x
-        		*(to++) = (ssid % 10) + 48;
+        		UartSendByte(uart, '-'); //add -
+        		UartSendNumber(uart, ssid);
         	}
-            if((*(from + nextPathEl + 6) & 128)) //h-bit in ssid
-            	*(to++) = '*'; //add *
+            if((from[nextPathEl + 6] & 0x80)) //h-bit in ssid
+            	UartSendByte(uart, '*'); //add *
 
             nextPathEl += 7; //next path element
             if(nextPathEl > 56) //too many path elements
             	break;
         }
-        while((*(from + nextPathEl - 1) & 1) == 0); //loop until the c-bit is found
+        while((from[nextPathEl - 1] & 1) == 0); //loop until the c-bit is found
 
     }
 
-
-    *(to++) = ':'; //separator
+    UartSendByte(uart, ':'); //separator
 
     nextPathEl += 2; //skip Control and PID
 
-    for(; nextPathEl < len; nextPathEl++) //copy information field
-    {
-        *(to++) = *(from + nextPathEl);
-    }
+    UartSendString(uart, &(from[nextPathEl]), len - nextPathEl); //send information field
 
-
-    *(to++) = 0; //terminate with NULL
-
+    UartSendByte(uart, 0); //terminate with NULL
 }
 
-uint32_t crc32(uint32_t crc0, uint8_t *s, uint64_t n)
+void SendTNC2(uint8_t *from, uint16_t len)
+{
+	if(UartUsb.mode == MODE_MONITOR)
+		sendTNC2ToUart(&UartUsb, from, len);
+	if(Uart1.mode == MODE_MONITOR)
+		sendTNC2ToUart(&Uart1, from, len);
+	if(Uart2.mode == MODE_MONITOR)
+		sendTNC2ToUart(&Uart2, from, len);
+}
+
+uint32_t Crc32(uint32_t crc0, uint8_t *s, uint64_t n)
 {
 	uint32_t crc = ~crc0;
 
@@ -185,38 +183,67 @@ uint32_t crc32(uint32_t crc0, uint8_t *s, uint64_t n)
 	return ~crc;
 }
 
-void SendKiss(uint8_t *buf, uint16_t len)
+bool ParseCallsign(const char *in, uint16_t size, uint8_t *out)
 {
-	Uart *u = &uart1;
+	if(size > 6)
+		return false;
 
-	for(uint8_t i = 0; i < 2; i++)
+	uint8_t tmp[6];
+
+	uint8_t i = 0;
+	for(; i < size; i++)
 	{
-		if(u->mode == MODE_KISS) //check if KISS mode
-		{
-			uart_sendByte(u, 0xc0); //send data in kiss format
-			uart_sendByte(u, 0x00);
-			for(uint16_t j = 0; j < len; j++)
-			{
-				uart_sendByte(u, buf[j]);
-			}
-			uart_sendByte(u, 0xc0);
-			uart_transmitStart(u);
-		}
-		u = &uart2;
+		if(!IS_UPPERCASE_ALPHANUMERIC(in[i]))
+			return false;
+
+		tmp[i] = in[i] << 1;
 	}
 
-	if(USBmode == MODE_KISS) //check if USB in KISS mode
-	{
-		uint8_t t[2] = {0xc0, 0};
+	for(uint8_t k = 0; k < i; k++)
+		out[k] = tmp[k];
 
-		CDC_Transmit_FS(&t[0], 1);
-		CDC_Transmit_FS(&t[1], 1);
+	for(; i < 6; i++)
+		out[i] = ' ' << 1;
 
-		for(uint16_t i = 0; i < len; i++)
-		{
-			CDC_Transmit_FS(&buf[i], 1);
 
-		}
-		CDC_Transmit_FS(&t[0], 1);
-	}
+	return true;
 }
+
+bool ParseCallsignWithSsid(const char *in, uint16_t size, uint8_t *out, uint8_t *ssid)
+{
+	uint16_t ssidPosition = size;
+	for(uint16_t i = 0; i < size; i++)
+	{
+		if(in[i] == '-')
+		{
+			ssidPosition = i;
+			break;
+		}
+	}
+	ssidPosition++;
+	if(!ParseCallsign(in, ssidPosition - 1, out))
+		return false;
+
+	if(ssidPosition == size)
+	{
+		*ssid = 0;
+		return true;
+	}
+
+	if(!ParseSsid(&in[ssidPosition], size - ssidPosition, ssid))
+		return false;
+	return true;
+}
+
+bool ParseSsid(const char *in, uint16_t size, uint8_t *out)
+{
+	int64_t ssid = StrToInt(in, size);
+	if((ssid >= 0) && (ssid <= 15))
+	{
+		*out = (uint8_t)ssid;
+		return true;
+	}
+	return false;
+}
+
+

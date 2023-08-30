@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -20,6 +22,46 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "drivers/modem.h"
 #include "common.h"
 #include "drivers/systick.h"
+#include <stdbool.h>
+#include "digipeater.h"
+
+struct Ax25ProtoConfig Ax25Config;
+
+//values below must be kept consistent so that FRAME_BUFFER_SIZE >= FRAME_MAX_SIZE * FRAME_MAX_COUNT
+#define FRAME_MAX_SIZE (308) //single frame max length for RX
+//308 bytes is the theoretical max size assuming 2-byte Control, 256-byte info field and 5 digi address fields
+#define FRAME_MAX_COUNT (10) //max count of frames in buffer
+#define FRAME_BUFFER_SIZE (FRAME_MAX_COUNT * FRAME_MAX_SIZE) //circular frame buffer length
+
+#define STATIC_HEADER_FLAG_COUNT 4 //number of flags sent before each frame
+#define STATIC_FOOTER_FLAG_COUNT 8 //number of flags sent after each frame
+
+#define MAX_TRANSMIT_RETRY_COUNT 8 //max number of retries if channel is busy
+
+struct FrameHandle
+{
+	uint16_t start;
+	uint16_t size;
+	uint16_t signalLevel;
+};
+
+static uint8_t rxBuffer[FRAME_BUFFER_SIZE]; //circular buffer for received frames
+static uint16_t rxBufferHead = 0; //circular RX buffer write index
+static struct FrameHandle rxFrame[FRAME_MAX_COUNT];
+static uint8_t rxFrameHead = 0;
+static uint8_t rxFrameTail = 0;
+static bool rxFrameBufferFull = false;
+
+static uint8_t txBuffer[FRAME_BUFFER_SIZE];  //circular TX frame buffer
+static uint16_t txBufferHead = 0; //circular TX buffer write index
+static uint16_t txBufferTail = 0;
+static struct FrameHandle txFrame[FRAME_MAX_COUNT];
+static uint8_t txFrameHead = 0;
+static uint8_t txFrameTail = 0;
+static bool txFrameBufferFull = false;
+
+static uint8_t frameReceived; //a bitmap of receivers that received the frame
+
 
 enum TxStage
 {
@@ -39,89 +81,171 @@ enum TxInitStage
 	TX_INIT_TRANSMITTING
 };
 
-struct TxState
+static uint8_t txByte = 0; //current TX byte
+static uint16_t txByteIdx = 0; //current TX byte index
+static int8_t txBitIdx = 0; //current bit index in txByte
+static uint16_t txDelayElapsed = 0; //counter of TXDelay bytes already sent
+static uint8_t txFlagsElapsed = 0; //counter of flag bytes already sent
+static uint8_t txCrcByteIdx = 0; //currently transmitted byte of CRC
+static uint8_t txBitstuff = 0; //bit-stuffing counter
+static uint16_t txTailElapsed; //counter of TXTail bytes already sent
+static uint16_t txCrc = 0xFFFF; //current CRC
+static uint32_t txQuiet = 0; //quit time + current tick value
+static uint8_t txRetries = 0; //number of TX retries
+static enum TxInitStage txInitStage; //current TX initialization stage
+static enum TxStage txStage; //current TX stage
+
+struct RxState
 {
-	uint8_t txByte; //current TX byte
-	int8_t txBitIdx; //current bit index in txByte
-	uint16_t txDelayElapsed; //counter of TXDelay bytes already sent
-	uint8_t flagsElapsed; //counter of flag bytes already sent
-	uint16_t xmitIdx; //current TX byte index in TX buffer
-	uint8_t crcIdx; //currently transmitted byte of CRC
-	uint8_t bitstuff; //bit-stuffing counter
-	uint16_t txTailElapsed; //counter of TXTail bytes already sent
-	uint16_t txDelay; //number of TXDelay bytes to send
-	uint16_t txTail; //number of TXTail bytes to send
 	uint16_t crc; //current CRC
-	uint32_t txQuiet; //quit time + current tick value
-	uint8_t txRetries; //number of TX retries
-	enum TxInitStage tx; //current TX initialization stage
-	enum TxStage txStage; //current TX stage
+	uint8_t frame[FRAME_MAX_SIZE]; //raw frame buffer
+	uint16_t frameIdx; //index for raw frame buffer
+	uint8_t receivedByte; //byte being currently received
+	uint8_t receivedBitIdx; //bit index for recByte
+	uint8_t rawData; //raw data being currently received
+	enum Ax25RxStage rx; //current RX stage
+	uint8_t frameReceived; //frame received flag
 };
 
-volatile struct TxState txState;
+static volatile struct RxState rxState[MODEM_DEMODULATOR_COUNT];
 
+static uint16_t lastCrc = 0; //CRC of the last received frame. If not 0, a frame was successfully received
+static uint16_t rxMultiplexDelay = 0; //simple delay for decoder multiplexer to avoid receiving the same frame twice
 
-typedef struct
-{
-	uint16_t crc; //current CRC
-	uint8_t frame[FRAMELEN]; //raw frame buffer
-	uint16_t frameIdx; //index for raw frame buffer
-	uint8_t recByte; //byte being currently received
-	uint8_t rBitIdx; //bit index for recByte
-	uint8_t rawData; //raw data being currently received
-	RxStage rx; //current RX stage
-	uint8_t frameReceived; //frame received flag
-} RxState;
+static uint16_t txDelay; //number of TXDelay bytes to send
+static uint16_t txTail; //number of TXTail bytes to send
 
-volatile RxState rxState1, rxState2;
+static uint8_t outputFrameBuffer[FRAME_MAX_SIZE];
 
-uint16_t lastCrc = 0; //CRC of the last received frame. If not 0, a frame was successfully received
-uint16_t rxMultiplexDelay = 0; //simple delay for decoder multiplexer to avoid receiving the same frame twice
-
-RxStage Ax25_getRxStage(uint8_t modemNo)
-{
-	if(modemNo == 0)
-		return rxState1.rx;
-
-	return rxState2.rx;
-}
-
-
+#define GET_FREE_SIZE(max, head, tail) (((head) < (tail)) ? ((tail) - (head)) : ((max) - (head) + (tail)))
+#define GET_USED_SIZE(max, head, tail) (max - GET_FREE_SIZE(max, head, tail))
 
 /**
  * @brief Recalculate CRC for one bit
- * @param[in] bit Input bit
+ * @param bit Input bit
  * @param *crc CRC pointer
  */
-static void ax25_calcCRC(uint8_t bit, uint16_t *crc) {
-    static uint16_t xor_result;
+static void calculateCRC(uint8_t bit, uint16_t *crc)
+{
+    uint16_t xor_result;
     xor_result = *crc ^ bit;
     *crc >>= 1;
     if (xor_result & 0x0001)
     {
     	*crc ^= 0x8408;
     }
-    return;
 }
 
-void Ax25_bitParse(uint8_t bit, uint8_t modemNo)
+uint8_t Ax25GetReceivedFrameBitmap(void)
 {
-	if(lastCrc > 0) //there was a frame received
+	return frameReceived;
+}
+
+void Ax25ClearReceivedFrameBitmap(void)
+{
+	frameReceived = 0;
+}
+
+void Ax25TxKiss(uint8_t *buf, uint16_t len)
+{
+	if(len < 18) //frame is too small
+	{
+		return;
+	}
+	for(uint16_t i = 0; i < len; i++)
+	{
+		if(buf[i] == 0xC0) //frame start marker
+		{
+			uint16_t end = i + 1;
+			while(end < len)
+			{
+				if(buf[end] == 0xC0)
+					break;
+				end++;
+			}
+			if(end == len) //no frame end marker found
+				return;
+			Ax25WriteTxFrame(&buf[i + 2], end - (i + 2)); //skip modem number and send frame
+			DigiStoreDeDupe(&buf[i + 2], end - (i + 2));
+			i = end; //move pointer to the next byte if there are more consecutive frames
+		}
+	}
+}
+
+void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
+{
+	while(txStage != TX_STAGE_IDLE)
+		;
+
+	if((GET_FREE_SIZE(FRAME_BUFFER_SIZE, txBufferHead, txBufferTail) < size) || txFrameBufferFull)
+	{
+		return NULL;
+	}
+
+
+	txFrame[txFrameHead].size = size;
+	txFrame[txFrameHead].start = txBufferHead;
+	for(uint16_t i = 0; i < size; i++)
+	{
+		txBuffer[txBufferHead++] = data[i];
+		txBufferHead %= FRAME_BUFFER_SIZE;
+	}
+	void *ret = &txFrame[txFrameHead];
+	txFrameHead++;
+	txFrameHead %= FRAME_MAX_COUNT;
+	if(txFrameHead == txFrameTail)
+		txFrameBufferFull = true;
+	return ret;
+}
+
+
+bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel)
+{
+	if((rxFrameHead == rxFrameTail) && !rxFrameBufferFull)
+		return false;
+
+	*dst = outputFrameBuffer;
+
+	for(uint16_t i = 0; i < rxFrame[rxFrameTail].size; i++)
+	{
+		(*dst)[i] = rxBuffer[(rxFrame[rxFrameTail].start + i) % FRAME_BUFFER_SIZE];
+	}
+
+	*signalLevel = rxFrame[rxFrameTail].signalLevel;
+	*size = rxFrame[rxFrameTail].size;
+
+	rxFrameBufferFull = false;
+	rxFrameTail++;
+	rxFrameTail %= FRAME_MAX_COUNT;
+	return true;
+}
+
+enum Ax25RxStage Ax25GetRxStage(uint8_t modem)
+{
+	return rxState[modem].rx;
+}
+
+
+void Ax25BitParse(uint8_t bit, uint8_t modem)
+{
+	if(lastCrc != 0) //there was a frame received
 	{
 		rxMultiplexDelay++;
-		if(rxMultiplexDelay > 4) //hold it for a while and wait for the other decoder to receive the frame
+		if(rxMultiplexDelay > (4 * MODEM_DEMODULATOR_COUNT)) //hold it for a while and wait for other decoders to receive the frame
 		{
 			lastCrc = 0;
 			rxMultiplexDelay = 0;
-			ax25.frameReceived = (rxState1.frameReceived > 0) | ((rxState2.frameReceived > 0) << 1);
+			for(uint8_t i = 0; i < MODEM_DEMODULATOR_COUNT; i++)
+			{
+				frameReceived |= ((rxState[i].frameReceived > 0) << i);
+				rxState[i].frameReceived = 0;
+			}
 		}
 
 	}
 
 
-	RxState *rx = (RxState*)&rxState1;
-	if(modemNo == 1)
-		rx = (RxState*)&rxState2;
+	struct RxState *rx = (struct RxState*)&(rxState[modem]);
 
 	rx->rawData <<= 1; //store incoming bit
 	rx->rawData |= (bit > 0);
@@ -129,7 +253,7 @@ void Ax25_bitParse(uint8_t bit, uint8_t modemNo)
 
 	if(rx->rawData == 0x7E) //HDLC flag received
 	{
-		if(rx->rx == RX_STAGE_FRAME) //we are in frame, so this is the end of the frame
+		if(rx->rx == RX_STAGE_FRAME) //if we are in frame, this is the end of the frame
 		{
     		if((rx->frameIdx > 15)) //correct frame must be at least 16 bytes long
     		{
@@ -142,69 +266,55 @@ void Ax25_bitParse(uint8_t bit, uint8_t modemNo)
 
 				//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
 
-				if(!ax25Cfg.allowNonAprs && ((rx->frame[i + 1] != 0x03) || (rx->frame[i + 2] != 0xf0)))
+				if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xf0))))
 				{
-					rx->recByte = 0;
-					rx->rBitIdx = 0;
-					rx->frameIdx = 0;
-					rx->crc = 0xFFFF;
+					if((rx->frame[rx->frameIdx - 2] == ((rx->crc & 0xFF) ^ 0xFF)) && (rx->frame[rx->frameIdx - 1] == (((rx->crc >> 8) & 0xFF) ^ 0xFF))) //check CRC
+					{
+						rx->frameReceived = 1;
+						rx->frameIdx -= 2; //remove CRC
+						if(rx->crc != lastCrc) //the other decoder has not received this frame yet, so store it in main frame buffer
+						{
+							lastCrc = rx->crc; //store CRC of this frame
 
-					return;
+							if(!rxFrameBufferFull) //if enough space, store the frame
+							{
+								rxFrame[rxFrameHead].start = rxBufferHead;
+								rxFrame[rxFrameHead].signalLevel = ModemGetRMS(modem);
+								rxFrame[rxFrameHead++].size = rx->frameIdx;
+								rxFrameHead %= FRAME_MAX_COUNT;
+								if(rxFrameHead == txFrameHead)
+									rxFrameBufferFull = true;
+
+								for(uint16_t i = 0; i < rx->frameIdx; i++)
+								{
+									rxBuffer[rxBufferHead++] = rx->frame[i];
+									rxBufferHead %= FRAME_BUFFER_SIZE;
+								}
+
+							}
+						}
+					}
 				}
-
-    			if ((rx->frame[rx->frameIdx - 2] == ((rx->crc & 0xFF) ^ 0xFF)) && (rx->frame[rx->frameIdx - 1] == (((rx->crc >> 8) & 0xFF) ^ 0xFF))) //check CRC
-	        	{
-	        		rx->frameReceived = 1;
-    				if(rx->crc != lastCrc) //the other decoder has not received this frame yet, so store it in main frame buffer
-	        		{
-	        			lastCrc = rx->crc; //store CRC of this frame
-	        			ax25.sLvl = Afsk_getRMS(modemNo); //get RMS amplitude of the received frame
-		        		uint16_t freebuf = 0;
-		        		if(ax25.frameBufWr > ax25.frameBufRd) //check if there is enough free space in buffer
-		        			freebuf = FRAMEBUFLEN - ax25.frameBufWr + ax25.frameBufRd - 3;
-		        		else
-		        			freebuf = ax25.frameBufRd - ax25.frameBufWr - 3;
-
-		        		if((rx->frameIdx - 2) <= freebuf) //if enough space, store the frame
-		        		{
-		        			for(uint16_t i = 0; i < rx->frameIdx - 2; i++)
-		        			{
-		        				ax25.frameBuf[ax25.frameBufWr++] = rx->frame[i];
-		        				ax25.frameBufWr %= (FRAMEBUFLEN);
-		        			}
-		        			ax25.frameBuf[ax25.frameBufWr++] = 0xFF; //add frame separator
-		        			ax25.frameBufWr %= FRAMEBUFLEN;
-		        		}
-	        		}
-	        	} else
-	        	{
-					Afsk_clearRMS(modemNo);
-	        	}
 
     		}
 
-
-			rx->recByte = 0;
-			rx->rBitIdx = 0;
-			rx->frameIdx = 0;
-			rx->crc = 0xFFFF;
 		}
 		rx->rx = RX_STAGE_FLAG;
-		rx->recByte = 0;
-		rx->rBitIdx = 0;
+		ModemClearRMS(modem);
+		rx->receivedByte = 0;
+		rx->receivedBitIdx = 0;
 		rx->frameIdx = 0;
 		rx->crc = 0xFFFF;
-		Afsk_clearRMS(modemNo);
 		return;
 	}
 
 
 	if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error (sometimes called "escape byte")
 	{
-		Afsk_clearRMS(modemNo);
-		rx->rx = RX_STAGE_IDLE;
-		rx->recByte = 0;
-		rx->rBitIdx = 0;
+		rx->rx = RX_STAGE_FLAG;
+		ModemClearRMS(modem);
+		rx->receivedByte = 0;
+		rx->receivedBitIdx = 0;
 		rx->frameIdx = 0;
 		rx->crc = 0xFFFF;
 		return;
@@ -216,218 +326,206 @@ void Ax25_bitParse(uint8_t bit, uint8_t modemNo)
 		return;
 
 
-	if((rx->rawData & 0x3F) == 0x3E) //dismiss bit 0 added by bitstuffing
+	if((rx->rawData & 0x3F) == 0x3E) //dismiss bit 0 added by bit stuffing
 		return;
 
 	if(rx->rawData & 0x01) //received bit 1
-		rx->recByte |= 0x80; //store it
+		rx->receivedByte |= 0x80; //store it
 
-	if(++rx->rBitIdx >= 8) //received full byte
+	if(++rx->receivedBitIdx >= 8) //received full byte
 	{
-		if(rx->frameIdx > FRAMELEN) //frame is too long
+		if(rx->frameIdx > FRAME_MAX_SIZE) //frame is too long
 		{
 			rx->rx = RX_STAGE_IDLE;
-			rx->recByte = 0;
-			rx->rBitIdx = 0;
+			ModemClearRMS(modem);
+			rx->receivedByte = 0;
+			rx->receivedBitIdx = 0;
 			rx->frameIdx = 0;
 			rx->crc = 0xFFFF;
-			Afsk_clearRMS(modemNo);
 			return;
 		}
 		if(rx->frameIdx >= 2) //more than 2 bytes received, calculate CRC
 		{
 			for(uint8_t i = 0; i < 8; i++)
 			{
-				ax25_calcCRC((rx->frame[rx->frameIdx - 2] >> i) & 0x01, &(rx->crc));
+				calculateCRC((rx->frame[rx->frameIdx - 2] >> i) & 1, &(rx->crc));
 			}
 		}
 		rx->rx = RX_STAGE_FRAME;
-		rx->frame[rx->frameIdx++] = rx->recByte; //store received byte
-		rx->recByte = 0;
-		rx->rBitIdx = 0;
+		rx->frame[rx->frameIdx++] = rx->receivedByte; //store received byte
+		rx->receivedByte = 0;
+		rx->receivedBitIdx = 0;
 	}
 	else
-		rx->recByte >>= 1;
+		rx->receivedByte >>= 1;
 }
 
 
-uint8_t Ax25_getTxBit(void)
+uint8_t Ax25GetTxBit(void)
 {
-	if(txState.txBitIdx == 8)
+	if(txBitIdx == 8)
 	{
-		txState.txBitIdx = 0;
-		if(txState.txStage == TX_STAGE_PREAMBLE) //transmitting preamble (TXDelay)
+		txBitIdx = 0;
+		if(txStage == TX_STAGE_PREAMBLE) //transmitting preamble (TXDelay)
 		{
-			if(txState.txDelayElapsed < txState.txDelay) //still transmitting
+			if(txDelayElapsed < txDelay) //still transmitting
 			{
-				txState.txByte = 0x7E;
-				txState.txDelayElapsed++;
+				txByte = 0x7E;
+				txDelayElapsed++;
 			}
 			else //now transmit initial flags
 			{
-				txState.txDelayElapsed = 0;
-				txState.txStage = TX_STAGE_HEADER_FLAGS;
+				txDelayElapsed = 0;
+				txStage = TX_STAGE_HEADER_FLAGS;
 			}
 
 		}
-		if(txState.txStage == TX_STAGE_HEADER_FLAGS) //transmitting initial flags
+		if(txStage == TX_STAGE_HEADER_FLAGS) //transmitting initial flags
 		{
-			if(txState.flagsElapsed < 4) //say we want to transmit 4 flags
+			if(txFlagsElapsed < STATIC_HEADER_FLAG_COUNT)
 			{
-				txState.txByte = 0x7E;
-				txState.flagsElapsed++;
+				txByte = 0x7E;
+				txFlagsElapsed++;
 			}
 			else
 			{
-				txState.flagsElapsed = 0;
-				txState.txStage = TX_STAGE_DATA; //transmit data
+				txFlagsElapsed = 0;
+				txStage = TX_STAGE_DATA; //transmit data
 			}
 		}
-		if(txState.txStage == TX_STAGE_DATA) //transmitting normal data
+		if(txStage == TX_STAGE_DATA) //transmitting normal data
 		{
-			if((ax25.xmitIdx > 10) && (txState.xmitIdx < ax25.xmitIdx)) //send buffer
+transmitNormalData:
+			if((txFrameHead != txFrameTail) || txFrameBufferFull)
 			{
-				if(ax25.frameXmit[txState.xmitIdx] == 0xFF) //frame separator found
+				if(txByteIdx < txFrame[txFrameTail].size) //send buffer
 				{
-					txState.txStage = TX_STAGE_CRC; //transmit CRC
-					txState.xmitIdx++;
+					txByte = txBuffer[(txFrame[txFrameTail].start + txByteIdx) % FRAME_BUFFER_SIZE];
+					txByteIdx++;
 				}
-				else //normal bytes
+				else //end of buffer, send CRC
 				{
-					txState.txByte = ax25.frameXmit[txState.xmitIdx];
-					txState.xmitIdx++;
+					txStage = TX_STAGE_CRC; //transmit CRC
+					txCrcByteIdx = 0;
 				}
-			} else //end of buffer
+			}
+			else //no more frames
 			{
-				ax25.xmitIdx = 0;
-				txState.xmitIdx = 0;
-				txState.txStage = TX_STAGE_TAIL;
+				txByteIdx = 0;
+				txBitIdx = 0;
+				txStage = TX_STAGE_TAIL;
 			}
 		}
-		if(txState.txStage == TX_STAGE_CRC) //transmitting CRC
+		if(txStage == TX_STAGE_CRC) //transmitting CRC
 		{
+			if(txCrcByteIdx <= 1)
+			{
+				txByte = (txCrc & 0xFF) ^ 0xFF;
+				txCrc >>= 8;
+				txCrcByteIdx++;
+			}
+			else
+			{
+				txCrc = 0xFFFF;
+				txStage = TX_STAGE_FOOTER_FLAGS; //now transmit flags
+				txFlagsElapsed = 0;
+			}
 
-			if(txState.crcIdx < 2)
+		}
+		if(txStage == TX_STAGE_FOOTER_FLAGS)
+		{
+			if(txFlagsElapsed < STATIC_FOOTER_FLAG_COUNT)
 			{
-				txState.txByte = (txState.crc >> (txState.crcIdx * 8)) ^ 0xFF;
-				txState.crcIdx++;
+				txByte = 0x7E;
+				txFlagsElapsed++;
 			}
 			else
 			{
-				txState.crc = 0xFFFF;
-				txState.txStage = TX_STAGE_FOOTER_FLAGS; //now transmit flags
-				txState.crcIdx = 0;
+				txFlagsElapsed = 0;
+				txByteIdx = 0;
+				txStage = TX_STAGE_DATA; //return to normal data transmission stage. There might be a next frame to transmit
+				txFrameBufferFull = false;
+				txFrameTail++;
+				txFrameTail %= FRAME_MAX_COUNT;
+				goto transmitNormalData;
 			}
 		}
-		if(txState.txStage == TX_STAGE_FOOTER_FLAGS)
+		if(txStage == TX_STAGE_TAIL) //transmitting tail
 		{
-			if(txState.flagsElapsed < 8) //say we want to transmit 8 flags
+			if(txTailElapsed < txTail)
 			{
-				txState.txByte = 0x7E;
-				txState.flagsElapsed++;
-			} else
-			{
-				txState.flagsElapsed = 0;
-				txState.txStage = TX_STAGE_DATA; //return to normal data transmission stage. There might be a next frame to transmit
-				if((ax25.xmitIdx > 10) && (txState.xmitIdx < ax25.xmitIdx)) //send buffer
-				{
-					if(ax25.frameXmit[txState.xmitIdx] == 0xFF) //frame separator found
-					{
-						txState.txStage = TX_STAGE_CRC; //transmit CRC
-						txState.xmitIdx++;
-					}
-					else //normal bytes
-					{
-						txState.txByte = ax25.frameXmit[txState.xmitIdx];
-						txState.xmitIdx++;
-					}
-				} else //end of buffer
-				{
-					ax25.xmitIdx = 0;
-					txState.xmitIdx = 0;
-					txState.txStage = TX_STAGE_TAIL;
-				}
-			}
-		}
-		if(txState.txStage == TX_STAGE_TAIL) //transmitting tail
-		{
-			ax25.xmitIdx = 0;
-			if(txState.txTailElapsed < txState.txTail)
-			{
-				txState.txByte = 0x7E;
-				txState.txTailElapsed++;
+				txByte = 0x7E;
+				txTailElapsed++;
 			}
 			else //tail transmitted, stop transmission
 			{
-				txState.txTailElapsed = 0;
-				txState.txStage = TX_STAGE_IDLE;
-				txState.crc = 0xFFFF;
-				txState.bitstuff = 0;
-				txState.txByte = 0;
-				txState.tx = TX_INIT_OFF;
-				Afsk_transmitStop();
+				txTailElapsed = 0;
+				txStage = TX_STAGE_IDLE;
+				txCrc = 0xFFFF;
+				txBitstuff = 0;
+				txByte = 0;
+				txInitStage = TX_INIT_OFF;
+				txBufferTail = txBufferHead;
+				ModemTransmitStop();
+				return 0;
 			}
-
-
 		}
 
 	}
 
 	uint8_t txBit = 0;
 
-	if((txState.txStage == TX_STAGE_DATA) || (txState.txStage == TX_STAGE_CRC)) //transmitting normal data or CRC
+	if((txStage == TX_STAGE_DATA) || (txStage == TX_STAGE_CRC)) //transmitting normal data or CRC
 	{
-		if(txState.bitstuff == 5) //5 consecutive ones transmitted
+		if(txBitstuff == 5) //5 consecutive ones transmitted
 		{
 			txBit = 0; //transmit bit-stuffed 0
-			txState.bitstuff = 0;
+			txBitstuff = 0;
 		}
 		else
 		{
-			if(txState.txByte & 1) //1 being transmitted
+			if(txByte & 1) //1 being transmitted
 			{
-				txState.bitstuff++; //increment bit stuffing counter
+				txBitstuff++; //increment bit stuffing counter
 				txBit = 1;
-			} else
+			}
+			else
 			{
 				txBit = 0;
-				txState.bitstuff = 0; //0 being transmitted, reset bit stuffing counter
+				txBitstuff = 0; //0 being transmitted, reset bit stuffing counter
 			}
-			if(txState.txStage == TX_STAGE_DATA) //calculate CRC only for normal data
-				ax25_calcCRC(txState.txByte & 1, (uint16_t*)&(txState.crc));
-			txState.txByte >>= 1;
-			txState.txBitIdx++;
+			if(txStage == TX_STAGE_DATA) //calculate CRC only for normal data
+				calculateCRC(txByte & 1, &txCrc);
+
+			txByte >>= 1;
+			txBitIdx++;
 		}
 	}
 	else //transmitting preamble or flags, don't calculate CRC, don't use bit stuffing
 	{
-			txBit = txState.txByte & 1;
-			txState.txByte >>= 1;
-			txState.txBitIdx++;
+		txBit = txByte & 1;
+		txByte >>= 1;
+		txBitIdx++;
 	}
 	return txBit;
-
 }
 
 /**
  * @brief Initialize transmission and start when possible
  */
-void Ax25_transmitBuffer(void)
+void Ax25TransmitBuffer(void)
 {
-	if(txState.tx == TX_INIT_WAITING)
+	if(txInitStage == TX_INIT_WAITING)
 		return;
-	if(txState.tx == TX_INIT_TRANSMITTING)
+	if(txInitStage == TX_INIT_TRANSMITTING)
 		return;
 
-	if(ax25.xmitIdx > 10)
+	if((txFrameHead != txFrameTail) || txFrameBufferFull)
 	{
-		txState.txQuiet = (ticks + (ax25Cfg.quietTime / 10) + rando(0, 20)); //calculate required delay
-		txState.tx = TX_INIT_WAITING;
+		txQuiet = (SysTickGet() + (Ax25Config.quietTime / SYSTICK_INTERVAL) + Random(0, 200 / SYSTICK_INTERVAL)); //calculate required delay
+		txInitStage = TX_INIT_WAITING;
 	}
-	else ax25.xmitIdx = 0;
 }
-
-
 
 
 
@@ -435,13 +533,14 @@ void Ax25_transmitBuffer(void)
  * @brief Start transmission immediately
  * @warning Transmission should be initialized using Ax25_transmitBuffer
  */
-static void ax25_transmitStart(void)
+static void transmitStart(void)
 {
-	txState.crc = 0xFFFF; //initial CRC value
-	txState.txStage = TX_STAGE_PREAMBLE;
-	txState.txByte = 0;
-	txState.txBitIdx = 0;
-	Afsk_transmitStart();
+	txCrc = 0xFFFF; //initial CRC value
+	txStage = TX_STAGE_PREAMBLE;
+	txByte = 0;
+	txBitIdx = 0;
+	txFlagsElapsed = 0;
+	ModemTransmitStart();
 }
 
 
@@ -449,58 +548,49 @@ static void ax25_transmitStart(void)
  * @brief Start transmitting when possible
  * @attention Must be continuously polled in main loop
  */
-void Ax25_transmitCheck(void)
+void Ax25TransmitCheck(void)
 {
-	if(txState.tx == TX_INIT_OFF) //TX not initialized at all, nothing to transmit
+	if(txInitStage == TX_INIT_OFF) //TX not initialized at all, nothing to transmit
 		return;
-	if(txState.tx == TX_INIT_TRANSMITTING) //already transmitting
+	if(txInitStage == TX_INIT_TRANSMITTING) //already transmitting
 		return;
 
-	if(ax25.xmitIdx < 10)
+	if(ModemIsTxTestOngoing()) //TX test is enabled, wait for now
+		return;
+
+	if(txQuiet < SysTickGet()) //quit time has elapsed
 	{
-		ax25.xmitIdx = 0;
-		return;
-	}
-
-	if(Afsk_isTxTestOngoing()) //TX test is enabled, wait for now
-		return;
-
-	if(txState.txQuiet < ticks) //quit time has elapsed
-	{
-		if(!Afsk_dcdState()) //channel is free
+		if(!ModemDcdState()) //channel is free
 		{
-			txState.tx = TX_INIT_TRANSMITTING; //transmit right now
-			txState.txRetries = 0;
-			ax25_transmitStart();
+			txInitStage = TX_INIT_TRANSMITTING; //transmit right now
+			txRetries = 0;
+			transmitStart();
 		}
 		else //channel is busy
 		{
-			if(txState.txRetries == 8) //8th retry occurred, transmit immediately
+			if(txRetries == MAX_TRANSMIT_RETRY_COUNT) //timeout
 			{
-				txState.tx = TX_INIT_TRANSMITTING; //transmit right now
-				txState.txRetries = 0;
-				ax25_transmitStart();
+				txInitStage = TX_INIT_TRANSMITTING; //transmit right now
+				txRetries = 0;
+				transmitStart();
 			}
 			else //still trying
 			{
-				txState.txQuiet = ticks + rando(10, 50); //try again after some random time
-				txState.txRetries++;
+				txQuiet = SysTickGet() + Random(100 / SYSTICK_INTERVAL, 500 / SYSTICK_INTERVAL); //try again after some random time
+				txRetries++;
 			}
 		}
 	}
 }
 
-void Ax25_init(void)
+void Ax25Init(void)
 {
-	txState.crc = 0xFFFF;
-	ax25.frameBufWr = 0;
-	ax25.frameBufRd = 0;
-	ax25.xmitIdx = 0;
-	ax25.frameReceived = 0;
+	txCrc = 0xFFFF;
 
-	rxState1.crc = 0xFFFF;
-	rxState2.crc = 0xFFFF;
+	memset((void*)rxState, 0, sizeof(rxState));
+	for(uint8_t i = 0; i < (sizeof(rxState) / sizeof(rxState[0])); i++)
+		rxState[i].crc = 0xFFFF;
 
-	txState.txDelay = ((float)ax25Cfg.txDelayLength / 6.66667f); //change milliseconds to byte count
-	txState.txTail = ((float)ax25Cfg.txTailLength / 6.66667f);
+	txDelay = ((float)Ax25Config.txDelayLength / (8.f * 1000.f / (float)MODEM_BAUDRATE)); //change milliseconds to byte count
+	txTail = ((float)Ax25Config.txTailLength / (8.f * 1000.f / (float)MODEM_BAUDRATE));
 }

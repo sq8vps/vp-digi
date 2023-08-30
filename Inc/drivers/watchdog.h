@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -23,12 +25,12 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @brief Initialize watchdog
  */
-void Wdog_init(void);
+void WdogInit(void);
 
 /**
  * @brief Restart watchdog
  * @attention Must be called continuously in main loop
  */
-void Wdog_reset(void);
+void WdogReset(void);
 
 #endif /* DRIVERS_WATCHDOG_H_ */

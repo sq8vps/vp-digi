@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -21,257 +23,157 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include "common.h"
 #include <string.h>
-
 #include "digipeater.h"
 
-uint8_t USBmode = MODE_KISS;
-uint8_t USBrcvd = DATA_NOTHING;
-uint8_t USBint = 0; /**< Flaga "przerwania" USB dla obslugi w petli glownej */
+Uart Uart1, Uart2, UartUsb;
 
-
-uint8_t Uart_txKiss(uint8_t *buf, uint16_t len)
-{
-	if(len < 10) //frame is too small
-	{
-		return 1;
-	}
-
-	uint16_t framebegin = 0;
-	uint8_t framestatus = 0; //0 - frame not started, 1 - frame start found, 2 - in a frame, 3 - frame end found
-
-	for(uint16_t i = 0; i < len; i++)
-	{
-		if(*(buf + i) == 0xc0) //found KISS frame delimiter
-		{
-			if((i > 2) && (framestatus == 2)) //we are already in frame, this is the ending marker
-			{
-				framestatus = 3;
-				ax25.frameXmit[ax25.xmitIdx++] = 0xFF; //write frame separator
-				Digi_storeDeDupeFromXmitBuf(framebegin); //store duplicate protection hash
-		        if((FRAMEBUFLEN - ax25.xmitIdx) < (len - i + 2)) //there might be next frame in input buffer, but if there is no space for it, drop it
-		        	break;
-			}
-		}
-		else if((*(buf + i) == 0x00) && (*(buf + i - 1) == 0xC0) && ((framestatus == 0) || (framestatus == 3))) //found frame delimiter, modem number (0x00) and we are not in a frame yet or preceding frame has been processed
-		{
-			framestatus = 1; //copy next frame
-			framebegin = ax25.xmitIdx;
-		}
-		else if((framestatus == 1) || (framestatus == 2)) //we are in a frame
-		{
-			ax25.frameXmit[ax25.xmitIdx++] = *(buf + i); //copy data
-			framestatus = 2;
-		}
-	}
-
-	return 0;
-}
-
-static volatile void uart_handleInterrupt(Uart *port)
+static void handleInterrupt(Uart *port)
 {
 	if(port->port->SR & USART_SR_RXNE) //byte received
 	{
 		port->port->SR &= ~USART_SR_RXNE;
-		port->bufrx[port->bufrxidx] = port->port->DR; //store it
-		port->bufrxidx++;
-		if(port->port == USART1) //handle special functions and characters
-			term_handleSpecial(TERM_UART1);
-		else if(port->port == USART2)
-			term_handleSpecial(TERM_UART2);
+		port->rxBuffer[port->rxBufferHead++] = port->port->DR; //store it
+		port->rxBufferHead %= UART_BUFFER_SIZE;
 
-		port->bufrxidx %= UARTBUFLEN;
+		TermHandleSpecial(port);
 
 		if(port->mode == MODE_KISS)
-			port->kissTimer = ticks + 500; //set timeout to 5s in KISS mode
+			port->kissTimer = SysTickGet() + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
 	}
 	if(port->port->SR & USART_SR_IDLE) //line is idle, end of data reception
 	{
 		port->port->DR; //reset idle flag by dummy read
-		if(port->bufrxidx == 0)
-			return; //no data, stop
-
-		if((port->bufrx[0] == 0xc0) && (port->bufrx[port->bufrxidx - 1] == 0xc0))   //data starts with 0xc0 and ends with 0xc0 - this is a KISS frame
+		if(port->rxBufferHead != 0)
 		{
-			port->rxflag = DATA_KISS;
-			port->kissTimer = 0;
+			if((port->rxBuffer[0] == 0xC0) && (port->rxBuffer[port->rxBufferHead - 1] == 0xC0)) //data starts with 0xc0 and ends with 0xc0 - this is a KISS frame
+			{
+				port->rxType = DATA_KISS;
+				port->kissTimer = 0;
+			}
+			else if(((port->rxBuffer[port->rxBufferHead - 1] == '\r') || (port->rxBuffer[port->rxBufferHead - 1] == '\n'))) //data ends with \r or \n, process as data
+			{
+				port->rxType = DATA_TERM;
+				port->kissTimer = 0;
+			}
 		}
-
-		if(((port->bufrx[port->bufrxidx - 1] == '\r') || (port->bufrx[port->bufrxidx - 1] == '\n'))) //data ends with \r or \n, process as data
-		{
-			port->rxflag = DATA_TERM;
-			port->kissTimer = 0;
-		}
-
 	}
 	if(port->port->SR & USART_SR_TXE) //TX buffer empty
 	{
-		if(port->buftxrd != port->buftxwr) //if there is anything to transmit
+		if((port->txBufferHead != port->txBufferTail) || port->txBufferFull) //if there is anything to transmit
 		{
-			port->port->DR = port->buftx[port->buftxrd++]; //push it to the refister
-			port->buftxrd %= UARTBUFLEN;
-		} else //nothing more to be transmitted
+			port->port->DR = port->txBuffer[port->txBufferTail++]; //push it to the refister
+			port->txBufferTail %= UART_BUFFER_SIZE;
+			port->txBufferFull = 0;
+		}
+		else //nothing more to be transmitted
 		{
-			port->txflag = 0; //stop transmission
 			port->port->CR1 &= ~USART_CR1_TXEIE;
 		}
 	}
 
-	if((port->kissTimer > 0) && (ticks >= port->kissTimer)) //KISS timer timeout
+	if((port->kissTimer > 0) && (SysTickGet() >= port->kissTimer)) //KISS timer timeout
 	{
 		port->kissTimer = 0;
-		port->bufrxidx = 0;
-		memset(port->bufrx, 0, UARTBUFLEN);
+		port->rxBufferHead = 0;
+		memset(port->rxBuffer, 0, sizeof(port->rxBuffer));
 	}
 }
 
 void USART1_IRQHandler(void) __attribute__ ((interrupt));
 void USART1_IRQHandler(void)
 {
-	uart_handleInterrupt(&uart1);
+	handleInterrupt(&Uart1);
 }
 
 void USART2_IRQHandler(void) __attribute__ ((interrupt));
 void USART2_IRQHandler(void)
 {
-	uart_handleInterrupt(&uart2);
+	handleInterrupt(&Uart2);
 }
 
 
-
-
-void uart_transmitStart(Uart *port)
+void UartSendByte(Uart *port, uint8_t data)
 {
-	if(port->enabled == 0)
-	{
-		port->buftxrd = port->buftxwr;
+	if(!port->enabled)
 		return;
-	}
-	port->txflag = 1;
-	port->port->CR1 |= USART_CR1_TXEIE;
-}
 
-
-void uartUSB_sendByte(uint8_t data)
-{
-	uint8_t a[1];
-	a[0] = data;
-	CDC_Transmit_FS(a, 1);
-}
-
-
-
-void uart_sendByte(Uart *port, uint8_t data)
-{
-	while(port->txflag == 1);;
-	port->buftx[port->buftxwr++] = data;
-	port->buftxwr %= (UARTBUFLEN);
-}
-
-
-void uart_sendString(Uart *port, uint8_t *data, uint16_t len)
-{
-
-	if(len == 0)
+	if(port->isUsb)
 	{
-		while(*(data + len) != 0)
-		{
-			len++;
-			if(len == UARTBUFLEN)
-				break;
-		}
+		CDC_Transmit_FS(&data, 1);
 	}
-
-	while(port->txflag == 1);;
-	uint16_t i = 0;
-	while(i < len)
+	else
 	{
-		port->buftx[port->buftxwr++] = *(data + i);
-		port->buftxwr %= (UARTBUFLEN);
-		i++;
+		while(port->txBufferFull)
+			;
+		port->txBuffer[port->txBufferHead++] = data;
+		port->txBufferHead %= UART_BUFFER_SIZE;
+		if(port->txBufferHead == port->txBufferTail)
+			port->txBufferFull = 1;
+		if(0 == (port->port->CR1 & USART_CR1_TXEIE))
+			port->port->CR1 |= USART_CR1_TXEIE;
 	}
-
 }
 
 
-void uart_sendNumber(Uart *port, int32_t n)
+void UartSendString(Uart *port, void *data, uint16_t len)
 {
-	if(n < 0) uart_sendByte(port, '-');
-	n = abs(n);
-	if(n > 999999) uart_sendByte(port, (n / 1000000) + 48);
-	if(n > 99999) uart_sendByte(port, ((n % 1000000) / 100000) + 48);
-	if(n > 9999) uart_sendByte(port, ((n % 100000) / 10000) + 48);
-	if(n > 999) uart_sendByte(port, ((n % 10000) / 1000) + 48);
-	if(n > 99) uart_sendByte(port, ((n % 1000) / 100) + 48);
-	if(n > 9) uart_sendByte(port, ((n % 100) / 10) + 48);
-	uart_sendByte(port, (n % 10) + 48);
-}
-
-
-void uartUSB_sendString(uint8_t *data, uint16_t len)
-{
-
-	if(len == 0)
-	{
+	if(0 == len)
 		len = strlen((char*)data);
-	}
-	uint16_t i = 0;
-	uint8_t j = 0;
-	uint16_t k = len;
-	//USB is quite specific and data must be send in small packets, say in 40-byte packets
-	while(i < len)
+
+	for(uint16_t i = 0; i < len; i++)
 	{
-		if((k / 40) >= 1)
-		{
-			CDC_Transmit_FS(&data[j * 40], 40);
-			j++;
-			k -= 40;
-			i += 40;
-		}
-		else
-		{
-			CDC_Transmit_FS(&data[i], len - i);
-			break;
-		}
+		UartSendByte(port, ((uint8_t*)data)[i]);
 	}
 }
 
 
-void uartUSB_sendNumber(int32_t n)
+static unsigned int findHighestPosition(unsigned int n)
+{
+    unsigned int i = 1;
+    while((i * 10) <= n)
+        i *= 10;
+
+    return i;
+}
+
+void UartSendNumber(Uart *port, int32_t n)
 {
 	if(n < 0)
-		uartUSB_sendByte('-');
+		UartSendByte(port, '-');
 	n = abs(n);
-	if(n > 999999) uartUSB_sendByte((n / 1000000) + 48);
-	if(n > 99999) uartUSB_sendByte(((n % 1000000) / 100000) + 48);
-	if(n > 9999) uartUSB_sendByte(((n % 100000) / 10000) + 48);
-	if(n > 999) uartUSB_sendByte(((n % 10000) / 1000) + 48);
-	if(n > 99) uartUSB_sendByte(((n % 1000) / 100) + 48);
-	if(n > 9) uartUSB_sendByte(((n % 100) / 10) + 48);
-	uartUSB_sendByte((n % 10) + 48);
+    unsigned int position = findHighestPosition(n);
+    while(position)
+    {
+        unsigned int number = n / position;
+        UartSendByte(port, (number + 48));
+        n -= (number * position);
+        position /= 10;
+    }
 }
 
-
-void uart_init(Uart *port, USART_TypeDef *uart, uint32_t baud)
+void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 {
 	port->port = uart;
 	port->baudrate = baud;
-	port->rxflag = DATA_NOTHING;
-	port->txflag = 0;
-	port->bufrxidx = 0;
-	port->buftxrd = 0;
-	port->buftxwr = 0;
+	port->rxType = DATA_NOTHING;
+	port->rxBufferHead = 0;
+	port->txBufferHead = 0;
+	port->txBufferTail = 0;
+	port->txBufferFull = 0;
 	port->mode = MODE_KISS;
 	port->enabled = 0;
 	port->kissTimer = 0;
-	memset(port->bufrx, 0, UARTBUFLEN);
-	memset(port->buftx, 0, UARTBUFLEN);
+	port->lastRxBufferHead = 0;
+	memset(port->rxBuffer, 0, sizeof(port->rxBuffer));
+	memset(port->txBuffer, 0, sizeof(port->txBuffer));
 }
 
 
-void uart_config(Uart *port, uint8_t state)
+void UartConfig(Uart *port, uint8_t state)
 {
 	if(port->port == USART1)
 	{
+		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
 		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 		GPIOA->CRH |= GPIO_CRH_MODE9_1;
 		GPIOA->CRH &= ~GPIO_CRH_CNF9_0;
@@ -293,9 +195,11 @@ void uart_config(Uart *port, uint8_t state)
 			NVIC_DisableIRQ(USART1_IRQn);
 
 		port->enabled = state > 0;
+		port->isUsb = 0;
 	}
 	else if(port->port == USART2)
 	{
+		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
 		RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
 		GPIOA->CRL |= GPIO_CRL_MODE2_1;
 		GPIOA->CRL &= ~GPIO_CRL_CNF2_0;
@@ -316,14 +220,29 @@ void uart_config(Uart *port, uint8_t state)
 			NVIC_DisableIRQ(USART2_IRQn);
 
 		port->enabled = state > 0;
+		port->isUsb = 0;
+	}
+	else
+	{
+		port->isUsb = 1;
+		port->enabled = state > 0;
 	}
 
 }
 
 
-void uart_clearRx(Uart *port)
+void UartClearRx(Uart *port)
 {
-	port->bufrxidx = 0;
-	port->rxflag = 0;
+	port->rxBufferHead = 0;
+	port->rxType = DATA_NOTHING;
 }
 
+void UartHandleKissTimeout(Uart *port)
+{
+	if((port->kissTimer > 0) && (SysTickGet() >= port->kissTimer)) //KISS timer timeout
+	{
+		port->kissTimer = 0;
+		port->rxBufferHead = 0;
+		memset(port->rxBuffer, 0, sizeof(port->rxBuffer));
+	}
+}

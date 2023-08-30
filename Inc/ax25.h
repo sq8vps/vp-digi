@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -18,46 +20,64 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef AX25_H_
 #define AX25_H_
 
-#define FRAMELEN (150) //single frame max length
-#define FRAMEBUFLEN (600) //circural frame buffer (multiple frames) length
-
-
-
 #include <stdint.h>
+#include <stdbool.h>
 
 
-typedef enum
+
+
+enum Ax25RxStage
 {
-	RX_STAGE_IDLE,
+	RX_STAGE_IDLE = 0,
 	RX_STAGE_FLAG,
 	RX_STAGE_FRAME,
-}  RxStage;
+};
 
-typedef struct
+struct Ax25ProtoConfig
 {
 	uint16_t txDelayLength; //TXDelay length in ms
 	uint16_t txTailLength; //TXTail length in ms
 	uint16_t quietTime; //Quiet time in ms
 	uint8_t allowNonAprs; //allow non-APRS packets
+};
 
-} Ax25_config;
+extern struct Ax25ProtoConfig Ax25Config;
 
-Ax25_config ax25Cfg;
+/**
+ * @brief Transmit one or more frames encoded in KISS format
+ * @param *buf Inout buffer
+ * @param len Buffer size
+ */
+void Ax25TxKiss(uint8_t *buf, uint16_t len);
 
+/**
+ * @brief Write frame to transmit buffer
+ * @param *data Data to transmit
+ * @param size Data size
+ * @return Pointer to internal frame handle or NULL on failure
+ * @attention This function will block if transmission is already in progress
+ */
+void *Ax25WriteTxFrame(uint8_t *data, uint16_t size);
 
-typedef struct
-{
-	uint8_t frameBuf[FRAMEBUFLEN]; //cirucal buffer for received frames, frames are separated with 0xFF
-	uint16_t frameBufWr; //cirucal RX buffer write index
-	uint16_t frameBufRd; //circural TX buffer read index
-	uint8_t frameXmit[FRAMEBUFLEN];  //TX frame buffer
-	uint16_t xmitIdx; //TX frame buffer index
-	uint16_t sLvl; //RMS of the frame
-	uint8_t frameReceived; //frame received flag, must be polled in main loop for >0. Bit 0 for frame received on decoder 1, bit 1 for decoder 2
+/**
+ * @brief Get bitmap of "frame received" flags for each decoder. A non-zero value means that a frame was received
+ * @return Bitmap of decoder that received the frame
+ */
+uint8_t Ax25GetReceivedFrameBitmap(void);
 
-} Ax25;
+/**
+ * @brief Clear bitmap of "frame received" flags
+ */
+void Ax25ClearReceivedFrameBitmap(void);
 
-Ax25 ax25;
+/**
+ * @brief Get next received frame (if available)
+ * @param **dst Pointer to internal buffer
+ * @param *size Actual frame size
+ * @param *signalLevel Frame signal level (RMS)
+ * @return True if frame was read, false if no more frames to read
+ */
+bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel);
 
 /**
  * @brief Get current RX stage
@@ -65,7 +85,7 @@ Ax25 ax25;
  * @return RX_STATE_IDLE, RX_STATE_FLAG or RX_STATE_FRAME
  * @warning Only for internal use
  */
-RxStage Ax25_getRxStage(uint8_t modemNo);
+enum Ax25RxStage Ax25GetRxStage(uint8_t modemNo);
 
 /**
  * @brief Parse incoming bit (not symbol!)
@@ -74,29 +94,29 @@ RxStage Ax25_getRxStage(uint8_t modemNo);
  * @param[in] *dem Modem state pointer
  * @warning Only for internal use
  */
-void Ax25_bitParse(uint8_t bit, uint8_t modemNo);
+void Ax25BitParse(uint8_t bit, uint8_t modemNo);
 
 /**
  * @brief Get next bit to be transmitted
  * @return Bit to be transmitted
  * @warning Only for internal use
  */
-uint8_t Ax25_getTxBit(void);
+uint8_t Ax25GetTxBit(void);
 
 /**
  * @brief Initialize transmission and start when possible
  */
-void Ax25_transmitBuffer(void);
+void Ax25TransmitBuffer(void);
 
 /**
  * @brief Start transmitting when possible
  * @attention Must be continuously polled in main loop
  */
-void Ax25_transmitCheck(void);
+void Ax25TransmitCheck(void);
 
 /**
  * @brief Initialize AX25 module
  */
-void Ax25_init(void);
+void Ax25Init(void);
 
 #endif /* AX25_H_ */

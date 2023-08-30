@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -21,9 +23,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 
-
-
-typedef struct
+struct _DigiConfig
 {
 	uint8_t alias[8][6]; //digi alias list
 	uint8_t ssid[4]; //ssid list for simple aliases
@@ -40,8 +40,7 @@ typedef struct
 	uint8_t filterPolarity : 1; //filter polarity: 0 - blacklist, 1- whitelist
 } Digi;
 
-Digi digi; //digipeater state
-
+extern struct _DigiConfig DigiConfig; //digipeater state
 
 
 /**
@@ -50,18 +49,19 @@ Digi digi; //digipeater state
  * @param[in] len Frame length
  * Decides whether the frame should be digipeated or not, processes it and pushes to TX buffer if needed
  */
-void Digi_digipeat(uint8_t *frame, uint16_t len);
+void DigiDigipeat(uint8_t *frame, uint16_t len);
 
 /**
- * @brief Store duplicate protection hash for the frame already pushed to TX buffer
- * @param[in] idx First frame byte index in TX buffer
+ * @brief Store duplicate protection hash for frame
+ * @param *buf Frame buffer
+ * @param size Frame size
  */
-void Digi_storeDeDupeFromXmitBuf(uint16_t idx);
+void DigiStoreDeDupe(uint8_t *buf, uint16_t size);
 
 /**
- * @brief Refresh viscous-delay buffers and push frames to TX buffer if neccessary
- * @attention Should be called constantly
+ * @brief Refresh viscous-delay buffers and push frames to TX buffer if necessary
+ * @attention Should be called in main loop
  */
-void Digi_viscousRefresh(void);
+void DigiViscousRefresh(void);
 
 #endif /* DIGIPEATER_H_ */

@@ -1,4 +1,6 @@
 /*
+Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -21,71 +23,33 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "drivers/uart.h"
 #include <stdint.h>
 
+/**
+ * @brief Send data to all available ports
+ * @param mode Output mode/data type
+ * @param *data Data buffer
+ * @param size Data size
+ */
+void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size);
 
-typedef enum
-{
-	TERM_ANY,
-	TERM_USB,
-	TERM_UART1,
-	TERM_UART2
-} Terminal_stream;
+/**
+ * @brief Send signed number to all available ports
+ * @param mode Output mode/data type
+ * @param n Number to send
+ */
+void TermSendNumberToAll(enum UartMode mode, int32_t n);
 
-#define TERMBUFLEN 300
 
 /**
  * @brief Handle "special" terminal cases like backspace or local echo
- * @param[in] src Source: TERM_USB, TERM_UART1, TERM_UART2
+ * @param *u UART structure
  * @attention Must be called for every received data
  */
-void term_handleSpecial(Terminal_stream src);
-
+void TermHandleSpecial(Uart *u);
 
 /**
- * \brief Send data to all available monitor outputs
- * \param[in] *data Data to send
- * \param[in] len Data length or 0 for NULL-terminated data
+ * @brief Parse and process received data
+ * @param *src UART structure
  */
-void term_sendMonitor(uint8_t *data, uint16_t len);
-
-/**
- * \brief Send number to all available monitor outputs
- * \param[in] data Number to send
- */
-void term_sendMonitorNumber(int32_t data);
-
-/**
-* \brief Send terminal buffer using specified stream
-* \param[in] way Stream: TERM_ANY, TERM_USB, TERM_UART1, TERM_UART2
-*/
-void term_sendBuf(Terminal_stream way);
-
-/**
- * \brief Push byte to terminal buffer
- * \param[in] data Byte to store
- */
-void term_sendByte(uint8_t data);
-
-/**
- * \brief Push string to terminal buffer
- * \param[in] *data String
- * \param[in] len String length or 0 for NULL-terminated string
- */
-void term_sendString(uint8_t *data, uint16_t len);
-
-/**
- * \brief Push number (in ASCII form) in terminal buffer
- * \param[in] n Number
- */
-void term_sendNumber(int32_t n);
-
-/**
- * \brief Parse and process received data
- * \param[in] *cmd Data
- * \param[in] len Data length
- * \param[in] src Source: TERM_USB, TERM_UART1, TERM_UART2
- * \param[in] type Data type: DATA_KISS, DATA_TERM
- * \param[in] mode Input mode: MODE_KISS, MODE_TERM, MODE_MONITOR
- */
-void term_parse(uint8_t *cmd, uint16_t len, Terminal_stream src, Uart_data_type type, Uart_mode mode);
+void TermParse(Uart *src);
 
 #endif /* DEBUG_H_ */
