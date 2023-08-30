@@ -26,6 +26,10 @@ enum Ax25RxStage
 	RX_STAGE_IDLE = 0,
 	RX_STAGE_FLAG,
 	RX_STAGE_FRAME,
+#ifdef ENABLE_FX25
+	RX_STAGE_FX25_TAG,
+	RX_STAGE_FX25_FRAME,
+#endif
 };
 
 struct Ax25ProtoConfig
@@ -35,6 +39,7 @@ struct Ax25ProtoConfig
 	uint16_t quietTime; //Quiet time in ms
 	uint8_t allowNonAprs : 1; //allow non-APRS packets
 	uint8_t fx25 : 1; //enable FX.25 (AX.25 + FEC)
+	uint8_t fx25Tx : 1; //enable TX in FX.25
 };
 
 extern struct Ax25ProtoConfig Ax25Config;
@@ -71,9 +76,10 @@ void Ax25ClearReceivedFrameBitmap(void);
  * @param **dst Pointer to internal buffer
  * @param *size Actual frame size
  * @param *signalLevel Frame signal level (RMS)
+ * @param *fixed Count of fixed bytes (FX.25)
  * @return True if frame was read, false if no more frames to read
  */
-bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel);
+bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel, uint8_t *fixed);
 
 /**
  * @brief Get current RX stage

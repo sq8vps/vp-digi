@@ -99,13 +99,11 @@ static void handleFrame(void)
 	uint8_t *buf;
 	uint16_t size = 0;
 	uint16_t signalLevel = 0;
+	uint8_t fixed = 0;
 
-	while(Ax25ReadNextRxFrame(&buf, &size, &signalLevel))
+	while(Ax25ReadNextRxFrame(&buf, &size, &signalLevel, &fixed))
 	{
-
 		TermSendToAll(MODE_KISS, buf, size);
-
-
 
 		if(((UartUsb.mode == MODE_MONITOR) || (Uart1.mode == MODE_MONITOR) || (Uart2.mode == MODE_MONITOR)))
 		{
@@ -127,30 +125,35 @@ static void handleFrame(void)
 				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too low! Please increase so most stations are around 50-70%.\r\n", 0);
 			}
 
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0); //show which modem received the frame: [FP] (flat and preemphasized), [FD] (flat and deemphasized - in flat audio input mode)
-																	   //[F_] (only flat), [_P] (only preemphasized) or [_D] (only deemphasized - in flat audio input mode)
-			for(uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
+			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0);
+			if(fixed == 0)
 			{
-				if(modemBitmap & (1 << i))
+				for(uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
 				{
-					enum ModemPrefilter m = ModemGetFilterType(i);
-					switch(m)
+					if(modemBitmap & (1 << i))
 					{
-						case PREFILTER_PREEMPHASIS:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"P", 1);
-							break;
-						case PREFILTER_DEEMPHASIS:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
-							break;
-						case PREFILTER_FLAT:
-						default:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
-							break;
+						enum ModemPrefilter m = ModemGetFilterType(i);
+						switch(m)
+						{
+							case PREFILTER_PREEMPHASIS:
+								TermSendToAll(MODE_MONITOR, (uint8_t*)"P", 1);
+								break;
+							case PREFILTER_DEEMPHASIS:
+								TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
+								break;
+							case PREFILTER_FLAT:
+								TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
+								break;
+							case PREFILTER_NONE:
+								TermSendToAll(MODE_MONITOR, (uint8_t*)"|", 1);
+						}
 					}
+					else
+						TermSendToAll(MODE_MONITOR, (uint8_t*)"_", 1);
 				}
-				else
-					TermSendToAll(MODE_MONITOR, (uint8_t*)"_", 1);
 			}
+			else
+				TermSendNumberToAll(MODE_MONITOR, fixed);
 
 			TermSendToAll(MODE_MONITOR, (uint8_t*)"], signal level ", 0);
 			TermSendNumberToAll(MODE_MONITOR, signalLevel);
@@ -229,6 +232,7 @@ int main(void)
 	Ax25Config.quietTime = 300;
 	Ax25Config.txDelayLength = 300;
 	Ax25Config.txTailLength = 30;
+	Ax25Config.fx25 = 0;
 	DigiConfig.dupeTime = 30;
 
 	ConfigRead();

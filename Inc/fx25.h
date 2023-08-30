@@ -4,6 +4,7 @@
 #ifdef ENABLE_FX25
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define FX25_MAX_BLOCK_SIZE 255
 
@@ -17,14 +18,38 @@ struct Fx25Mode
 extern const struct Fx25Mode Fx25ModeList[11];
 
 /**
+ * @brief Get FX.25 mode for given correlation tag
+ * @param tag FX.25 correlation tag
+ * @return FX.25 mode structure pointer or NULL if not a FX.25 tag
+ */
+const struct Fx25Mode* Fx25GetModeForTag(uint64_t tag);
+
+/**
  * @brief Get FX.25 mode for given payload size
  * @param size Payload size including flags and CRC
  * @return FX.25 mode structure pointer or NULL if standard AX.25 must be used
  */
-const struct Fx25Mode* Fx25GetMode(uint16_t size);
+const struct Fx25Mode* Fx25GetModeForSize(uint16_t size);
 
-void Fx25AddParity(uint8_t *buffer, const struct Fx25Mode *mode);
+/**
+ * @brief Encode AX.25 message in FX.25
+ * @param *buffer AX.25 message (bit-stuffed, with CRC and padding)
+ * @param *mode FX.25 mode
+ */
+void Fx25Encode(uint8_t *buffer, const struct Fx25Mode *mode);
 
+/**
+ * @brief Decode/fix FX.25 packet
+ * @param *buffer Input buffer
+ * @param *mode FX.25 mode
+ * @param *fixed Number of bytes fixed
+ * @return True if message is valid, false if uncorrectable
+ */
+bool Fx25Decode(uint8_t *buffer, const struct Fx25Mode *mode, uint8_t *fixed);
+
+/**
+ * @brief Initialize FX.25 module
+ */
 void Fx25Init(void);
 
 #endif

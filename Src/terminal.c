@@ -150,7 +150,9 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 		"digi dupe <5-255> - sets anti-dupe buffer time (s)\r\n"
 		"digi list <0-19> [set <call>/remove] - sets/clears specified callsign slot in filter list\r\n"
 		"monkiss [on/off] - send own and digipeated frames to KISS ports\r\n"
-		"nonaprs [on/off] - enable reception of non-APRS frames\r\n";
+		"nonaprs [on/off] - enable reception of non-APRS frames\r\n"
+		"fx25 [on/off] - enable FX.25 protocol (AX.25 + FEC)\r\n"
+		"fx25tx [on/off] - enable TX in FX.25 mode\r\n";
 
 
 
@@ -327,6 +329,16 @@ static void printConfig(Uart *src)
 		UartSendString(src, "Off\r\n", 0);
 	UartSendString(src, "Allow non-APRS frames: ", 0);
 	if(Ax25Config.allowNonAprs == 1)
+		UartSendString(src, "On\r\n", 0);
+	else
+		UartSendString(src, "Off\r\n", 0);
+	UartSendString(src, "FX.25 protocol: ", 0);
+	if(Ax25Config.fx25 == 1)
+		UartSendString(src, "On\r\n", 0);
+	else
+		UartSendString(src, "Off\r\n", 0);
+	UartSendString(src, "FX.25 TX: ", 0);
+	if(Ax25Config.fx25Tx == 1)
 		UartSendString(src, "On\r\n", 0);
 	else
 		UartSendString(src, "Off\r\n", 0);
@@ -999,6 +1011,24 @@ void TermParse(Uart *src)
 			Ax25Config.allowNonAprs = 1;
 		else if(!strncmp(&cmd[8], "off", 2))
 			Ax25Config.allowNonAprs = 0;
+		else
+			err = true;
+	}
+	else if(!strncmp(cmd, "fx25 ", 5))
+	{
+		if(!strncmp(&cmd[5], "on", 2))
+			Ax25Config.fx25 = 1;
+		else if(!strncmp(&cmd[5], "off", 2))
+			Ax25Config.fx25 = 0;
+		else
+			err = true;
+	}
+	else if(!strncmp(cmd, "fx25tx ", 7))
+	{
+		if(!strncmp(&cmd[7], "on", 2))
+			Ax25Config.fx25Tx = 1;
+		else if(!strncmp(&cmd[7], "off", 2))
+			Ax25Config.fx25Tx = 0;
 		else
 			err = true;
 	}

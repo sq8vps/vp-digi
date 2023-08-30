@@ -5,7 +5,10 @@
 #include <stddef.h>
 #include "rs.h"
 
+#define FX25_RS_FCR 1
+
 #define FX25_PREGENERATE_POLYS
+#define FX25_MAX_DISTANCE 10 //maximum Hamming distance when comparing tags
 
 const struct Fx25Mode Fx25ModeList[11] =
 {
@@ -22,8 +25,42 @@ const struct Fx25Mode Fx25ModeList[11] =
 	{.tag =  0x4A4ABEC4A724B796, .K = 64, .T = 64}
 };
 
-const struct Fx25Mode* Fx25GetMode(uint16_t size)
+static inline uint8_t hammingDistance(uint64_t x, uint64_t y)
 {
+	uint8_t distance = 0;
+	for(uint8_t i = 0; i < 64; i++)
+	{
+		distance += (x ^ y) & 1;
+		x >>= 1;
+		y >>= 1;
+	}
+	return distance;
+}
+
+const struct Fx25Mode* Fx25GetModeForTag(uint64_t tag)
+{
+	struct Fx25Mode *closest = NULL;
+	uint8_t closestDistance = 255;
+	for(uint8_t i = 0; i < sizeof(Fx25ModeList) / sizeof(*Fx25ModeList); i++)
+	{
+		uint8_t distance = hammingDistance(tag, Fx25ModeList[i].tag);
+		if(distance == 0)
+			return &Fx25ModeList[i];
+		else if(distance < closestDistance)
+		{
+			closest = (struct Fx25Mode*)&Fx25ModeList[i];
+			closestDistance = distance;
+		}
+	}
+	if(closestDistance <= FX25_MAX_DISTANCE)
+		return closest;
+	else
+		return NULL;
+}
+
+const struct Fx25Mode* Fx25GetModeForSize(uint16_t size)
+{
+	//use "UZ7HO Soundmodem standard" for choosing FX.25 mode
 	if(size <= 32)
 		return &Fx25ModeList[3];
 	else if(size <= 64)
@@ -41,41 +78,71 @@ const struct Fx25Mode* Fx25GetMode(uint16_t size)
 }
 
 #ifdef FX25_PREGENERATE_POLYS
-static uint8_t poly16[17], poly32[33], poly64[65];
+static struct LwFecRS rs16, rs32, rs64;
 #else
-static uint8_t poly[65];
+static struct LwFecRS rs;
 #endif
 
-void Fx25AddParity(uint8_t *buffer, const struct Fx25Mode *mode)
+void Fx25Encode(uint8_t *buffer, const struct Fx25Mode *mode)
 {
 #ifdef FX25_PREGENERATE_POLYS
-	uint8_t *poly = NULL;
+	struct LwFecRS *rs = NULL;
 	switch(mode->T)
 	{
 		case 16:
-			poly = poly16;
+			rs = &rs16;
 			break;
 		case 32:
-			poly = poly32;
+			rs = &rs32;
 			break;
 		case 64:
-			poly = poly64;
+			rs = &rs64;
 			break;
 		default:
-			poly = poly16;
+			rs = &rs16;
+			break;
 	}
+	RsEncode(rs, buffer, mode->K);
 #else
-	RsGeneratePolynomial(mode->T, poly);
+	RsInit(&rs, mode->T, FX25_RS_FCR);
+	RsEncode(&rs, buffer, mode->K);
 #endif
-	RsEncode(buffer, mode->K + mode->T, poly, mode->T);
+
+}
+
+bool Fx25Decode(uint8_t *buffer, const struct Fx25Mode *mode, uint8_t *fixed)
+{
+#ifdef FX25_PREGENERATE_POLYS
+	struct LwFecRS *rs = NULL;
+	switch(mode->T)
+	{
+		case 16:
+			rs = &rs16;
+			break;
+		case 32:
+			rs = &rs32;
+			break;
+		case 64:
+			rs = &rs64;
+			break;
+		default:
+			rs = &rs16;
+			break;
+	}
+	return RsDecode(rs, buffer, mode->K, fixed);
+#else
+	RsInit(&rs, mode->T, FX25_RS_FCR);
+	return RsDecode(&rs, buffer, mode->K, fixed);
+#endif
+
 }
 
 void Fx25Init(void)
 {
 #ifdef FX25_PREGENERATE_POLYS
-	RsGeneratePolynomial(16, poly16);
-	RsGeneratePolynomial(32, poly32);
-	RsGeneratePolynomial(64, poly64);
+	RsInit(&rs16, 16, FX25_RS_FCR);
+	RsInit(&rs32, 32, FX25_RS_FCR);
+	RsInit(&rs64, 64, FX25_RS_FCR);
 #else
 #endif
 }
