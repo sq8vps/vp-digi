@@ -25,6 +25,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <string.h>
 #include "drivers/systick.h"
+#include "digipeater.h"
 
 struct Ax25ProtoConfig Ax25Config;
 
@@ -197,7 +198,7 @@ void Ax25TxKiss(uint8_t *buf, uint16_t len)
 			if(end == len) //no frame end marker found
 				return;
 			Ax25WriteTxFrame(&buf[i + 2], end - (i + 2)); //skip modem number and send frame
-			//DigiStoreDeDupe(&buf[i + 2], end - (i + 2));
+			DigiStoreDeDupe(&buf[i + 2], end - (i + 2));
 			i = end; //move pointer to the next byte if there are more consecutive frames
 		}
 	}
