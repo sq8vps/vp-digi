@@ -25,13 +25,13 @@ const struct Fx25Mode Fx25ModeList[11] =
 	{.tag =  0x4A4ABEC4A724B796, .K = 64, .T = 64}
 };
 
-static inline uint8_t hammingDistance(uint64_t x, uint64_t y)
+static uint8_t hammingDistance(uint64_t x, uint64_t y)
 {
 	x ^= y;
 	uint8_t distance = 0;
 	for(uint8_t i = 0; i < 64; i++)
 	{
-		distance += (x & 1) > 0;
+		distance += (x & 1);
 		x >>= 1;
 	}
 	return distance;

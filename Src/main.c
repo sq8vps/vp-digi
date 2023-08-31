@@ -136,7 +136,7 @@ static void handleFrame(void)
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
 							break;
 						case PREFILTER_NONE:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"*", 1);
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"N", 1);
 					}
 				}
 				else
@@ -224,7 +224,7 @@ int main(void)
 	//set some initial values in case there is no configuration saved in memory
 	Uart1.baudrate = 9600;
 	Uart2.baudrate = 9600;
-	ModemConfig.usePWM = 0;
+	ModemConfig.usePWM = 1;
 	ModemConfig.flatAudioIn = 0;
 	Ax25Config.quietTime = 300;
 	Ax25Config.txDelayLength = 300;

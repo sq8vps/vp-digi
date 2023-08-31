@@ -70,7 +70,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define AMP_TRACKING_DECAY 0.00004f //0.00004
 
 
-#define DAC_SINE_SIZE 32 //DAC sine table size
+#define DAC_SINE_SIZE 128 //DAC sine table size
 
 
 struct ModemDemodConfig ModemConfig;
@@ -347,7 +347,7 @@ void DMA1_Channel2_IRQHandler(void)
  	if(ModemConfig.modem == MODEM_9600)
  	{
  		if(ModemConfig.usePWM)
- 			sample = scrambledSymbol ? 99 : 0;
+ 			sample = scrambledSymbol ? 256 : 1;
  		else
  			sample = scrambledSymbol ? 15 : 0;
 
@@ -367,7 +367,7 @@ void DMA1_Channel2_IRQHandler(void)
  	else
  	{
  		GPIOB->ODR &= ~0xF000; //zero 4 oldest bits
- 		GPIOB->ODR |= (sample << 12); //write sample to 4 oldest bits
+ 		GPIOB->ODR |= ((uint32_t)sample << 12); //write sample to 4 oldest bits
  	}
 
 }
@@ -434,11 +434,11 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 
 	if(sample <= dem->valley)
 	{
-		dem->valley += (((int32_t)(AMP_TRACKING_ATTACK * (float)32768) * (int32_t)(sample - dem->valley)) >> 15);
+		dem->valley -= (((int32_t)(AMP_TRACKING_ATTACK * (float)32768) * (int32_t)(dem->valley - sample)) >> 15);
 	}
 	else
 	{
-		dem->valley += (((int32_t)(AMP_TRACKING_DECAY * (float)32768) * (int32_t)(sample - dem->valley)) >> 15);
+		dem->valley -= (((int32_t)(AMP_TRACKING_DECAY * (float)32768) * (int32_t)(dem->valley - sample)) >> 15);
 	}
 
 
@@ -492,7 +492,7 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 
 	if((sample > 0) != dem->dcdLastSymbol) //tone changed
 	{
-		if(abs(dem->dcdPll) <= (uint32_t)(dem->pllStep)) //tone change occurred near zero
+		if((uint32_t)abs(dem->dcdPll) <= (uint32_t)(dem->pllStep)) //tone change occurred near zero
 			dem->dcdCounter += dem->dcdInc; //increase DCD counter
 		else //tone change occurred far from zero
 		{
@@ -943,7 +943,8 @@ void ModemInit(void)
 	for(uint8_t i = 0; i < DAC_SINE_SIZE; i++) //calculate DAC sine samples
 	{
 		if(ModemConfig.usePWM)
-			dacSine[i] = ((sinf(2.f * 3.1416f * (float)i / (float)DAC_SINE_SIZE) + 1.f) * 45.f);
+			//produce values in range 1 to 256
+			dacSine[i] = ((sinf(2.f * 3.1416f * (float)i / (float)DAC_SINE_SIZE) + 1.f) * 128.f);
 		else
 			dacSine[i] = ((7.f * sinf(2.f * 3.1416f * (float)i / (float)DAC_SINE_SIZE)) + 8.f);
 	}
@@ -957,12 +958,12 @@ void ModemInit(void)
 		 GPIOB->CRL &= ~GPIO_CRL_CNF6_0;
 
 		 //set up PWM generation
-		 TIM4->PSC = 7; //72MHz/8=9MHz
-		 TIM4->ARR = 90; //9MHz/90=100kHz
+		 TIM4->PSC = 2; //72MHz/3=24MHz
+		 TIM4->ARR = 257; //18MHz/258=93kHz
 
 		 TIM4->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
 		 TIM4->CCER |= TIM_CCER_CC1E;
-		 TIM4->CCR1 = 44; //initial duty cycle
+		 TIM4->CCR1 = 127; //initial duty cycle
 
 		 TIM4->CR1 |= TIM_CR1_CEN;
 	}

@@ -135,7 +135,6 @@ struct RxState
 #ifdef ENABLE_FX25
 	struct Fx25Mode *fx25Mode;
 	uint64_t tag; //received correlation tag
-	uint8_t tagBit;
 #endif
 };
 
@@ -537,42 +536,20 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 	rx->tag >>= 1;
 	if(bit)
 		rx->tag |= 0x8000000000000000;
-	rx->tagBit++;
 
-
-	if((rx->rx == RX_STAGE_FX25_TAG) || (rx->rx == RX_STAGE_FX25_FRAME))
+	if(Ax25Config.fx25
+			&& (rx->rx != RX_STAGE_FX25_FRAME)
+			&& (NULL != (rx->fx25Mode = (struct Fx25Mode*)Fx25GetModeForTag(rx->tag))))
 	{
-		if((rx->rx == RX_STAGE_FX25_TAG) && (rx->tagBit == 64))
-		{
-			if(Ax25Config.fx25)
-			{
-				rx->fx25Mode = (struct Fx25Mode*)Fx25GetModeForTag(rx->tag);
-				if(Ax25Config.fx25 && (rx->fx25Mode != NULL))
-				{
-					rx->rx = RX_STAGE_FX25_FRAME;
-					rx->frameIdx = 0;
-					rx->receivedBitIdx = 0;
-					rx->receivedByte = 0;
-					return;
-				}
-			}
-			rx->rx = RX_STAGE_FRAME;
-		}
+		rx->rx = RX_STAGE_FX25_FRAME;
+		rx->receivedByte = 0;
+		rx->receivedBitIdx = 0;
+		rx->frameIdx = 0;
+		return;
 	}
-	else
+
+	if(rx->rx != RX_STAGE_FX25_FRAME)
 	{
-			if(rx->rawData != 0x7E)
-			{
-				if(Ax25Config.fx25)
-				{
-					if((rx->rx == RX_STAGE_FLAG) && (rx->tagBit == 8))
-						rx->rx = RX_STAGE_FX25_TAG;
-				}
-				else
-					rx->rx = RX_STAGE_FRAME;
-			}
-			else
-				rx->tagBit = 0;
 #endif
 
 		if(rx->rawData == 0x7E) //HDLC flag received
@@ -638,12 +615,14 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 			rx->frameIdx = 0;
 			return;
 		}
+		else
+			rx->rx = RX_STAGE_FRAME;
 
 #ifdef ENABLE_FX25
 	}
 
 
-	if((rx->rx != RX_STAGE_FX25_FRAME) && (rx->rx != RX_STAGE_FX25_TAG))
+	if(rx->rx != RX_STAGE_FX25_FRAME)
 	{
 #else
 	{
@@ -689,8 +668,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 					h->corrected = AX25_NOT_FX25;
 				lastCrc = crc;
 			}
-			rx->rx = RX_STAGE_FX25_TAG;
-			rx->tagBit = 0;
+			rx->rx = RX_STAGE_FLAG;
 			rx->receivedByte = 0;
 			rx->receivedBitIdx = 0;
 			rx->frameIdx = 0;
