@@ -32,27 +32,23 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
  * DCD_MAXPULSE and DCD_THRES difference sets the DCD "inertia" so that the DCD state won't change rapidly when a valid signal is present
  * DCD_DEC is the DCD pulse counter decrementation value when symbol changes too far from PLL counter zero
  * DCD_INC is the DCD pulse counter incrementation value when symbol changes near the PLL counter zero
- * DCD_PLLTUNE is the DCD timing coefficient when symbol changes, pll_counter = pll_counter * DCD_PLLTUNE
- * The DCD mechanism is described in afsk_demod().
+ * The DCD mechanism is described in demodulate().
  * All values were selected by trial and error
  */
 #define DCD1200_MAXPULSE 100
 #define DCD1200_THRES 30
-#define DCD1200_DEC 1
-#define DCD1200_INC 7
-#define DCD1200_PLLTUNE 0
+#define DCD1200_DEC 2
+#define DCD1200_INC 1
 
-#define DCD9600_MAXPULSE 200
-#define DCD9600_THRES 80
-#define DCD9600_DEC 3
-#define DCD9600_INC 6
-#define DCD9600_PLLTUNE 0
+#define DCD9600_MAXPULSE 70
+#define DCD9600_THRES 50
+#define DCD9600_DEC 5
+#define DCD9600_INC 1
 
-#define DCD300_MAXPULSE 50
-#define DCD300_THRES 6
-#define DCD300_DEC 1
+#define DCD300_MAXPULSE 140
+#define DCD300_THRES 120
+#define DCD300_DEC 3
 #define DCD300_INC 5
-#define DCD300_PLLTUNE 0
 
 #define N1200 8 //samples per symbol @ fs=9600, oversampling = 38400 Hz
 #define N9600 4 //fs=38400, oversampling = 153600 Hz
@@ -84,7 +80,7 @@ static enum ModemTxTestMode txTestState; //current TX test mode
 static uint8_t demodCount; //actual number of parallel demodulators
 static uint16_t dacSine[DAC_SINE_SIZE]; //sine samples for DAC
 static uint8_t dacSineIdx; //current sine sample index
-static uint16_t samples[4]; //very raw received samples, filled directly by DMA
+static volatile uint16_t samples[4]; //very raw received samples, filled directly by DMA
 static uint8_t currentSymbol; //current symbol for NRZI encoding
 static uint8_t scrambledSymbol; //current symbol after scrambling
 static float markFreq; //mark frequency
@@ -198,12 +194,11 @@ struct DemodState
 
 	int32_t dcdPll; //DCD PLL main counter
 	uint8_t dcdLastSymbol; //last symbol for DCD
-	uint8_t dcdCounter; //DCD "pulse" counter (incremented when RX signal is correct)
-	int32_t dcdMax;
-	int32_t dcdThres;
-	int32_t dcdInc;
-	int32_t dcdDec;
-	float dcdAdjust;
+	uint16_t dcdCounter; //DCD "pulse" counter (incremented when RX signal is correct)
+	uint16_t dcdMax;
+	uint16_t dcdThres;
+	uint16_t dcdInc;
+	uint16_t dcdDec;
 
 	int16_t peak;
 	int16_t valley;
@@ -314,7 +309,7 @@ void DMA1_Channel2_IRQHandler(void)
 	 	DMA1->IFCR |= DMA_IFCR_CTCIF2;
 
 		//each sample is 12 bits, output sample is 13 bits
-		int16_t sample = ((samples[0] + samples[1] + samples[2] + samples[3]) >> 1) - 4095; //calculate input sample (decimation)
+		int32_t sample = ((samples[0] + samples[1] + samples[2] + samples[3]) >> 1) - 4095; //calculate input sample (decimation)
 
 		bool partialDcd = false;
 
@@ -352,21 +347,17 @@ void DMA1_Channel2_IRQHandler(void)
  	if(ModemConfig.modem == MODEM_9600)
  	{
  		if(ModemConfig.usePWM)
- 			sample = scrambledSymbol ? 89 : 0;
+ 			sample = scrambledSymbol ? 99 : 0;
  		else
  			sample = scrambledSymbol ? 15 : 0;
 
  		sample = filter(&demodState[0].lpf, sample);
- 		if(sample < 0)
- 			sample = 0;
- 		else if(sample > 15)
- 			sample = 15;
  	}
  	else
  	{
  		sample = dacSine[dacSineIdx];
  		dacSineIdx++;
- 		dacSineIdx &= (DAC_SINE_SIZE - 1);
+ 		dacSineIdx %= DAC_SINE_SIZE;
  	}
 
  	if(ModemConfig.usePWM)
@@ -379,17 +370,6 @@ void DMA1_Channel2_IRQHandler(void)
  		GPIOB->ODR |= (sample << 12); //write sample to 4 oldest bits
  	}
 
-}
-
-void txBit()
-{
-	if(Ax25GetTxBit() == 0) //get next bit and check if it's 0
-	{
-		currentSymbol ^= 1; //change symbol - NRZI encoding
-	}
-	//if 1, no symbol change
-
-	scrambledSymbol = scramble(currentSymbol);
 }
 
 
@@ -411,10 +391,13 @@ void txBit()
  	}
  	else //transmit test mode
  	{
+ 		if(ModemConfig.modem == MODEM_9600)
+ 		{
+ 			scrambledSymbol ^= 1;
+ 			return;
+ 		}
  		currentSymbol ^= 1; //change symbol
  	}
-
- 	TIM1->CNT = 0;
 
  	if(ModemConfig.modem == MODEM_9600)
  	{
@@ -422,6 +405,7 @@ void txBit()
  	}
  	else
  	{
+ 	 	TIM1->CNT = 0;
  		if(currentSymbol) //current symbol is space
  			TIM1->ARR = spaceStep;
  		else //mark
@@ -503,18 +487,19 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 	//when configured properly, it's generally immune to noise, as the detected tone changes much faster than 1200 baud
 	//it's also important to set some maximum value for DCD counter, otherwise the DCD is "sticky"
 
-	dem->dcdPll = (signed)((unsigned)(dem->dcdPll) + (unsigned)(dem->pllStep)); //keep PLL ticking at the frequency equal to baudrate
+
+	dem->dcdPll = (int32_t)((uint32_t)(dem->dcdPll) + (uint32_t)(dem->pllStep)); //keep PLL ticking at the frequency equal to baudrate
 
 	if((sample > 0) != dem->dcdLastSymbol) //tone changed
 	{
-		if(abs(dem->dcdPll) < dem->pllStep) //tone change occurred near zero
+		if(abs(dem->dcdPll) <= (uint32_t)(dem->pllStep)) //tone change occurred near zero
 			dem->dcdCounter += dem->dcdInc; //increase DCD counter
 		else //tone change occurred far from zero
 		{
 			if(dem->dcdCounter >= dem->dcdDec) //avoid overflow
 				dem->dcdCounter -= dem->dcdDec; //decrease DCD counter
 		}
-		dem->dcdPll = (int)(dem->dcdPll * dem->dcdAdjust); //adjust PLL
+		dem->dcdPll = 0;
 	}
 
 	dem->dcdLastSymbol = sample > 0; //store last symbol for symbol change detection
@@ -544,7 +529,7 @@ static void decode(uint8_t symbol, uint8_t demod)
 	//Current symbol is sampled at PLL counter overflow, so symbol transition should occur at PLL counter zero
 	int32_t previous = dem->pll; //store last clock state
 
-	dem->pll = (signed)((unsigned)(dem->pll) + (unsigned)(dem->pllStep)); //keep PLL running
+	dem->pll = (int32_t)((uint32_t)(dem->pll) + (uint32_t)(dem->pllStep)); //keep PLL running
 
 	dem->rawSymbols <<= 1; //store received unsynchronized symbol
 	dem->rawSymbols |= (symbol & 1);
@@ -606,6 +591,15 @@ void ModemTxTestStart(enum ModemTxTestMode type)
 	 NVIC_DisableIRQ(DMA1_Channel2_IRQn); //disable RX DMA interrupt
 	 NVIC_EnableIRQ(TIM1_UP_IRQn); //enable DAC interrupt
 
+	 if(ModemConfig.modem == MODEM_9600)
+	 {
+		TIM1->ARR = 103;
+		//enable baudrate generator
+		TIM3->CR1 = TIM_CR1_CEN; //enable timer
+		NVIC_EnableIRQ(TIM3_IRQn); //enable interrupt in NVIC
+		return;
+	 }
+
 	 if(type == TEST_MARK)
 	 {
 	 	TIM1->ARR = markStep;
@@ -642,6 +636,8 @@ void ModemTxTestStop(void)
 void ModemTransmitStart(void)
 {
 	 setPtt(1); //PTT on
+	 if(ModemConfig.modem == MODEM_9600)
+		 TIM1->ARR = 103;
 
 	 TIM3->CR1 = TIM_CR1_CEN;
 	 TIM1->CR1 = TIM_CR1_CEN;
@@ -813,7 +809,6 @@ void ModemInit(void)
 		demodState[0].dcdThres = DCD1200_THRES;
 		demodState[0].dcdInc = DCD1200_INC;
 		demodState[0].dcdDec = DCD1200_DEC;
-		demodState[0].dcdAdjust = DCD1200_PLLTUNE;
 
 		demodState[1].pllStep = PLL1200_STEP;
 		demodState[1].pllLockedAdjust = PLL1200_LOCKED_TUNE;
@@ -822,7 +817,6 @@ void ModemInit(void)
 		demodState[1].dcdThres = DCD1200_THRES;
 		demodState[1].dcdInc = DCD1200_INC;
 		demodState[1].dcdDec = DCD1200_DEC;
-		demodState[1].dcdAdjust = DCD1200_PLLTUNE;
 
 		demodState[1].prefilter = PREFILTER_NONE;
 		demodState[1].lpf.coeffs = (int16_t*)lpf1200;
@@ -895,7 +889,6 @@ void ModemInit(void)
 		demodState[0].dcdThres = DCD300_THRES;
 		demodState[0].dcdInc = DCD300_INC;
 		demodState[0].dcdDec = DCD300_DEC;
-		demodState[0].dcdAdjust = DCD300_PLLTUNE;
 
 		demodState[0].prefilter = PREFILTER_FLAT;
 		demodState[0].bpf.coeffs = (int16_t*)bpf300;
@@ -920,7 +913,6 @@ void ModemInit(void)
 		demodState[0].dcdThres = DCD9600_THRES;
 		demodState[0].dcdInc = DCD9600_INC;
 		demodState[0].dcdDec = DCD9600_DEC;
-		demodState[0].dcdAdjust = DCD9600_PLLTUNE;
 
 		demodState[0].prefilter = PREFILTER_NONE;
 		//this filter will be used for RX and TX

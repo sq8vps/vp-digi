@@ -198,7 +198,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     }
     else //normal mode
     {
-    	if(sizeof(buf) < (len + 7))
+    	if((uint32_t)sizeof(buf) < (len + 7))
     		return;
     	buffer = buf;
     }
@@ -218,7 +218,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     	{
     		if(elStart != 14)
     			return; //this is not the very first path element, frame not received directly
-    		if((alias >= 0) && (alias <= 3) && (ssid != n))
+    		if((alias <= 3) && (ssid != n))
     			return; //n-N type alias, but n is not equal to N, frame not received directly
     	}
     }

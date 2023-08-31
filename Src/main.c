@@ -136,7 +136,7 @@ static void handleFrame(void)
 							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
 							break;
 						case PREFILTER_NONE:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"|", 1);
+							TermSendToAll(MODE_MONITOR, (uint8_t*)"*", 1);
 					}
 				}
 				else

@@ -139,7 +139,7 @@ struct RxState
 #endif
 };
 
-static volatile struct RxState rxState[MODEM_MAX_DEMODULATOR_COUNT];
+static struct RxState rxState[MODEM_MAX_DEMODULATOR_COUNT];
 
 static uint16_t lastCrc = 0; //CRC of the last received frame. If not 0, a frame was successfully received
 static uint16_t rxMultiplexDelay = 0; //simple delay for decoder multiplexer to avoid receiving the same frame twice
@@ -495,9 +495,7 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, int8_t *peak, int8_t *va
 	*valley = rxFrame[rxFrameTail].valley;
 	*level = rxFrame[rxFrameTail].level;
 	*size = rxFrame[rxFrameTail].size;
-#ifdef ENABLE_FX25
 	*corrected = rxFrame[rxFrameTail].corrected;
-#endif
 
 	rxFrameBufferFull = false;
 
@@ -526,10 +524,6 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 				frameReceived |= ((rxState[i].frameReceived > 0) << i);
 				rxState[i].frameReceived = 0;
 			}
-
-			rxFrameTail++;
-			rxFrameTail %= FRAME_MAX_COUNT;
-			rxFrameBufferFull = false;
 		}
 
 	}
@@ -652,19 +646,12 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 	if((rx->rx != RX_STAGE_FX25_FRAME) && (rx->rx != RX_STAGE_FX25_TAG))
 	{
 #else
-<<<<<<< HEAD
-	{
-		//this condition must not be checked when FX.25 is enabled
-		//because FX.25 parity bytes and tags contain >= 7 consecutive ones
-		if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error (sometimes called "escape byte")
-=======
 	{
 		//this condition must not be checked when FX.25 is enabled
 		//because FX.25 parity bytes and tags contain >= 7 consecutive ones
 		if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error (sometimes called "escape byte")
 		{
 			rx->rx = RX_STAGE_FLAG;
-			ModemClearRMS(modem);
 			rx->receivedByte = 0;
 			rx->receivedBitIdx = 0;
 			rx->frameIdx = 0;
@@ -686,26 +673,21 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 		if((rx->fx25Mode != NULL) && (rx->frameIdx == (rx->fx25Mode->K + rx->fx25Mode->T)))
 		{
 			uint8_t fixed = 0;
-			if(Fx25Decode(rx->frame, rx->fx25Mode, &fixed))
+			bool fecSuccess = Fx25Decode(rx->frame, rx->fx25Mode, &fixed);
+			uint16_t crc;
+			struct FrameHandle *h = parseFx25Frame(rx->frame, rx->frameIdx, &crc);
+			if(h != NULL)
 			{
-				uint16_t crc;
-				struct FrameHandle *h = parseFx25Frame(rx->frame, rx->frameIdx, &crc);
-				if(h != NULL)
+				rx->frameReceived = 1;
+				ModemGetSignalLevel(modem, &h->peak, &h->valley, &h->level);
+				if(fecSuccess)
 				{
-					rx->frameReceived = 1;
-					ModemGetSignalLevel(modem, &h->peak, &h->valley, &h->level);
 					h->corrected = fixed;
-					//FX.25 (RS) decoding is not reentrant/interrupt safe
-					//use only one modem when FX.25 is enabled
-					// if(crc != lastCrc)
-					// {
-//						h->signalLevel = ModemGetRMS(modem);
-						h->fx25Mode = rx->fx25Mode;
-						lastCrc = crc;
-					// }
-					// else
-					// 	removeLastFrameFromRxBuffer();
+					h->fx25Mode = rx->fx25Mode;
 				}
+				else
+					h->corrected = AX25_NOT_FX25;
+				lastCrc = crc;
 			}
 			rx->rx = RX_STAGE_FX25_TAG;
 			rx->tagBit = 0;

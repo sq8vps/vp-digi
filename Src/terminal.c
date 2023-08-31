@@ -392,8 +392,8 @@ void TermParse(Uart *src)
 	{
 		UartSendString(src, (uint8_t*)"Switched to configuration mode\r\n"
 				"Some settings require the device to be rebooted\r\n"
-				"in order to behave correctly"
-				"Always use \"save\" to save and reboot", 0);
+				"in order to behave correctly\r\n"
+				"Always use \"save\" to save and reboot\r\n", 0);
 		src->mode = MODE_TERM;
 		return;
 	}
@@ -602,10 +602,10 @@ void TermParse(Uart *src)
 	 */
 	else if(!strncmp(cmd, "modem", 5))
 	{
-		if(!strncmp(&cmd[6], "1200", 4))
-			ModemConfig.modem = MODEM_1200;
-		else if(!strncmp(&cmd[6], "1200_V23", 8))
+		if(!strncmp(&cmd[6], "1200_V23", 8))
 			ModemConfig.modem = MODEM_1200_V23;
+		else if(!strncmp(&cmd[6], "1200", 4))
+			ModemConfig.modem = MODEM_1200;
 		else if(!strncmp(&cmd[6], "300", 3))
 			ModemConfig.modem = MODEM_300;
 		else if(!strncmp(&cmd[6], "9600", 4))
