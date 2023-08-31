@@ -1,3 +1,12 @@
+# 1.3.2 (2023-08-31)
+## New features
+* none
+## Bug fixes
+* Duplicate protection was not working properly
+## Other
+* none
+## Known bugs
+* none
 # 1.3.1 (2023-08-30)
 ## New features
 * none
