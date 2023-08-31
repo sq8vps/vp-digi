@@ -324,7 +324,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
 
     //calculate frame "hash"
     uint32_t hash = Crc32(CRC32_INIT, frame, 14); //use destination and source address, skip path
-    hash = Crc32(hash, &frame[t + 1], len - t); //continue through all remaining data
+    hash = Crc32(hash, &frame[t + 1], len - t - 1); //continue through all remaining data
 
     if(DigiConfig.viscous) //viscous-delay enabled on any slot
     {
@@ -463,7 +463,7 @@ void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
     deDupeCount %= DEDUPE_SIZE;
 
     deDupe[deDupeCount].hash = hash;
-    deDupe[deDupeCount].timeLimit = SysTickGet() + (DigiConfig.dupeTime * 10 / SYSTICK_INTERVAL);
+    deDupe[deDupeCount].timeLimit = SysTickGet() + (DigiConfig.dupeTime * 1000 / SYSTICK_INTERVAL);
 
     deDupeCount++;
 }
