@@ -768,7 +768,7 @@ void ModemInit(void)
 	 TIM1->DIER |= TIM_DIER_UIE;
 
 	 //baudrate timer
-	 TIM3->PSC = 71; //72/72=1 MHz
+	 TIM3->PSC = 3; //72/9=18 MHz
 	 TIM3->DIER |= TIM_DIER_UIE;
 
 	 if(ModemConfig.modem > MODEM_9600)
@@ -927,7 +927,7 @@ void ModemInit(void)
 
 	markStep = 4000000 / (DAC_SINE_SIZE * markFreq) - 1;
 	spaceStep = 4000000 / (DAC_SINE_SIZE * spaceFreq) - 1;
-	baudRateStep = 1000000 / baudRate - 1;
+	baudRateStep = 18000000 / baudRate - 1;
 
 
 	TIM3->ARR = baudRateStep;

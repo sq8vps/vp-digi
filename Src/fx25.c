@@ -25,23 +25,13 @@ const struct Fx25Mode Fx25ModeList[11] =
 	{.tag =  0x4A4ABEC4A724B796, .K = 64, .T = 64}
 };
 
-static uint8_t hammingDistance(uint64_t x, uint64_t y)
-{
-	x ^= y;
-	uint8_t distance = 0;
-	for(uint8_t i = 0; i < 64; i++)
-	{
-		distance += (x & 1);
-		x >>= 1;
-	}
-	return distance;
-}
+
 
 const struct Fx25Mode* Fx25GetModeForTag(uint64_t tag)
 {
 	for(uint8_t i = 0; i < sizeof(Fx25ModeList) / sizeof(*Fx25ModeList); i++)
 	{
-		if(hammingDistance(tag, Fx25ModeList[i].tag) <= FX25_MAX_DISTANCE)
+		if(__builtin_popcountll(tag ^ Fx25ModeList[i].tag) <= FX25_MAX_DISTANCE)
 			return &Fx25ModeList[i];
 	}
 	return NULL;
