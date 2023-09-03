@@ -154,9 +154,10 @@ void Ax25TxKiss(uint8_t *buf, uint16_t len)
 	}
 	for(uint16_t i = 0; i < len; i++)
 	{
-		if(buf[i] == 0xC0) //frame start marker
+		if((buf[i] == 0xC0) && ((buf[i + 1] & 0xF) == 0)) //frame start marker and type is data frame
 		{
-			uint16_t end = i + 1;
+			i += 2; //skip 0xC0 and type
+			uint16_t end = i;
 			while(end < len)
 			{
 				if(buf[end] == 0xC0)
@@ -165,8 +166,38 @@ void Ax25TxKiss(uint8_t *buf, uint16_t len)
 			}
 			if(end == len) //no frame end marker found
 				return;
-			Ax25WriteTxFrame(&buf[i + 2], end - (i + 2)); //skip modem number and send frame
-			DigiStoreDeDupe(&buf[i + 2], end - (i + 2));
+
+			uint16_t modifiedEnd = end;
+
+			for(uint16_t j = i; j < modifiedEnd; j++)
+			{
+				if(buf[j] == 0xDB) //escape character
+				{
+					if(buf[j + 1] == 0xDC) //transposed frame end
+					{
+						buf[j] = 0xC0;
+					}
+					else if(buf[j + 1] == 0xDD) //transposed frame escape
+					{
+						buf[j] = 0xDB;
+					}
+					else
+					{
+						j++;
+						continue;
+					}
+
+					j++;
+					modifiedEnd--;
+					for(uint16_t k = j; k < modifiedEnd; k++)
+					{
+						buf[k] = buf[k + 1];
+					}
+				}
+			}
+
+			Ax25WriteTxFrame(&buf[i], modifiedEnd - i); //skip modem number and send frame
+			DigiStoreDeDupe(&buf[i], modifiedEnd - i);
 			i = end; //move pointer to the next byte if there are more consecutive frames
 		}
 	}

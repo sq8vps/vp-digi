@@ -62,12 +62,26 @@ void TermHandleSpecial(Uart *u)
 
 static void sendKiss(Uart *port, uint8_t *buf, uint16_t len)
 {
-	if(port->mode == MODE_KISS) //check if KISS mode
+	if(port->mode == MODE_KISS)
 	{
-		UartSendByte(port, 0xc0); //send data in kiss format
+		UartSendByte(port, 0xC0);
 		UartSendByte(port, 0x00);
-		UartSendString(port, buf, len);
-		UartSendByte(port, 0xc0);
+		for(uint16_t i = 0; i < len; i++)
+		{
+			if(buf[i] == 0xC0) //frame end in data
+			{
+				UartSendByte(port, 0xDB); //frame escape
+				UartSendByte(port, 0xDC); //transposed frame end
+			}
+			else if(buf[i] == 0xDB) //frame escape in data
+			{
+				UartSendByte(port, 0xDB); //frame escape
+				UartSendByte(port, 0xDD); //transposed frame escape
+			}
+			else
+				UartSendByte(port, buf[i]);
+		}
+		UartSendByte(port, 0xC0);
 	}
 }
 
