@@ -32,7 +32,7 @@ struct _GeneralConfig GeneralConfig =
 		.kissMonitor = 0,
 };
 
-const char versionString[] = "VP-Digi v. 1.3.2\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
+const char versionString[] = "VP-Digi v. 1.3.3\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n";
 
 static uint64_t pow10i(uint16_t exp)
 {
@@ -146,11 +146,16 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 
     }
 
-    UartSendByte(uart, ':'); //separator
+	UartSendByte(uart, ':'); //separator
 
-    nextPathEl += 2; //skip Control and PID
+    if((from[nextPathEl] & 0b11101111) == 0b00000011) //check if UI packet
+    {
+		nextPathEl += 2; //skip Control and PID
 
-    UartSendString(uart, &(from[nextPathEl]), len - nextPathEl); //send information field
+		UartSendString(uart, &(from[nextPathEl]), len - nextPathEl); //send information field
+    }
+    else
+    	UartSendString(uart, "<not UI packet>", 0);
 
     UartSendByte(uart, 0); //terminate with NULL
 }

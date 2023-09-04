@@ -290,7 +290,6 @@ int main(void)
 		  TermParse(&Uart2);
 		  UartClearRx(&Uart2);
 	  }
-	  UartHandleKissTimeout(&UartUsb);
 
 	  BeaconCheck(); //check beacons
 

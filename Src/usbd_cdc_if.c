@@ -26,6 +26,7 @@
 #include "drivers/uart.h"
 #include "drivers/systick.h"
 #include "terminal.h"
+#include "kiss.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -274,6 +275,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 	for(uint16_t i = 0; i < *Len; i++)
 	{
 		UartUsb.rxBuffer[UartUsb.rxBufferHead++] = Buf[i];
+		KissParse(&UartUsb, Buf[i]);
 		UartUsb.rxBufferHead %= UART_BUFFER_SIZE;
 	}
 
@@ -322,20 +324,11 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
 static void handleUsbInterrupt(Uart *port)
 {
-	if(port->mode == MODE_KISS)
-		port->kissTimer = SysTickGet() + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
-
 	if(port->rxBufferHead != 0)
 	{
-		if((port->rxBuffer[0] == 0xC0) && (port->rxBuffer[port->rxBufferHead - 1] == 0xC0)) //data starts with 0xc0 and ends with 0xc0 - this is a KISS frame
-		{
-			port->rxType = DATA_KISS;
-			port->kissTimer = 0;
-		}
-		else if(((port->rxBuffer[port->rxBufferHead - 1] == '\r') || (port->rxBuffer[port->rxBufferHead - 1] == '\n'))) //data ends with \r or \n, process as data
+		if(((port->rxBuffer[port->rxBufferHead - 1] == '\r') || (port->rxBuffer[port->rxBufferHead - 1] == '\n'))) //data ends with \r or \n, process as data
 		{
 			port->rxType = DATA_TERM;
-			port->kissTimer = 0;
 		}
 	}
 }

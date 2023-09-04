@@ -52,8 +52,7 @@ static struct DeDupeData deDupe[DEDUPE_SIZE]; //duplicate protection hash buffer
 static uint8_t deDupeCount = 0; //duplicate protection buffer index
 
 
-#define DIGI_BUFFER_SIZE 308 //308 is the theoretical max under some assumptions, see ax25.c
-static uint8_t buf[DIGI_BUFFER_SIZE];
+static uint8_t buf[AX25_FRAME_MAX_SIZE];
 
 /**
  * @brief Check if frame with specified hash is already in viscous-delay buffer and delete it if so
