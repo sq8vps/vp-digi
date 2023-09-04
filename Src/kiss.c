@@ -51,7 +51,7 @@ void KissParse(Uart *port, uint8_t data)
 {
 	if(data == 0xC0) //frame end marker
 	{
-		if(port->kissBufferHead < 17) //command+source+destination+PID+Control=17
+		if(port->kissBufferHead < 16) //command+source+destination+Control=16
 		{
 			port->kissBufferHead = 0;
 			return;

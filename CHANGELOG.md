@@ -3,6 +3,7 @@
 * none
 ## Bug fixes
 * RX buffer pointers bug fix
+* AX.25 to TNC2 converter bug with non-UI frames
 ## Other
 * New KISS handling method to support long and multiple frames
 ## Known bugs
