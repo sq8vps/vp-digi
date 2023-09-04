@@ -23,7 +23,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include <stdbool.h>
 
-
+#define AX25_FRAME_MAX_SIZE (308) //single frame max length for RX
+//308 bytes is the theoretical max size assuming 2-byte Control, 256-byte info field and 5 digi address fields
 
 
 enum Ax25RxStage
@@ -43,12 +44,6 @@ struct Ax25ProtoConfig
 
 extern struct Ax25ProtoConfig Ax25Config;
 
-/**
- * @brief Transmit one or more frames encoded in KISS format
- * @param *buf Inout buffer
- * @param len Buffer size
- */
-void Ax25TxKiss(uint8_t *buf, uint16_t len);
 
 /**
  * @brief Write frame to transmit buffer

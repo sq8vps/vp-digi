@@ -27,11 +27,9 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 struct Ax25ProtoConfig Ax25Config;
 
-//values below must be kept consistent so that FRAME_BUFFER_SIZE >= FRAME_MAX_SIZE * FRAME_MAX_COUNT
-#define FRAME_MAX_SIZE (308) //single frame max length for RX
-//308 bytes is the theoretical max size assuming 2-byte Control, 256-byte info field and 5 digi address fields
+
 #define FRAME_MAX_COUNT (10) //max count of frames in buffer
-#define FRAME_BUFFER_SIZE (FRAME_MAX_COUNT * FRAME_MAX_SIZE) //circular frame buffer length
+#define FRAME_BUFFER_SIZE (FRAME_MAX_COUNT * AX25_FRAME_MAX_SIZE) //circular frame buffer length
 
 #define STATIC_HEADER_FLAG_COUNT 4 //number of flags sent before each frame
 #define STATIC_FOOTER_FLAG_COUNT 8 //number of flags sent after each frame
@@ -98,7 +96,7 @@ static enum TxStage txStage; //current TX stage
 struct RxState
 {
 	uint16_t crc; //current CRC
-	uint8_t frame[FRAME_MAX_SIZE]; //raw frame buffer
+	uint8_t frame[AX25_FRAME_MAX_SIZE]; //raw frame buffer
 	uint16_t frameIdx; //index for raw frame buffer
 	uint8_t receivedByte; //byte being currently received
 	uint8_t receivedBitIdx; //bit index for recByte
@@ -115,7 +113,7 @@ static uint16_t rxMultiplexDelay = 0; //simple delay for decoder multiplexer to 
 static uint16_t txDelay; //number of TXDelay bytes to send
 static uint16_t txTail; //number of TXTail bytes to send
 
-static uint8_t outputFrameBuffer[FRAME_MAX_SIZE];
+static uint8_t outputFrameBuffer[AX25_FRAME_MAX_SIZE];
 
 #define GET_FREE_SIZE(max, head, tail) (((head) < (tail)) ? ((tail) - (head)) : ((max) - (head) + (tail)))
 #define GET_USED_SIZE(max, head, tail) (max - GET_FREE_SIZE(max, head, tail))
@@ -146,62 +144,6 @@ void Ax25ClearReceivedFrameBitmap(void)
 	frameReceived = 0;
 }
 
-void Ax25TxKiss(uint8_t *buf, uint16_t len)
-{
-	if(len < 18) //frame is too small
-	{
-		return;
-	}
-	for(uint16_t i = 0; i < len; i++)
-	{
-		if((buf[i] == 0xC0) && ((buf[i + 1] & 0xF) == 0)) //frame start marker and type is data frame
-		{
-			i += 2; //skip 0xC0 and type
-			uint16_t end = i;
-			while(end < len)
-			{
-				if(buf[end] == 0xC0)
-					break;
-				end++;
-			}
-			if(end == len) //no frame end marker found
-				return;
-
-			uint16_t modifiedEnd = end;
-
-			for(uint16_t j = i; j < modifiedEnd; j++)
-			{
-				if(buf[j] == 0xDB) //escape character
-				{
-					if(buf[j + 1] == 0xDC) //transposed frame end
-					{
-						buf[j] = 0xC0;
-					}
-					else if(buf[j + 1] == 0xDD) //transposed frame escape
-					{
-						buf[j] = 0xDB;
-					}
-					else
-					{
-						j++;
-						continue;
-					}
-
-					j++;
-					modifiedEnd--;
-					for(uint16_t k = j; k < modifiedEnd; k++)
-					{
-						buf[k] = buf[k + 1];
-					}
-				}
-			}
-
-			Ax25WriteTxFrame(&buf[i], modifiedEnd - i); //skip modem number and send frame
-			DigiStoreDeDupe(&buf[i], modifiedEnd - i);
-			i = end; //move pointer to the next byte if there are more consecutive frames
-		}
-	}
-}
 
 void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
 {
@@ -340,7 +282,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 	}
 
 
-	if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error (sometimes called "escape byte")
+	if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error
 	{
 		rx->rx = RX_STAGE_FLAG;
 		ModemClearRMS(modem);
@@ -365,7 +307,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 
 	if(++rx->receivedBitIdx >= 8) //received full byte
 	{
-		if(rx->frameIdx > FRAME_MAX_SIZE) //frame is too long
+		if(rx->frameIdx > AX25_FRAME_MAX_SIZE) //frame is too long
 		{
 			rx->rx = RX_STAGE_IDLE;
 			ModemClearRMS(modem);

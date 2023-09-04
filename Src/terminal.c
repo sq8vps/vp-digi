@@ -25,6 +25,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "drivers/modem.h"
 #include "ax25.h"
 #include "drivers/systick.h"
+#include "kiss.h"
 
 void TermHandleSpecial(Uart *u)
 {
@@ -60,38 +61,13 @@ void TermHandleSpecial(Uart *u)
 }
 
 
-static void sendKiss(Uart *port, uint8_t *buf, uint16_t len)
-{
-	if(port->mode == MODE_KISS)
-	{
-		UartSendByte(port, 0xC0);
-		UartSendByte(port, 0x00);
-		for(uint16_t i = 0; i < len; i++)
-		{
-			if(buf[i] == 0xC0) //frame end in data
-			{
-				UartSendByte(port, 0xDB); //frame escape
-				UartSendByte(port, 0xDC); //transposed frame end
-			}
-			else if(buf[i] == 0xDB) //frame escape in data
-			{
-				UartSendByte(port, 0xDB); //frame escape
-				UartSendByte(port, 0xDD); //transposed frame escape
-			}
-			else
-				UartSendByte(port, buf[i]);
-		}
-		UartSendByte(port, 0xC0);
-	}
-}
-
 void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size)
 {
 	if(MODE_KISS == mode)
 	{
-		sendKiss(&Uart1, data, size);
-		sendKiss(&Uart2, data, size);
-		sendKiss(&UartUsb, data, size);
+		KissSend(&Uart1, data, size);
+		KissSend(&Uart2, data, size);
+		KissSend(&UartUsb, data, size);
 	}
 	else if(MODE_MONITOR == mode)
 	{
@@ -118,9 +94,6 @@ void TermSendNumberToAll(enum UartMode mode, int32_t n)
 	}
 
 }
-
-
-
 
 static const char monitorHelp[] = "\r\nCommans available in monitor mode:\r\n"
 		"help - shows this help page\r\n"
@@ -389,14 +362,6 @@ void TermParse(Uart *src)
 	{
 		UartSendString(src, (uint8_t*)"Switched to monitor mode\r\n", 0);
 		src->mode = MODE_MONITOR;
-		return;
-	}
-	/*
-	 * KISS parsing
-	 */
-	else if((src->mode == MODE_KISS) && (src->rxType == DATA_KISS))
-	{
-		Ax25TxKiss(src->rxBuffer, src->rxBufferHead);
 		return;
 	}
 	/*
