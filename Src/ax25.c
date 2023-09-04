@@ -147,14 +147,10 @@ void Ax25ClearReceivedFrameBitmap(void)
 
 void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
 {
-	while(txStage != TX_STAGE_IDLE)
-		;
-
 	if((GET_FREE_SIZE(FRAME_BUFFER_SIZE, txBufferHead, txBufferTail) < size) || txFrameBufferFull)
 	{
 		return NULL;
 	}
-
 
 	txFrame[txFrameHead].size = size;
 	txFrame[txFrameHead].start = txBufferHead;
@@ -164,10 +160,12 @@ void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
 		txBufferHead %= FRAME_BUFFER_SIZE;
 	}
 	void *ret = &txFrame[txFrameHead];
+	__disable_irq();
 	txFrameHead++;
 	txFrameHead %= FRAME_MAX_COUNT;
 	if(txFrameHead == txFrameTail)
 		txFrameBufferFull = true;
+	__enable_irq();
 	return ret;
 }
 
@@ -175,7 +173,9 @@ void *Ax25WriteTxFrame(uint8_t *data, uint16_t size)
 bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel)
 {
 	if((rxFrameHead == rxFrameTail) && !rxFrameBufferFull)
+	{
 		return false;
+	}
 
 	*dst = outputFrameBuffer;
 
@@ -187,9 +187,11 @@ bool Ax25ReadNextRxFrame(uint8_t **dst, uint16_t *size, uint16_t *signalLevel)
 	*signalLevel = rxFrame[rxFrameTail].signalLevel;
 	*size = rxFrame[rxFrameTail].size;
 
+	__disable_irq();
 	rxFrameBufferFull = false;
 	rxFrameTail++;
 	rxFrameTail %= FRAME_MAX_COUNT;
+	__enable_irq();
 	return true;
 }
 
@@ -253,10 +255,12 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 							{
 								rxFrame[rxFrameHead].start = rxBufferHead;
 								rxFrame[rxFrameHead].signalLevel = ModemGetRMS(modem);
+								__disable_irq();
 								rxFrame[rxFrameHead++].size = rx->frameIdx;
 								rxFrameHead %= FRAME_MAX_COUNT;
-								if(rxFrameHead == txFrameHead)
+								if(rxFrameHead == rxFrameTail)
 									rxFrameBufferFull = true;
+								__enable_irq();
 
 								for(uint16_t i = 0; i < rx->frameIdx; i++)
 								{
@@ -369,8 +373,10 @@ uint8_t Ax25GetTxBit(void)
 		if(txStage == TX_STAGE_DATA) //transmitting normal data
 		{
 transmitNormalData:
+			__disable_irq();
 			if((txFrameHead != txFrameTail) || txFrameBufferFull)
 			{
+				__enable_irq();
 				if(txByteIdx < txFrame[txFrameTail].size) //send buffer
 				{
 					txByte = txBuffer[(txFrame[txFrameTail].start + txByteIdx) % FRAME_BUFFER_SIZE];
@@ -384,6 +390,7 @@ transmitNormalData:
 			}
 			else //no more frames
 			{
+				__enable_irq();
 				txByteIdx = 0;
 				txBitIdx = 0;
 				txStage = TX_STAGE_TAIL;
@@ -417,9 +424,11 @@ transmitNormalData:
 				txFlagsElapsed = 0;
 				txByteIdx = 0;
 				txStage = TX_STAGE_DATA; //return to normal data transmission stage. There might be a next frame to transmit
+				__disable_irq();
 				txFrameBufferFull = false;
 				txFrameTail++;
 				txFrameTail %= FRAME_MAX_COUNT;
+				__enable_irq();
 				goto transmitNormalData;
 			}
 		}
