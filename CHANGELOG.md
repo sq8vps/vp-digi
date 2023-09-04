@@ -1,3 +1,12 @@
+# 1.3.3 (2023-09-04)
+## New features
+* none
+## Bug fixes
+* RX buffer pointers bug fix
+## Other
+* New KISS handling method to support long and multiple frames
+## Known bugs
+* none
 # 1.3.2 (2023-08-31)
 ## New features
 * none
