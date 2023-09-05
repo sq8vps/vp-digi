@@ -593,7 +593,7 @@ void ModemTxTestStart(enum ModemTxTestMode type)
 
 	 if(ModemConfig.modem == MODEM_9600)
 	 {
-		TIM1->ARR = 103;
+		TIM1->ARR = markStep;
 		//enable baudrate generator
 		TIM3->CR1 = TIM_CR1_CEN; //enable timer
 		NVIC_EnableIRQ(TIM3_IRQn); //enable interrupt in NVIC
@@ -637,7 +637,7 @@ void ModemTransmitStart(void)
 {
 	 setPtt(1); //PTT on
 	 if(ModemConfig.modem == MODEM_9600)
-		 TIM1->ARR = 103;
+		 TIM1->ARR = markStep;
 
 	 TIM3->CR1 = TIM_CR1_CEN;
 	 TIM1->CR1 = TIM_CR1_CEN;
@@ -688,8 +688,8 @@ void ModemInit(void)
 	memset(demodState, 0, sizeof(demodState));
 
 	/**
-	 * TIM1 is used for pushing samples to DAC (R2R or PWM) (clocked at 4 MHz)
-	 * TIM3 is the baudrate generator for TX (clocked at 1 MHz)
+	 * TIM1 is used for pushing samples to DAC (R2R or PWM) (clocked at 18 MHz)
+	 * TIM3 is the baudrate generator for TX (clocked at 18 MHz)
 	 * TIM4 is the PWM generator with no software interrupt
 	 * TIM2 is the RX sampling timer with no software interrupt, but it directly calls DMA
 	 */
@@ -764,11 +764,11 @@ void ModemInit(void)
 	 TIM2->DIER |= TIM_DIER_UDE; //enable calling DMA on timer tick
 
 	 //TX DAC timer
-	 TIM1->PSC = 17; //72/18=4 MHz
+	 TIM1->PSC = 3; //72/4=18 MHz
 	 TIM1->DIER |= TIM_DIER_UIE;
 
 	 //baudrate timer
-	 TIM3->PSC = 3; //72/9=18 MHz
+	 TIM3->PSC = 3; //72/4=18 MHz
 	 TIM3->DIER |= TIM_DIER_UIE;
 
 	 if(ModemConfig.modem > MODEM_9600)
@@ -905,6 +905,7 @@ void ModemInit(void)
 		demodCount = 1;
 		N = N9600;
 		baudRate = 9600.f;
+		markFreq = 38400.f / (float)DAC_SINE_SIZE; //use as DAC sample rate
 
 		demodState[0].pllStep = PLL9600_STEP;
 		demodState[0].pllLockedAdjust = PLL9600_LOCKED_TUNE;
@@ -925,8 +926,8 @@ void ModemInit(void)
 
 	TIM2->CR1 |= TIM_CR1_CEN; //enable DMA timer
 
-	markStep = 4000000 / (DAC_SINE_SIZE * markFreq) - 1;
-	spaceStep = 4000000 / (DAC_SINE_SIZE * spaceFreq) - 1;
+	markStep = 18000000 / (DAC_SINE_SIZE * markFreq) - 1;
+	spaceStep = 18000000 / (DAC_SINE_SIZE * spaceFreq) - 1;
 	baudRateStep = 18000000 / baudRate - 1;
 
 
