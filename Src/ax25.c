@@ -41,6 +41,8 @@ struct Ax25ProtoConfig Ax25Config;
 
 #define MAX_TRANSMIT_RETRY_COUNT 8 //max number of retries if channel is busy
 
+#define SYNC_BYTE 0x7E //preamble/postamble octet
+
 struct FrameHandle
 {
 	uint16_t start;
@@ -375,6 +377,7 @@ static struct FrameHandle* parseFx25Frame(uint8_t *frame, uint16_t size, uint16_
 endParseFx25Frame:
 	*crc = 0xFFFF;
 	i = initialRxBufferHead;
+
 	for(uint16_t j = 0; j < (k - 2); j++)
 	{
 		for(uint8_t b = 0; b < 8; b++)
@@ -384,18 +387,29 @@ endParseFx25Frame:
 		i %= FRAME_BUFFER_SIZE;
 	}
 
+
 	*crc ^= 0xFFFF;
 	if((rxBuffer[i] == (*crc & 0xFF) )
 		&& (rxBuffer[(i + 1) % FRAME_BUFFER_SIZE] == ((*crc >> 8) & 0xFF))) //check CRC
 	{
-		h->size = k - 2;
-		return h;
+		uint16_t pathEnd = initialRxBufferHead;
+		for(uint16_t j = 0; j < (k - 2); j++)
+		{
+			if(rxBuffer[pathEnd] & 1)
+				break;
+			pathEnd++;
+			pathEnd %= FRAME_BUFFER_SIZE;
+		}
+
+		if(Ax25Config.allowNonAprs || (((rxBuffer[(pathEnd + 1) % FRAME_BUFFER_SIZE] == 0x03) && (rxBuffer[(pathEnd + 2) % FRAME_BUFFER_SIZE] == 0xF0))))
+		{
+			h->size = k - 2;
+			return h;
+		}
 	}
-	else
-	{
-		removeLastFrameFromRxBuffer();
-		return NULL;
-	}
+
+	removeLastFrameFromRxBuffer();
+	return NULL;
 }
 #endif
 
@@ -673,7 +687,7 @@ uint8_t Ax25GetTxBit(void)
 		{
 			if(txDelayElapsed < txDelay)
 			{
-				txByte = 0x7E;
+				txByte = SYNC_BYTE;
 				txDelayElapsed++;
 			}
 			else
@@ -815,7 +829,7 @@ transmitTail:
 		{
 			if(txTailElapsed < txTail)
 			{
-				txByte = 0x7E;
+				txByte = SYNC_BYTE;
 				txTailElapsed++;
 			}
 			else //tail transmitted, stop transmission
