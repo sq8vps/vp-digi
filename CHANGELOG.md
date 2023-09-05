@@ -5,7 +5,7 @@
 ## Bug fixes
 * none
 ## Other
-* none
+* New signal level measurement method
 ## Known bugs
 * none
 # 1.3.3 (2023-09-04)
