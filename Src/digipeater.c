@@ -50,8 +50,7 @@ static struct DeDupeData deDupe[DEDUPE_SIZE]; //duplicate protection hash buffer
 static uint8_t deDupeCount = 0; //duplicate protection buffer index
 
 
-#define DIGI_BUFFER_SIZE 308 //308 is the theoretical max under some assumptions, see ax25.c
-static uint8_t buf[DIGI_BUFFER_SIZE];
+static uint8_t buf[AX25_FRAME_MAX_SIZE];
 
 /**
  * @brief Check if frame with specified hash is already in viscous-delay buffer and delete it if so
@@ -198,7 +197,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     }
     else //normal mode
     {
-    	if(sizeof(buf) < (len + 7))
+    	if((uint16_t)sizeof(buf) < (len + 7))
     		return;
     	buffer = buf;
     }
@@ -218,7 +217,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     	{
     		if(elStart != 14)
     			return; //this is not the very first path element, frame not received directly
-    		if((alias >= 0) && (alias <= 3) && (ssid != n))
+    		if((alias <= 3) && (ssid != n))
     			return; //n-N type alias, but n is not equal to N, frame not received directly
     	}
     }
@@ -322,7 +321,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
 
     //calculate frame "hash"
     uint32_t hash = Crc32(CRC32_INIT, frame, 14); //use destination and source address, skip path
-    hash = Crc32(hash, &frame[t + 1], len - t); //continue through all remaining data
+    hash = Crc32(hash, &frame[t + 1], len - t - 1); //continue through all remaining data
 
     if(DigiConfig.viscous) //viscous-delay enabled on any slot
     {
@@ -461,7 +460,7 @@ void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
     deDupeCount %= DEDUPE_SIZE;
 
     deDupe[deDupeCount].hash = hash;
-    deDupe[deDupeCount].timeLimit = SysTickGet() + (DigiConfig.dupeTime * 10 / SYSTICK_INTERVAL);
+    deDupe[deDupeCount].timeLimit = SysTickGet() + (DigiConfig.dupeTime * 1000 / SYSTICK_INTERVAL);
 
     deDupeCount++;
 }

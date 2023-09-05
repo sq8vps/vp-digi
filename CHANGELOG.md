@@ -1,4 +1,63 @@
-# 1.2.6 (2023-08-29)
+# 2.0.0 (2023-09-05)
+## New features
+* New modems: AFSK Bell 103 (300 Bd, 1600/1800 Hz), GFSK G3RUH (9600 Bd), AFSK V.23 (1200 Bd, 1300/2100 Hz)
+* FX.25 (AX.25 with Reed-Solomon FEC) support
+## Bug fixes
+* none
+## Other
+* none
+## Known bugs
+* none
+# 1.3.3 (2023-09-04)
+## New features
+* none
+## Bug fixes
+* RX buffer pointers bug fix
+* AX.25 to TNC2 converter bug with non-UI frames
+## Other
+* New KISS handling method to support long and multiple frames
+## Known bugs
+* none
+# 1.3.2 (2023-08-31)
+## New features
+* none
+## Bug fixes
+* Duplicate protection was not working properly
+## Other
+* none
+## Known bugs
+* none
+# 1.3.1 (2023-08-30)
+## New features
+* none
+## Bug fixes
+* Non-APRS switch was not stored in memory
+## Other
+* PWM is now the default option
+## Known bugs
+* none
+# 1.3.0 (2023-08-30)
+## New features
+* Callsign is now set together with SSID using ```call <call-SSID>```
+* ```time``` command to show uptime
+## Removed features
+* ```ssid``` command is removed
+* Auto-reset functionality and ```autoreset``` command is removed
+## Bug fixes
+* When beacon *n* delay hadn't passed yet, beacon *n+1*, *n+2*, ... were not sent regardless of their delay
+* Bugs with line ending parsing
+## Other
+* Major code refactoring and rewrite
+* Got rid of *uart_transmitStart()* routine
+* USB sending is handled the same way as UART
+* New way of TX and RX frame handling to improve non-APRS compatibility
+* Much bigger frame buffer
+* Minimized number of temporary buffers
+* All *malloc()*s removed
+* Added copyright notice as required by GNU GPL
+## Known bugs
+* none
+# 1.2.6 (2023-07-29)
 ## New features
 * Added ```nonaprs [on/off]``` command that enables reception of non-APRS frames, e.g. for full Packet Radio use
 ## Bug fixes
@@ -34,15 +93,6 @@
 * none
 ## Known bugs
 * none
-# 1.2.2 (2022-06-11)
-## New features
-* none
-## Bug fixes
-* Default de-dupe time was 0, backspace was sometimes stored in config, frame length was not checked in viscous delay mode
-## Other
-* none
-## Known bugs
-* USB in KISS mode has problem with TX frames
 # 1.2.2 (2022-06-11)
 ## New features
 * none

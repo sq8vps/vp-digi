@@ -67,6 +67,15 @@ enum ModemPrefilter
 void pushSample(float s);
 
 /**
+ * @brief Get measured signal level
+ * @param modem Modem number
+ * @param *peak Output signal positive peak in %
+ * @param *valley Output signal negative peak in %
+ * @param *level Output signal level in %
+ */
+void ModemGetSignalLevel(uint8_t modem, int8_t *peak, int8_t *valley, uint8_t *level);
+
+/**
  * @brief Get current modem baudrate
  * @return Baudrate
  */

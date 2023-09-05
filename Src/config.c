@@ -95,7 +95,8 @@ along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_DEST 1208
 #define CONFIG_ALLOWNONAPRS 1214
 #define CONFIG_FX25 1216
-#define CONFIG_XXX 1218 //next address (not used)
+#define CONFIG_MODEM 1218
+#define CONFIG_XXX 1220 //next address (not used)
 
 
 /**
@@ -264,6 +265,7 @@ void ConfigWrite(void)
 	write(CONFIG_KISSMONITOR, GeneralConfig.kissMonitor);
 	write(CONFIG_ALLOWNONAPRS, Ax25Config.allowNonAprs);
 	write(CONFIG_FX25, Ax25Config.fx25 | (Ax25Config.fx25Tx << 1));
+	write(CONFIG_MODEM, ModemConfig.modem);
 
 	write(CONFIG_FLAG, CONFIG_FLAG_WRITTEN);
 
@@ -281,10 +283,10 @@ uint8_t ConfigRead(void)
 	readString(CONFIG_CALL, GeneralConfig.call, sizeof(GeneralConfig.call));
 	GeneralConfig.callSsid = (uint8_t)read(CONFIG_SSID);
 	uint8_t temp[6];
-	readString(CONFIG_DEST, temp, sizeof(temp));
+	readString(CONFIG_DEST, temp, 6);
 	if((temp[0] >= ('A' << 1)) && (temp[0] <= ('Z' << 1)) && ((temp[0] & 1) == 0)) //check if stored destination address is correct (we just assume it by reading the first byte)
 	{
-		memcpy(GeneralConfig.dest, temp, sizeof(temp));
+		memcpy(GeneralConfig.dest, temp, 6);
 	}
 	Ax25Config.txDelayLength = read(CONFIG_TXDELAY);
 	Ax25Config.txTailLength = read(CONFIG_TXTAIL);
@@ -355,6 +357,7 @@ uint8_t ConfigRead(void)
 	t = (uint8_t)read(CONFIG_FX25);
 	Ax25Config.fx25 = t & 1;
 	Ax25Config.fx25Tx = (t & 2) > 0;
+	ModemConfig.modem = read(CONFIG_MODEM);
 
 	return 1;
 }

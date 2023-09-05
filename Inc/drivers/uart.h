@@ -23,7 +23,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "usbd_cdc_if.h"
 #include "ax25.h"
 
-#define UART_BUFFER_SIZE 250
+#define UART_BUFFER_SIZE 130
 
 enum UartMode
 {
@@ -35,7 +35,6 @@ enum UartMode
 enum UartDataType
 {
 	DATA_NOTHING = 0,
-	DATA_KISS,
 	DATA_TERM,
 	DATA_USB,
 };
@@ -53,19 +52,13 @@ typedef struct
 	uint16_t txBufferHead, txBufferTail;
 	uint8_t txBufferFull : 1;
 	enum UartMode mode;
-	uint32_t kissTimer;
 	uint16_t lastRxBufferHead; //for special characters handling
+	uint8_t kissBuffer[AX25_FRAME_MAX_SIZE + 1];
+	uint16_t kissBufferHead;
 } Uart;
 
 extern Uart Uart1, Uart2, UartUsb;
 
-
-///**
-// * \brief Copy KISS frame(s) from input buffer to APRS TX buffer
-// * \param[in] *buf Input buffer
-// * \param[in] len Input buffer size
-// */
-//uint8_t Uart_txKiss(uint8_t *buf, uint16_t len);
 
 /**
  * @brief Send byte
@@ -110,12 +103,5 @@ void UartConfig(Uart *port, uint8_t state);
  * @param *port UART port
  */
 void UartClearRx(Uart *port);
-
-/**
- * @brief Handle KISS timeout
- * @param *port UART pointer
- * @attention This function must be polled constantly in main loop for USB UART.
- */
-void UartHandleKissTimeout(Uart *port);
 
 #endif

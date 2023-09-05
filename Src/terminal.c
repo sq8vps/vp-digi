@@ -23,6 +23,7 @@ along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 #include "drivers/modem.h"
 #include "ax25.h"
 #include "drivers/systick.h"
+#include "kiss.h"
 
 void TermHandleSpecial(Uart *u)
 {
@@ -57,25 +58,13 @@ void TermHandleSpecial(Uart *u)
 
 }
 
-
-static void sendKiss(Uart *port, uint8_t *buf, uint16_t len)
-{
-	if(port->mode == MODE_KISS) //check if KISS mode
-	{
-		UartSendByte(port, 0xc0); //send data in kiss format
-		UartSendByte(port, 0x00);
-		UartSendString(port, buf, len);
-		UartSendByte(port, 0xc0);
-	}
-}
-
 void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size)
 {
 	if(MODE_KISS == mode)
 	{
-		sendKiss(&Uart1, data, size);
-		sendKiss(&Uart2, data, size);
-		sendKiss(&UartUsb, data, size);
+		KissSend(&Uart1, data, size);
+		KissSend(&Uart2, data, size);
+		KissSend(&UartUsb, data, size);
 	}
 	else if(MODE_MONITOR == mode)
 	{
@@ -86,7 +75,6 @@ void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size)
 		if(Uart2.mode == MODE_MONITOR)
 			UartSendString(&Uart2, data, size);
 	}
-
 }
 
 void TermSendNumberToAll(enum UartMode mode, int32_t n)
@@ -102,8 +90,6 @@ void TermSendNumberToAll(enum UartMode mode, int32_t n)
 	}
 
 }
-
-
 
 
 static const char monitorHelp[] = "\r\nCommans available in monitor mode:\r\n"
@@ -126,6 +112,7 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 		"reboot - reboots the device\r\n"
 		"time - show time since boot\r\n"
 		"version - shows full firmware version info\r\n\r\n"
+		"modem <type> - sets modem type: 1200, 1200_V23, 300 or 9600\r\n"
 		"call <callsign-SSID> - sets callsign with optional SSID\r\n"
 		"dest <address> - sets destination address\r\n"
 		"txdelay <50-2550> - sets TXDelay time (ms)\r\n"
@@ -158,7 +145,23 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 
 static void printConfig(Uart *src)
 {
-	UartSendString(src, "Callsign: ", 0);
+	UartSendString(src, "Modem: ", 0);
+	switch(ModemConfig.modem)
+	{
+		case MODEM_1200:
+			UartSendString(src, "AFSK Bell 202 1200 Bd 1200/2200 Hz", 0);
+			break;
+		case MODEM_1200_V23:
+			UartSendString(src, "AFSK V.23 1200 Bd 1300/2100 Hz", 0);
+			break;
+		case MODEM_300:
+			UartSendString(src, "AFSK Bell 103 300 Bd 1600/1800 Hz", 0);
+			break;
+		case MODEM_9600:
+			UartSendString(src, "GFSK G3RUH 9600 Bd", 0);
+			break;
+	}
+	UartSendString(src, "\r\nCallsign: ", 0);
 	for(uint8_t i = 0; i < 6; i++)
 	{
 		if(GeneralConfig.call[i] != (' ' << 1))
@@ -376,8 +379,9 @@ void TermParse(Uart *src)
 	else if(!strncmp(cmd, "config", 6))
 	{
 		UartSendString(src, (uint8_t*)"Switched to configuration mode\r\n"
-				"Most settings will take effect immediately, but\r\n"
-				"remember to save the configuration using \"save\"\r\n", 0);
+				"Some settings require the device to be rebooted\r\n"
+				"in order to behave correctly\r\n"
+				"Always use \"save\" to save and reboot\r\n", 0);
 		src->mode = MODE_TERM;
 		return;
 	}
@@ -385,14 +389,6 @@ void TermParse(Uart *src)
 	{
 		UartSendString(src, (uint8_t*)"Switched to monitor mode\r\n", 0);
 		src->mode = MODE_MONITOR;
-		return;
-	}
-	/*
-	 * KISS parsing
-	 */
-	else if((src->mode == MODE_KISS) && (src->rxType == DATA_KISS))
-	{
-		Ax25TxKiss(src->rxBuffer, src->rxBufferHead);
 		return;
 	}
 	/*
@@ -584,9 +580,24 @@ void TermParse(Uart *src)
 	/*
 	 * Settings insertion handling
 	 */
+	else if(!strncmp(cmd, "modem", 5))
+	{
+		if(!strncmp(&cmd[6], "1200_V23", 8))
+			ModemConfig.modem = MODEM_1200_V23;
+		else if(!strncmp(&cmd[6], "1200", 4))
+			ModemConfig.modem = MODEM_1200;
+		else if(!strncmp(&cmd[6], "300", 3))
+			ModemConfig.modem = MODEM_300;
+		else if(!strncmp(&cmd[6], "9600", 4))
+			ModemConfig.modem = MODEM_9600;
+		else
+		{
+			UartSendString(src, "Incorrect modem type!\r\n", 0);
+			return;
+		}
+	}
 	else if(!strncmp(cmd, "call", 4))
 	{
-
 		if(!ParseCallsignWithSsid(&cmd[5], len - 5, GeneralConfig.call, &GeneralConfig.callSsid))
 		{
 			UartSendString(src, "Incorrect callsign!\r\n", 0);

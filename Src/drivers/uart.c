@@ -22,6 +22,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "common.h"
 #include <string.h>
 #include "digipeater.h"
+#include "kiss.h"
 
 Uart Uart1, Uart2, UartUsb;
 
@@ -30,28 +31,22 @@ static void handleInterrupt(Uart *port)
 	if(port->port->SR & USART_SR_RXNE) //byte received
 	{
 		port->port->SR &= ~USART_SR_RXNE;
-		port->rxBuffer[port->rxBufferHead++] = port->port->DR; //store it
+		uint8_t data = port->port->DR;
+		port->rxBuffer[port->rxBufferHead++] = data; //store it
 		port->rxBufferHead %= UART_BUFFER_SIZE;
 
+		KissParse(port, data);
 		TermHandleSpecial(port);
 
-		if(port->mode == MODE_KISS)
-			port->kissTimer = SysTickGet() + (5000 / SYSTICK_INTERVAL); //set timeout to 5s in KISS mode
 	}
 	if(port->port->SR & USART_SR_IDLE) //line is idle, end of data reception
 	{
 		port->port->DR; //reset idle flag by dummy read
 		if(port->rxBufferHead != 0)
 		{
-			if((port->rxBuffer[0] == 0xC0) && (port->rxBuffer[port->rxBufferHead - 1] == 0xC0)) //data starts with 0xc0 and ends with 0xc0 - this is a KISS frame
-			{
-				port->rxType = DATA_KISS;
-				port->kissTimer = 0;
-			}
-			else if(((port->rxBuffer[port->rxBufferHead - 1] == '\r') || (port->rxBuffer[port->rxBufferHead - 1] == '\n'))) //data ends with \r or \n, process as data
+			if(((port->rxBuffer[port->rxBufferHead - 1] == '\r') || (port->rxBuffer[port->rxBufferHead - 1] == '\n'))) //data ends with \r or \n, process as data
 			{
 				port->rxType = DATA_TERM;
-				port->kissTimer = 0;
 			}
 		}
 	}
@@ -59,7 +54,7 @@ static void handleInterrupt(Uart *port)
 	{
 		if((port->txBufferHead != port->txBufferTail) || port->txBufferFull) //if there is anything to transmit
 		{
-			port->port->DR = port->txBuffer[port->txBufferTail++]; //push it to the refister
+			port->port->DR = port->txBuffer[port->txBufferTail++];
 			port->txBufferTail %= UART_BUFFER_SIZE;
 			port->txBufferFull = 0;
 		}
@@ -67,13 +62,6 @@ static void handleInterrupt(Uart *port)
 		{
 			port->port->CR1 &= ~USART_CR1_TXEIE;
 		}
-	}
-
-	if((port->kissTimer > 0) && (SysTickGet() >= port->kissTimer)) //KISS timer timeout
-	{
-		port->kissTimer = 0;
-		port->rxBufferHead = 0;
-		memset(port->rxBuffer, 0, sizeof(port->rxBuffer));
 	}
 }
 
@@ -160,10 +148,11 @@ void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 	port->txBufferFull = 0;
 	port->mode = MODE_KISS;
 	port->enabled = 0;
-	port->kissTimer = 0;
+	port->kissBufferHead = 0;
 	port->lastRxBufferHead = 0;
 	memset(port->rxBuffer, 0, sizeof(port->rxBuffer));
 	memset(port->txBuffer, 0, sizeof(port->txBuffer));
+	memset(port->kissBuffer, 0, sizeof(port->kissBuffer));
 }
 
 
@@ -235,12 +224,3 @@ void UartClearRx(Uart *port)
 	port->rxType = DATA_NOTHING;
 }
 
-void UartHandleKissTimeout(Uart *port)
-{
-	if((port->kissTimer > 0) && (SysTickGet() >= port->kissTimer)) //KISS timer timeout
-	{
-		port->kissTimer = 0;
-		port->rxBufferHead = 0;
-		memset(port->rxBuffer, 0, sizeof(port->rxBuffer));
-	}
-}
