@@ -169,7 +169,7 @@ void Ax25ClearReceivedFrameBitmap(void)
 	frameReceived = 0;
 }
 
-
+#ifdef ENABLE_FX25
 static void removeLastFrameFromRxBuffer(void)
 {
 	rxBufferHead = rxFrame[rxFrameHead].start;
@@ -180,7 +180,7 @@ static void removeLastFrameFromRxBuffer(void)
 	rxFrameBufferFull = false;
 }
 
-#ifdef ENABLE_FX25
+
 
 static void *writeFx25Frame(uint8_t *data, uint16_t size)
 {
@@ -523,10 +523,13 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 		{
 			if(rx->rx == RX_STAGE_FRAME) //if we are in frame, this is the end of the frame
 			{
-				if((rx->frameIdx > 15)) //correct frame must be at least 16 bytes long
+				if(rx->frameIdx >= 17) //correct frame must be at least 17 bytes long (source+destination+control+CRC)
 				{
-					uint16_t i = 0;
-					for(; i < rx->frameIdx - 2; i++) //look for path end bit
+					uint16_t i = 13;
+					//start from 13, which is the SSID of source
+					//end either at the 69th byte, which is the SSID of th 8th digipeater
+					//or at frame size - 3, which is the last byte before PID/control field
+					for(; i < ((rx->frameIdx < 73) ? (rx->frameIdx - 3) : 70); i++) //look for path end bit
 					{
 						if(rx->frame[i] & 1)
 							break;
@@ -535,14 +538,6 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 					//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
 					if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xF0))))
 					{
-						rx->crc = 0xFFFF;
-						for(i = 0; i < rx->frameIdx - 2; i++)
-						{
-							for(uint8_t k = 0; k < 8; k++)
-							{
-								calculateCRC((rx->frame[i] >> k) & 1, &(rx->crc));
-							}
-						}
 						rx->crc ^= 0xFFFF;
 						if((rx->frame[rx->frameIdx - 2] == (rx->crc & 0xFF)) && (rx->frame[rx->frameIdx - 1] == ((rx->crc >> 8) & 0xFF))) //check CRC
 						{
@@ -582,24 +577,19 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 			rx->receivedByte = 0;
 			rx->receivedBitIdx = 0;
 			rx->frameIdx = 0;
+			rx->crc = 0xFFFF;
 			return;
 		}
 		else
 			rx->rx = RX_STAGE_FRAME;
 
-#ifdef ENABLE_FX25
-	}
-
-
-	if(rx->rx != RX_STAGE_FX25_FRAME)
-	{
-#else
+#ifndef ENABLE_FX25
 	{
 		//this condition must not be checked when FX.25 is enabled
 		//because FX.25 parity bytes and tags contain >= 7 consecutive ones
 		if((rx->rawData & 0x7F) == 0x7F) //received 7 consecutive ones, this is an error
 		{
-			rx->rx = RX_STAGE_FLAG;
+			rx->rx = RX_STAGE_IDLE;
 			rx->receivedByte = 0;
 			rx->receivedBitIdx = 0;
 			rx->frameIdx = 0;
@@ -611,11 +601,21 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 			return;
 	}
 
+
 	if(rx->rawData & 0x01) //received bit 1
 		rx->receivedByte |= 0x80; //store it
 
+
 	if(++rx->receivedBitIdx >= 8) //received full byte
 	{
+		if(rx->frameIdx >= 2)
+		{
+			for(uint8_t k = 0; k < 8; k++)
+			{
+				calculateCRC((rx->frame[rx->frameIdx - 2] >> k) & 1, &(rx->crc));
+			}
+		}
+
 #ifdef ENABLE_FX25
 		//end of FX.25 reception, that is received full block
 		if((rx->fx25Mode != NULL) && (rx->frameIdx == (rx->fx25Mode->K + rx->fx25Mode->T)))
