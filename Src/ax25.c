@@ -539,21 +539,19 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 			{
 				if(rx->frameIdx >= 17) //correct frame must be at least 17 bytes long (source+destination+control+CRC)
 				{
-					uint16_t i = 13;
-					//start from 13, which is the SSID of source
-					//end either at the 69th byte, which is the SSID of th 8th digipeater
-					//or at frame size - 3, which is the last byte before PID/control field
-					for(; i < ((rx->frameIdx < 73) ? (rx->frameIdx - 3) : 70); i++) //look for path end bit
+					rx->crc ^= 0xFFFF;
+					if((rx->frame[rx->frameIdx - 2] == (rx->crc & 0xFF)) && (rx->frame[rx->frameIdx - 1] == ((rx->crc >> 8) & 0xFF))) //check CRC
 					{
-						if(rx->frame[i] & 1)
-							break;
-					}
+						uint16_t i = 13;
+						//start from 13, which is the SSID of source
+						for(; i < (rx->frameIdx - 2); i++) //look for path end bit
+						{
+							if(rx->frame[i] & 1)
+								break;
+						}
 
-					//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
-					if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xF0))))
-					{
-						rx->crc ^= 0xFFFF;
-						if((rx->frame[rx->frameIdx - 2] == (rx->crc & 0xFF)) && (rx->frame[rx->frameIdx - 1] == ((rx->crc >> 8) & 0xFF))) //check CRC
+						//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
+						if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xF0))))
 						{
 							rx->frameReceived = 1;
 							rx->frameIdx -= 2; //remove CRC
