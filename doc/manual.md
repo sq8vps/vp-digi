@@ -18,7 +18,7 @@ The changelog is placed at the bottom of this document.
     - [2.5. Programming](#25-programming)
       - [2.5.1. Programming using an ST-Link programmer](#251-programming-using-an-st-link-programmer)
       - [2.5.2. Programming using a USB-UART adapter](#252-programming-using-a-usb-uart-adapter)
-    - [2.6. Initialization](#26-initialization)
+    - [2.6. Setup](#26-setup)
   - [3. Technical description](#3-technical-description)
     - [3.1. Hardware](#31-hardware)
       - [3.1.1. Reception](#311-reception)
@@ -221,7 +221,8 @@ KISS mode is used for working as a standard TNC KISS, compatible with many Packe
 - `config` – switches the port to configuration mode
 
 ### 2.4. Signal level setting
-After device startup, you should enter monitor mode (using the `monitor` command) and wait for packets to appear. You should adjust the signal level so that most packets have a signal level of around 50% (as described in [section 2.2.2](#222-received-packet-view)). The received signal level should be maintained within the range of 10-90%.
+After device startup, you should enter monitor mode (using the `monitor` command) and wait for packets to appear. You should adjust the signal level so that most packets have a signal level of around 50% (as described in [section 2.2.2](#222-received-packet-view)). The received signal level should be maintained within the range of 10-90%.\
+The correct setting of the audio output type from the transceiver using the `flat <on/off>` command is crucial for the performance of the 1200 Bd modem. If you are using the headphone/speaker output (filtered), this option should be set to *off*. If you are using the *flat audio* output (unfiltered), this option should be set to *on*. This setting does not affect modems other than 1200 Bd.\
 To ensure the best network performance, the transmitted signal level should also be properly set. This is especially important for the 1200 Bd modem, where the signal is transmitted through the standard microphone connector of an FM radio. Excessive signal levels can lead to distortion and significant tone amplitude imbalances.
 Signal calibration requires an FM receiver tuned to the same frequency as the transmitter. You should enter monitor mode (using the `monitor` command) and enable high tone transmission (using the `cal high` command). You should set the potentiometer to the minimum amplitude level position and then slowly increase the level while carefully monitoring the signal strength in the receiver, which should increase. At some point, the signal level will stop increasing. At that point, gently retract the potentiometer and turn off the calibration mode (using the `cal stop` command). After this operation, the transmitter should be correctly driven.
 > Note! If you fail to reach the point where the signal level stops increasing, the resistor value in the TX path is probably too high. If the signal level is clearly too low, reduce the value of this resistor. Otherwise, no action is necessary.
@@ -250,8 +251,8 @@ In both methods, you need to download the VP-Digi software (HEX file) beforehand
 9. On the following screen, select the option *Download to device* and choose the downloaded HEX file.
 10. Check the options *Erase necessary pages* and *Verify after download*, then click *Next*. After a moment, the device should be programmed. Revert both jumpers to position 0, reset the microcontroller, and disconnect the adapter. The proper software should start running.
 
-### 2.6. Initialization
-To use the device, you should assemble it according to the schematic presented in [section 3.1](#31-hardware) and program it (description in [section 2.5](#25-programming)).
+### 2.6. Setup
+To use the device, you should assemble it according to the schematic presented in [section 3.1](#31-hardware), program it (description in [section 2.5](#25-programming)) and calibrate (description in [section 2.4](#24-signal-level-setting)).
 After startup, all ports (USB, UART1, UART2) operate in KISS mode, and the baud rate for UART1 and UART2 ports is 9600 Bd (the USB port's speed doesn't matter).
 To configure VP-Digi or monitor frames, you need to connect it to a computer via the USB or UART port and install a terminal program (*TeraTerm*, *RealTerm*, etc.). As mentioned in the preceding sections, switching to configuration and monitor mode is done by entering the commands `config` and `monitor` respectively and confirming with the Enter key.
 > In KISS mode, echo (displaying entered characters) is disabled, so you won't see the entered commands.
