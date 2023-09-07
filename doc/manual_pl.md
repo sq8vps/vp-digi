@@ -88,8 +88,8 @@ W trybie konfiguracji dostępne są następujące polecenia:
 - `txdelay CZAS` – ustawia długość preambuły do nadania przed ramką. Wartość w milisekundach z zakresu od 30 do 2550
 - `txtail CZAS` – ustawia ogona nadawanego po ramce. Wartość w milisekundach, z zakresu od 10 do 2550. Jeśli nie zachodzi potrzeba, należy ustawić wartość minimalną.
 - `quiet CZAS` – ustawia czas, który musi upłynąć pomiędzy zwolnieniem się kanału a włączeniem nadawania. Wartość w milisekundach z zakresu od 100 do 2550.
-- `rs1baud PREDKOSC` – ustawia prędkość (*baudrate*) portu UART1. Wartość z zakresu od 1200 do 115200.
-- `rs2baud PREDKOSC` – ustawia prędkość (*baudrate*) portu UART2. Wartość z zakresu od 1200 do 115200.
+- `uart NUMER baud PREDKOSC` - ustawia prędkość (1200-115200 Bd) pracy wybranego portu szeregowego.
+- `uart NUMBER mode <kiss/monitor/config` - ustawia domyślny tryb pracy wybranego portu szeregowego (0 dla USB).
 - `pwm <on/off>` – ustawia typ DAC. *on*, gdy zainstalowany jest filtr PWM, *off* gdy zainstalowana jest drabinka R2R. Od wersji 2.0.0 zalecane jest użycie wyłącznie PWM.
 - `flat <on/off>` – konfiguruje modem do użycia z radiem z wyjściem *flat audio*. *on* gdy sygnał podawany jest ze złącza *flat audio*, *off* gdy sygnał podawany jest ze złącza słuchawkowego. Opcja ma wpływ jedynie na modemy 1200 Bd.
 - `beacon NUMER <on/off>` – *on* włącza, *off* wyłącza beacon o podanym numerze z zakresu od 0 do 7.

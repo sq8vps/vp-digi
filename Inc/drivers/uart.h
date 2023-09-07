@@ -53,6 +53,7 @@ typedef struct
 	uint16_t txBufferHead, txBufferTail;
 	uint8_t txBufferFull : 1;
 	enum UartMode mode;
+	enum UartMode defaultMode;
 	uint16_t lastRxBufferHead; //for special characters handling
 	uint8_t kissBuffer[AX25_FRAME_MAX_SIZE + 1];
 	uint16_t kissBufferHead;

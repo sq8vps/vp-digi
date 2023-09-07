@@ -97,7 +97,10 @@ along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_ALLOWNONAPRS 1214
 #define CONFIG_FX25 1216
 #define CONFIG_MODEM 1218
-#define CONFIG_XXX 1220 //next address (not used)
+#define CONFIG_MODE_USB 1220
+#define CONFIG_MODE_UART1 1222
+#define CONFIG_MODE_UART2 1224
+#define CONFIG_XXX 1226 //next address (not used)
 
 
 /**
@@ -267,6 +270,9 @@ void ConfigWrite(void)
 	write(CONFIG_ALLOWNONAPRS, Ax25Config.allowNonAprs);
 	write(CONFIG_FX25, Ax25Config.fx25 | (Ax25Config.fx25Tx << 1));
 	write(CONFIG_MODEM, ModemConfig.modem);
+	write(CONFIG_MODE_USB, UartUsb.defaultMode);
+	write(CONFIG_MODE_UART1, Uart1.defaultMode);
+	write(CONFIG_MODE_UART2, Uart2.defaultMode);
 
 	write(CONFIG_FLAG, CONFIG_FLAG_WRITTEN);
 
@@ -359,6 +365,9 @@ uint8_t ConfigRead(void)
 	Ax25Config.fx25 = t & 1;
 	Ax25Config.fx25Tx = (t & 2) > 0;
 	ModemConfig.modem = read(CONFIG_MODEM);
+	UartUsb.defaultMode = read(CONFIG_MODE_USB);
+	Uart1.defaultMode = read(CONFIG_MODE_UART1);
+	Uart2.defaultMode = read(CONFIG_MODE_UART2);
 
 	return 1;
 }

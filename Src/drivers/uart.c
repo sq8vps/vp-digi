@@ -25,7 +25,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "digipeater.h"
 #include "kiss.h"
 
-Uart Uart1, Uart2, UartUsb;
+Uart Uart1 = {.defaultMode = MODE_KISS}, Uart2 = {.defaultMode = MODE_KISS}, UartUsb= {.defaultMode = MODE_KISS};
 
 static void handleInterrupt(Uart *port)
 {
@@ -147,7 +147,9 @@ void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 	port->txBufferHead = 0;
 	port->txBufferTail = 0;
 	port->txBufferFull = 0;
-	port->mode = MODE_KISS;
+	if(port->defaultMode > MODE_MONITOR)
+		port->defaultMode = MODE_KISS;
+	port->mode = port->defaultMode;
 	port->enabled = 0;
 	port->kissBufferHead = 0;
 	port->lastRxBufferHead = 0;

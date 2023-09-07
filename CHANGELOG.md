@@ -2,6 +2,7 @@
 ## New features
 * New modems: AFSK Bell 103 (300 Bd, 1600/1800 Hz), GFSK G3RUH (9600 Bd), AFSK V.23 (1200 Bd, 1300/2100 Hz)
 * FX.25 (AX.25 with Reed-Solomon FEC) support
+* Default UART/USB modes can be configured
 ## Bug fixes
 * none
 ## Other

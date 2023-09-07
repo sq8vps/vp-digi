@@ -93,56 +93,78 @@ void TermSendNumberToAll(enum UartMode mode, int32_t n)
 }
 
 
-static const char monitorHelp[] = "\r\nCommans available in monitor mode:\r\n"
-		"help - shows this help page\r\n"
-		"cal {low|high|alt|stop} - transmits/stops transmitter calibration pattern\r\n"
-		"\tlow - transmits MARK tone, high - transmits SPACE tone, alt - transmits alternating tones (null bytes)\r\n"
-		"beacon <beacon_number> - immediately transmits selected beacon (number from 0 to 7)\r\n"
-		"kiss - switches to KISS mode\r\n"
-		"config - switches to config mode\r\n"
-		"reboot - reboots the device\r\n"
+static const char monitorHelp[] = "\r\nCommands available in monitor mode:\r\n"
+		"help - show this help page\r\n"
+		"cal {low|high|alt|stop} - transmit/stop transmitter calibration pattern\r\n"
+		"\tlow - transmit MARK tone, high - transmit SPACE tone, alt - transmit alternating tones (null bytes)\r\n"
+		"beacon <beacon_number> - immediately transmit selected beacon (number from 0 to 7)\r\n"
+		"kiss - switch to KISS mode\r\n"
+		"config - switch to config mode\r\n"
+		"reboot - reboot the device\r\n"
 		"time - show time since boot\r\n"
-		"version - shows full firmware version info\r\n\r\n\r\n";
+		"version - show full firmware version info\r\n\r\n\r\n";
 
 static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
-		"print - prints all configuration parameters\r\n"
-		"list - prints callsign filter list\r\n"
-		"save - saves configuration and reboots the device\r\n"
-		"eraseall - erases all configurations and reboots the device\r\n"
-		"help - shows this help page\r\n"
-		"reboot - reboots the device\r\n"
+		"print - print all configuration parameters\r\n"
+		"list - print callsign filter list\r\n"
+		"save - save configuration and reboot the device\r\n"
+		"eraseall - erase all configurations and reboot the device\r\n"
+		"help - show this help page\r\n"
+		"reboot - reboot the device\r\n"
 		"time - show time since boot\r\n"
-		"version - shows full firmware version info\r\n\r\n"
-		"modem <type> - sets modem type: 1200, 1200_V23, 300 or 9600\r\n"
-		"call <callsign-SSID> - sets callsign with optional SSID\r\n"
-		"dest <address> - sets destination address\r\n"
-		"txdelay <50-2550> - sets TXDelay time (ms)\r\n"
-		"txtail <10-2550> - sets TXTail time (ms)\r\n"
-		"quiet <100-2550> - sets quiet time (ms)\r\n"
-		"rs1baud/rs2baud <1200-115200> - sets UART1/UART2 baudrate\r\n"
-		"pwm [on/off] - enables/disables PWM. If PWM is off, R2R will be used instead\r\n"
+		"version - show full firmware version info\r\n\r\n"
+		"modem <type> - set modem type: 1200, 1200_V23, 300 or 9600\r\n"
+		"call <callsign-SSID> - set callsign with optional SSID\r\n"
+		"dest <address> - set destination address\r\n"
+		"txdelay <50-2550> - set TXDelay time (ms)\r\n"
+		"txtail <10-2550> - set TXTail time (ms)\r\n"
+		"quiet <100-2550> - set quiet time (ms)\r\n"
+		"uart <1/2> baud <1200-115200> - set UART baud rate\r\n"
+		"uart <0/1/2> mode [kiss/monitor/config] - set UART default mode (0 for USB)\r\n"
+		"pwm [on/off] - enable/disable PWM. If PWM is off, R2R will be used instead\r\n"
 		"flat [on/off] - set to \"on\" if flat audio input is used\r\n"
-		"beacon <0-7> [on/off] - enables/disables specified beacon\r\n"
-		"beacon <0-7> [iv/dl] <0-720> - sets interval/delay for the specified beacon (min)\r\n"
-		"beacon <0-7> path <el1,[el2]>/none - sets path for the specified beacon\r\n"
-		"beacon <0-7> data <data> - sets information field for the specified beacon\r\n"
-		"digi [on/off] - enables/disables whole digipeater\r\n"
-		"digi <0-7> [on/off] - enables/disables specified slot\r\n"
-		"digi <0-7> alias <alias> - sets alias for the specified slot\r\n"
-		"digi <0-3> [max/rep] <0/1-7> - sets maximum/replacement N for the specified slot\r\n"
-		"digi <0-7> trac [on/off] - enables/disables packet tracing for the specified slot\r\n"
-		"digi <0-7> viscous [on/off] - enables/disables viscous-delay digipeating for the specified slot\r\n"
-		"digi <0-7> direct [on/off] - enables/disables direct-only digipeating for the specified slot\r\n"\
-		"digi <0-7> filter [on/off] - enables/disables packet filtering for the specified slot\r\n"
-		"digi filter [black/white] - sets filtering type to blacklist/whitelist\r\n"
-		"digi dupe <5-255> - sets anti-dupe buffer time (s)\r\n"
-		"digi list <0-19> [set <call>/remove] - sets/clears specified callsign slot in filter list\r\n"
+		"beacon <0-7> [on/off] - enable/disable specified beacon\r\n"
+		"beacon <0-7> [iv/dl] <0-720> - set interval/delay for the specified beacon (min)\r\n"
+		"beacon <0-7> path <el1,[el2]>/none - set path for the specified beacon\r\n"
+		"beacon <0-7> data <data> - set information field for the specified beacon\r\n"
+		"digi [on/off] - enable/disable whole digipeater\r\n"
+		"digi <0-7> [on/off] - enable/disable specified slot\r\n"
+		"digi <0-7> alias <alias> - set alias for the specified slot\r\n"
+		"digi <0-3> [max/rep] <0/1-7> - set maximum/replacement N for the specified slot\r\n"
+		"digi <0-7> trac [on/off] - enable/disable packet tracing for the specified slot\r\n"
+		"digi <0-7> viscous [on/off] - enable/disable viscous-delay digipeating for the specified slot\r\n"
+		"digi <0-7> direct [on/off] - enable/disable direct-only digipeating for the specified slot\r\n"\
+		"digi <0-7> filter [on/off] - enable/disable packet filtering for the specified slot\r\n"
+		"digi filter [black/white] - set filter type to blacklist/whitelist\r\n"
+		"digi dupe <5-255> - set duplicate protection buffer time (s)\r\n"
+		"digi list <0-19> [set <call>/remove] - set/clear given callsign slot in filter list\r\n"
 		"monkiss [on/off] - send own and digipeated frames to KISS ports\r\n"
 		"nonaprs [on/off] - enable reception of non-APRS frames\r\n"
 		"fx25 [on/off] - enable FX.25 protocol (AX.25 + FEC)\r\n"
 		"fx25tx [on/off] - enable TX in FX.25 mode\r\n";
 
 
+static void sendUartParams(Uart *output, Uart *uart)
+{
+	if(!uart->isUsb)
+	{
+		UartSendNumber(output, uart->baudrate);
+		UartSendString(output, " baud, ", 0);
+	}
+	UartSendString(output, "default mode: ", 0);
+	switch(uart->defaultMode)
+	{
+		case MODE_KISS:
+			UartSendString(output, "KISS", 0);
+			break;
+		case MODE_MONITOR:
+			UartSendString(output, "monitor", 0);
+			break;
+		case MODE_TERM:
+			UartSendString(output, "configuration", 0);
+			break;
+	}
+}
 
 static void printConfig(Uart *src)
 {
@@ -184,10 +206,12 @@ static void printConfig(Uart *src)
 	UartSendNumber(src, Ax25Config.txTailLength);
 	UartSendString(src, "\r\nQuiet time (ms): ", 0);
 	UartSendNumber(src, Ax25Config.quietTime);
-	UartSendString(src, "\r\nUART1 baudrate: ", 0);
-	UartSendNumber(src, Uart1.baudrate);
-	UartSendString(src, "\r\nUART2 baudrate: ", 0);
-	UartSendNumber(src, Uart2.baudrate);
+	UartSendString(src, "\r\nUSB: ", 0);
+	sendUartParams(src, &UartUsb);
+	UartSendString(src, "\r\nUART1: ", 0);
+	sendUartParams(src, &Uart1);
+	UartSendString(src, "\r\nUART2: ", 0);
+	sendUartParams(src, &Uart2);
 	UartSendString(src, "\r\nDAC type: ", 0);
 	if(ModemConfig.usePWM)
 		UartSendString(src, "PWM", 0);
@@ -652,24 +676,54 @@ void TermParse(Uart *src)
 			Ax25Config.quietTime = (uint16_t)t;
 		}
 	}
-	else if(!strncmp(cmd, "rs1baud", 7) || !strncmp(cmd, "rs2baud", 7))
+	else if(!strncmp(cmd, "uart", 4))
 	{
-		int64_t t = StrToInt(&cmd[8], len - 8);
-		if((t > 115200) || (t < 1200))
+		Uart *u = NULL;
+		if((cmd[5] - '0') == 1)
+			u = &Uart1;
+		else if((cmd[5] - '0') == 2)
+			u = &Uart2;
+		else if((cmd[5] - '0') == 0)
+			u = &UartUsb;
+		else
 		{
-			UartSendString(src, "Incorrect baudrate!\r\n", 0);
+			UartSendString(src, "Incorrect UART number!\r\n", 0);
+			return;
+		}
+		if(!strncmp(&cmd[7], "baud", 4))
+		{
+			int64_t t = StrToInt(&cmd[12], len - 12);
+			if((t > 115200) || (t < 1200))
+			{
+				UartSendString(src, "Incorrect baud rate!\r\n", 0);
+				return;
+			}
+			u->baudrate = (uint32_t)t;
+		}
+		else if(!strncmp(&cmd[7], "mode", 4))
+		{
+			if(!strncmp(&cmd[12], "kiss", 4))
+			{
+				u->defaultMode = MODE_KISS;
+			}
+			else if(!strncmp(&cmd[12], "monitor", 7))
+			{
+				u->defaultMode = MODE_MONITOR;
+			}
+			else if(!strncmp(&cmd[12], "config", 6))
+			{
+				u->defaultMode = MODE_TERM;
+			}
+			else
+			{
+				UartSendString(src, "Incorrect UART mode!\r\n", 0);
+				return;
+			}
 		}
 		else
 		{
-			if(cmd[2] == '1')
-				Uart1.baudrate = (uint32_t)t;
-			else if(cmd[2] == '2')
-				Uart2.baudrate = (uint32_t)t;
-			else
-			{
-				UartSendString(src, "Incorrect port number!\r\n", 0);
-				return;
-			}
+			UartSendString(src, "Incorrect option!\r\n", 0);
+			return;
 		}
 	}
 	else if(!strncmp(cmd, "beacon", 6))

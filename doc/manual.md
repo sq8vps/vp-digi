@@ -85,8 +85,8 @@ The following commands are available in configuration mode:
 - `txdelay TIME` – sets the preamble length before transmitting a frame. Value in milliseconds, ranging from 30 to 2550.
 - `txtail TIME` – sets the tail length after a frame transmission. Value in milliseconds, ranging from 10 to 2550. Set to the minimum value if not needed.
 - `quiet TIME` – sets the time that must elapse between channel release and transmission start. Value in milliseconds, ranging from 100 to 2550.
-- `rs1baud BAUDRATE` – sets the baud rate for UART1 port. Value ranging from 1200 to 115200.
-- `rs2baud BAUDRATE` – sets the baud rate for UART2 port. Value ranging from 1200 to 115200.
+- `uart NUMBER baud RATE` - sets the baud rate (1200-115200 Bd) for the selected serial port.
+- `uart NUMBER mode <kiss/monitor/config>` - sets the default operating mode for the selected serial port (0 for USB).
 - `pwm <on/off>` – sets the DAC type. *on* when a PWM filter is installed, *off* when an R2R ladder is installed. Starting from version 2.0.0, it is recommended to use only PWM.
 - `flat <on/off>` – configures the modem for use with a radio with *flat audio* output. *on* when the signal is fed from the *flat audio* connector, *off* when the signal is fed from the headphone jack. This option only affects 1200 Bd modems.
 - `beacon NUMBER <on/off>` – *on* activates, *off* deactivates the beacon with the specified number, ranging from 0 to 7.
