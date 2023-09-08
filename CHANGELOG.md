@@ -8,6 +8,8 @@
 ## Other
 * New signal level measurement method
 * Full documentation (English and Polish) in Markdown
+* Project moved to STM32CubeIDE
+* Updated HAL version used for USB
 ## Known bugs
 * none
 # 1.3.3 (2023-09-04)

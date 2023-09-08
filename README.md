@@ -31,7 +31,7 @@ The user manual and technical description are available [here](doc/manual.md).
 
 ## Source code
 
-The firmware was written using System Workbench for STM32 (SW4STM32), and you should be able to import this repository directly into the IDE. You can get the source code using:
+The firmware was written using STM32CubeIDE, and you should be able to import this repository directly into the IDE. You can get the source code using:
 
 ```bash
 git clone https://github.com/sq8vps/vp-digi.git

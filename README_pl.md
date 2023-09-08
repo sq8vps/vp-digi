@@ -30,7 +30,7 @@ Instrukcja użytkownika i opis techniczny są dostępne [tutaj](doc/manual_pl.md
 
 ## Kod źródłowy
 
-Firmware został napisany w środowisku System Workbench for STM32 (SW4STM32), gdzie można bezpośrednio zaimportować projekt. Kod źródłowy można pobrać za pomocą:
+Firmware został napisany w środowisku STM32CubeIDE, gdzie można bezpośrednio zaimportować projekt. Kod źródłowy można pobrać za pomocą:
 
 ```bash
 git clone https://github.com/sq8vps/vp-digi.git
