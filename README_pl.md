@@ -40,7 +40,7 @@ Począwszy od wersji 2.0.0 konieczne jest także pobranie odpowiedniego modułu 
 git submodule init
 git submodule update
 ```
-Począwszy od wersji 2.0.0 istnieje również możliwość kompilowania oprogramowania z obsługą lub bez obsługi protokołu FX.25. Symbol `ENABLE_FX25` musi zostać zdefiniowany, aby włączyć obsługę FX.25. W SW4STM32 (i prawdopodobnie w STM32CubeIDE) można to zrobić w menu *Project->Properties->C/C++ Build->Settings->Preprocessor->Defined symbols*.
+Począwszy od wersji 2.0.0 istnieje również możliwość kompilowania oprogramowania z obsługą lub bez obsługi protokołu FX.25. Symbol `ENABLE_FX25` musi zostać zdefiniowany, aby włączyć obsługę FX.25. W STM32CubeIDE można to zrobić w menu *Project->Properties->C/C++ Build->Settings->Preprocessor->Defined symbols*.
 
 ## Wkład
 Każdy wkład jest mile widziany.

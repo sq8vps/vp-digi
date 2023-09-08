@@ -42,7 +42,7 @@ Since version 2.0.0, you will also need to get the appropriate submodule ([LwFEC
 git submodule init
 git submodule update
 ```
-Since version 2.0.0, there is also a possibility to build the firmware with or without FX.25 protocol support. The `ENABLE_FX25` symbol must be defined to enable FX.25 support. On SW4STM32 (and STM32CubeIDE probably), this can be done under *Project->Properties->C/C++ Build->Settings->Preprocessor->Defined symbols*.
+Since version 2.0.0, there is also a possibility to build the firmware with or without FX.25 protocol support. The `ENABLE_FX25` symbol must be defined to enable FX.25 support. On STM32CubeIDE, this can be done under *Project->Properties->C/C++ Build->Settings->Preprocessor->Defined symbols*.
 
 ## Contributing
 All contributions are appreciated.
