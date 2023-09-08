@@ -21,7 +21,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define KISS_H_
 
 #include <stdint.h>
-#include "drivers/uart.h"
+#include "uart.h"
 
 /**
  * @brief Convert AX.25 frame to KISS and send

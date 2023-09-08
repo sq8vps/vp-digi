@@ -16,14 +16,14 @@ You should have received a copy of the GNU General Public License
 along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "modem.h"
+#include <systick.h>
 #include "terminal.h"
 #include "common.h"
 #include "beacon.h"
 #include "digipeater.h"
 #include "config.h"
-#include "drivers/modem.h"
 #include "ax25.h"
-#include "drivers/systick.h"
 #include "kiss.h"
 
 void TermHandleSpecial(Uart *u)

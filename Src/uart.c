@@ -16,12 +16,12 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "drivers/uart.h"
-#include "drivers/systick.h"
 #include "terminal.h"
 #include "ax25.h"
 #include "common.h"
 #include <string.h>
+#include <systick.h>
+#include <uart.h>
 #include "digipeater.h"
 #include "kiss.h"
 
@@ -29,9 +29,9 @@ Uart Uart1 = {.defaultMode = MODE_KISS}, Uart2 = {.defaultMode = MODE_KISS}, Uar
 
 static void handleInterrupt(Uart *port)
 {
-	if(port->port->SR & USART_SR_RXNE) //byte received
+	if(UART_LL_CHECK_RX_NOT_EMPTY(port->port)) //byte received
 	{
-		port->port->SR &= ~USART_SR_RXNE;
+		UART_LL_CLEAR_RX_NOT_EMPTY(port->port);
 		uint8_t data = port->port->DR;
 		port->rxBuffer[port->rxBufferHead++] = data; //store it
 		port->rxBufferHead %= UART_BUFFER_SIZE;
@@ -40,9 +40,9 @@ static void handleInterrupt(Uart *port)
 		TermHandleSpecial(port);
 
 	}
-	if(port->port->SR & USART_SR_IDLE) //line is idle, end of data reception
+	if(UART_LL_CHECK_RX_IDLE(port->port)) //line is idle, end of data reception
 	{
-		port->port->DR; //reset idle flag by dummy read
+		UART_LL_GET_DATA(port->port); //reset idle flag by dummy read
 		if(port->rxBufferHead != 0)
 		{
 			if(((port->rxBuffer[port->rxBufferHead - 1] == '\r') || (port->rxBuffer[port->rxBufferHead - 1] == '\n'))) //data ends with \r or \n, process as data
@@ -51,29 +51,29 @@ static void handleInterrupt(Uart *port)
 			}
 		}
 	}
-	if(port->port->SR & USART_SR_TXE) //TX buffer empty
+	if(UART_LL_CHECK_TX_EMPTY(port->port)) //TX buffer empty
 	{
 		if((port->txBufferHead != port->txBufferTail) || port->txBufferFull) //if there is anything to transmit
 		{
-			port->port->DR = port->txBuffer[port->txBufferTail++];
+			UART_LL_PUT_DATA(port->port, port->txBuffer[port->txBufferTail++]);
 			port->txBufferTail %= UART_BUFFER_SIZE;
 			port->txBufferFull = 0;
 		}
 		else //nothing more to be transmitted
 		{
-			port->port->CR1 &= ~USART_CR1_TXEIE;
+			UART_LL_DISABLE_TX_EMPTY_INTERRUPT(port->port);
 		}
 	}
 }
 
-void USART1_IRQHandler(void) __attribute__ ((interrupt));
-void USART1_IRQHandler(void)
+void UART_LL_UART1_INTERUPT_HANDLER(void) __attribute__ ((interrupt));
+void UART_LL_UART1_INTERUPT_HANDLER(void)
 {
 	handleInterrupt(&Uart1);
 }
 
-void USART2_IRQHandler(void) __attribute__ ((interrupt));
-void USART2_IRQHandler(void)
+void UART_LL_UART2_INTERUPT_HANDLER(void) __attribute__ ((interrupt));
+void UART_LL_UART2_INTERUPT_HANDLER(void)
 {
 	handleInterrupt(&Uart2);
 }
@@ -96,8 +96,8 @@ void UartSendByte(Uart *port, uint8_t data)
 		port->txBufferHead %= UART_BUFFER_SIZE;
 		if(port->txBufferHead == port->txBufferTail)
 			port->txBufferFull = 1;
-		if(0 == (port->port->CR1 & USART_CR1_TXEIE))
-			port->port->CR1 |= USART_CR1_TXEIE;
+		if(0 == (UART_LL_CHECK_ENABLED_TX_EMPTY_INTERRUPT(port->port)))
+			UART_LL_ENABLE_TX_EMPTY_INTERRUPT(port->port);
 	}
 }
 
@@ -161,53 +161,46 @@ void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 
 void UartConfig(Uart *port, uint8_t state)
 {
-	if(port->port == USART1)
+	if(port->port == UART_LL_UART1_STRUCTURE)
 	{
-		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-		GPIOA->CRH |= GPIO_CRH_MODE9_1;
-		GPIOA->CRH &= ~GPIO_CRH_CNF9_0;
-		GPIOA->CRH |= GPIO_CRH_CNF9_1;
-		GPIOA->CRH |= GPIO_CRH_CNF10_0;
-		GPIOA->CRH &= ~GPIO_CRH_CNF10_1;
-
-		USART1->BRR = (SystemCoreClock / (port->baudrate));
+		UART_LL_UART1_INITIALIZE_PERIPHERAL(port->baudrate);
 
 		if(state)
-			USART1->CR1 |= USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_IDLEIE;
+		{
+			UART_LL_ENABLE(port->port);
+		}
 		else
-			USART1->CR1 &= (~USART_CR1_RXNEIE) & (~USART_CR1_TE) & (~USART_CR1_RE) &  (~USART_CR1_UE) & (~USART_CR1_IDLEIE);
+		{
+			UART_LL_DISABLE(port->port);
+		}
 
-		NVIC_SetPriority(USART1_IRQn, 2);
+		NVIC_SetPriority(UART_LL_UART1_IRQ, 2);
 		if(state)
-			NVIC_EnableIRQ(USART1_IRQn);
+			NVIC_EnableIRQ(UART_LL_UART1_IRQ);
 		else
-			NVIC_DisableIRQ(USART1_IRQn);
+			NVIC_DisableIRQ(UART_LL_UART1_IRQ);
 
 		port->enabled = state > 0;
 		port->isUsb = 0;
 	}
-	else if(port->port == USART2)
+	else if(port->port == UART_LL_UART2_STRUCTURE)
 	{
-		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-		RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
-		GPIOA->CRL |= GPIO_CRL_MODE2_1;
-		GPIOA->CRL &= ~GPIO_CRL_CNF2_0;
-		GPIOA->CRL |= GPIO_CRL_CNF2_1;
-		GPIOA->CRL |= GPIO_CRL_CNF3_0;
-		GPIOA->CRL &= ~GPIO_CRL_CNF3_1;
+		UART_LL_UART2_INITIALIZE_PERIPHERAL(port->baudrate);
 
-		USART2->BRR = (SystemCoreClock / (port->baudrate * 2));
 		if(state)
-			USART2->CR1 |= USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_IDLEIE;
+		{
+			UART_LL_ENABLE(port->port);
+		}
 		else
-			USART2->CR1 &= (~USART_CR1_RXNEIE) & (~USART_CR1_TE) & (~USART_CR1_RE) &  (~USART_CR1_UE) & (~USART_CR1_IDLEIE);
+		{
+			UART_LL_DISABLE(port->port);
+		}
 
-		NVIC_SetPriority(USART2_IRQn, 2);
+		NVIC_SetPriority(UART_LL_UART2_IRQ, 2);
 		if(state)
-			NVIC_EnableIRQ(USART2_IRQn);
+			NVIC_EnableIRQ(UART_LL_UART2_IRQ);
 		else
-			NVIC_DisableIRQ(USART2_IRQn);
+			NVIC_DisableIRQ(UART_LL_UART2_IRQ);
 
 		port->enabled = state > 0;
 		port->isUsb = 0;

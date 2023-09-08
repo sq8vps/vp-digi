@@ -16,15 +16,15 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "drivers/systick.h"
-#include "drivers/modem.h"
-#include "ax25.h"
-#include <math.h>
-#include <stdlib.h>
-#include "common.h"
 #include <string.h>
-#include "stm32f1xx.h"
-
+#include <math.h>
+#include <modem.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "ax25.h"
+#include "common.h"
+#include "systick.h"
+#include "drivers/modem_ll.h"
 
 /*
  * Configuration for PLL-based data carrier detection
@@ -81,7 +81,7 @@ static enum ModemTxTestMode txTestState; //current TX test mode
 static uint8_t demodCount; //actual number of parallel demodulators
 static uint16_t dacSine[DAC_SINE_SIZE]; //sine samples for DAC
 static uint8_t dacSineIdx; //current sine sample index
-static volatile uint16_t samples[4]; //very raw received samples, filled directly by DMA
+static volatile uint16_t samples[MODEM_LL_OVERSAMPLING_FACTOR]; //very raw received samples, filled directly by DMA
 static uint8_t currentSymbol; //current symbol for NRZI encoding
 static uint8_t scrambledSymbol; //current symbol after scrambling
 static float markFreq; //mark frequency
@@ -209,7 +209,7 @@ static struct DemodState demodState[MODEM_MAX_DEMODULATOR_COUNT];
 
 static void decode(uint8_t symbol, uint8_t demod);
 static int32_t demodulate(int16_t sample, struct DemodState *dem);
-static void setPtt(uint8_t state);
+static void setPtt(bool state);
 
 static int32_t filter(struct Filter *filter, int32_t input)
 {
@@ -263,19 +263,17 @@ enum ModemPrefilter ModemGetFilterType(uint8_t modem)
 
 /**
  * @brief Set DCD LED
- * @param[in] state 0 - OFF, 1 - ON
+ * @param[in] state False - OFF, true - ON
  */
-static void setDcd(uint8_t state)
+static void setDcd(bool state)
 {
 	 if(state)
 	 {
-	 	GPIOC->BSRR = GPIO_BSRR_BR13;
-	 	GPIOB->BSRR = GPIO_BSRR_BS5;
+		 MODEM_LL_DCD_LED_ON();
 	 }
 	 else
 	 {
-	 	GPIOC->BSRR = GPIO_BSRR_BS13;
-	 	GPIOB->BSRR = GPIO_BSRR_BR5;
+		 MODEM_LL_DCD_LED_OFF();
 	 }
 }
 
@@ -302,12 +300,12 @@ static inline uint8_t scramble(uint8_t in)
 /**
  * @brief ISR for demodulator
  */
-void DMA1_Channel2_IRQHandler(void) __attribute__ ((interrupt));
-void DMA1_Channel2_IRQHandler(void)
+void MODEM_LL_DMA_INTERRUPT_HANDLER(void) __attribute__ ((interrupt));
+void MODEM_LL_DMA_INTERRUPT_HANDLER(void)
 {
-	 if(DMA1->ISR & DMA_ISR_TCIF2)
+	 if(MODEM_LL_DMA_TRANSFER_COMPLETE_FLAG)
 	 {
-	 	DMA1->IFCR |= DMA_IFCR_CTCIF2;
+		 MODEM_LL_DMA_CLEAR_TRANSFER_COMPLETE_FLAG();
 
 		//each sample is 12 bits, output sample is 13 bits
 		int32_t sample = ((samples[0] + samples[1] + samples[2] + samples[3]) >> 1) - 4095; //calculate input sample (decimation)
@@ -325,12 +323,12 @@ void DMA1_Channel2_IRQHandler(void)
 		if(partialDcd) //DCD on any of the demodulators
 		{
 			dcd = 1;
-			setDcd(1);
+			setDcd(true);
 		}
 		else //no DCD on both demodulators
 		{
 			dcd = 0;
-			setDcd(0);
+			setDcd(false);
 		}
 	}
 }
@@ -338,10 +336,10 @@ void DMA1_Channel2_IRQHandler(void)
 /**
  * @brief ISR for pushing DAC samples
  */
- void TIM1_UP_IRQHandler(void) __attribute__ ((interrupt));
- void TIM1_UP_IRQHandler(void)
+ void MODEM_LL_DAC_INTERRUPT_HANDLER(void) __attribute__ ((interrupt));
+ void MODEM_LL_DAC_INTERRUPT_HANDLER(void)
  {
- 	TIM1->SR &= ~TIM_SR_UIF;
+	 MODEM_LL_DAC_TIMER_CLEAR_INTERRUPT_FLAG;
 
  	int32_t sample = 0;
 
@@ -363,12 +361,11 @@ void DMA1_Channel2_IRQHandler(void)
 
  	if(ModemConfig.usePWM)
  	{
- 		TIM4->CCR1 = sample;
+ 		MODEM_LL_PWM_PUT_VALUE(sample);
  	}
  	else
  	{
- 		GPIOB->ODR &= ~0xF000; //zero 4 oldest bits
- 		GPIOB->ODR |= ((uint32_t)sample << 12); //write sample to 4 oldest bits
+ 		MODEM_LL_R2R_PUT_VALUE(sample);
  	}
 
 }
@@ -377,10 +374,10 @@ void DMA1_Channel2_IRQHandler(void)
 /**
  * @brief ISR for baudrate generator timer. NRZI encoding is done here.
  */
- void TIM3_IRQHandler(void) __attribute__ ((interrupt));
- void TIM3_IRQHandler(void)
+ void MODEM_LL_BAUDRATE_TIMER_INTERRUPT_HANDLER(void) __attribute__ ((interrupt));
+ void MODEM_LL_BAUDRATE_TIMER_INTERRUPT_HANDLER(void)
  {
- 	TIM3->SR &= ~TIM_SR_UIF;
+	 MODEM_LL_BAUDRATE_TIMER_CLEAR_INTERRUPT_FLAG();
 
  	if(txTestState == TEST_DISABLED) //transmitting normal data
  	{
@@ -406,11 +403,15 @@ void DMA1_Channel2_IRQHandler(void)
  	}
  	else
  	{
- 	 	TIM1->CNT = 0;
- 		if(currentSymbol) //current symbol is space
- 			TIM1->ARR = spaceStep;
- 		else //mark
- 			TIM1->ARR = markStep;
+ 	 	MODEM_LL_DAC_TIMER_SET_CURRENT_VALUE(0);
+ 		if(currentSymbol)
+ 		{
+ 			MODEM_LL_DAC_TIMER_SET_RELOAD_VALUE(spaceStep);
+ 		}
+ 		else
+ 		{
+ 			MODEM_LL_DAC_TIMER_SET_RELOAD_VALUE(markStep);
+ 		}
  	}
 
 }
@@ -583,37 +584,35 @@ void ModemTxTestStart(enum ModemTxTestMode type)
 	 if(txTestState != TEST_DISABLED) //TX test is already running
 	 	ModemTxTestStop(); //stop this test
 
-	 setPtt(1); //PTT on
+	 setPtt(true); //PTT on
 	 txTestState = type;
 
-	 TIM2->CR1 &= ~TIM_CR1_CEN; //disable RX timer
-	 TIM1->CR1 |= TIM_CR1_CEN; //enable DAC timer
+	 MODEM_LL_ADC_TIMER_DISABLE();
+	 MODEM_LL_DAC_TIMER_ENABLE();
 
-	 NVIC_DisableIRQ(DMA1_Channel2_IRQn); //disable RX DMA interrupt
-	 NVIC_EnableIRQ(TIM1_UP_IRQn); //enable DAC interrupt
+	 NVIC_DisableIRQ(MODEM_LL_DMA_IRQ);
+	 NVIC_EnableIRQ(MODEM_LL_DAC_IRQ);
 
 	 if(ModemConfig.modem == MODEM_9600)
 	 {
-		TIM1->ARR = markStep;
-		//enable baudrate generator
-		TIM3->CR1 = TIM_CR1_CEN; //enable timer
-		NVIC_EnableIRQ(TIM3_IRQn); //enable interrupt in NVIC
+		MODEM_LL_DAC_TIMER_SET_RELOAD_VALUE(markStep);
+		MODEM_LL_BAUDRATE_TIMER_ENABLE();
+		NVIC_EnableIRQ(MODEM_LL_BAUDRATE_TIMER_IRQ);
 		return;
 	 }
 
 	 if(type == TEST_MARK)
 	 {
-	 	TIM1->ARR = markStep;
+		 MODEM_LL_DAC_TIMER_SET_RELOAD_VALUE(markStep);
 	 }
 	 else if(type == TEST_SPACE)
 	 {
-	 	TIM1->ARR = spaceStep;
+		 MODEM_LL_DAC_TIMER_SET_RELOAD_VALUE(spaceStep);
 	 }
 	 else //alternating tones
 	 {
-	 	//enable baudrate generator
-	 	TIM3->CR1 = TIM_CR1_CEN; //enable timer
-	 	NVIC_EnableIRQ(TIM3_IRQn); //enable interrupt in NVIC
+		MODEM_LL_BAUDRATE_TIMER_ENABLE();
+	 	NVIC_EnableIRQ(MODEM_LL_BAUDRATE_TIMER_IRQ); //enable interrupt in NVIC
 	 }
 }
 
@@ -622,31 +621,33 @@ void ModemTxTestStop(void)
 {
 	 txTestState = TEST_DISABLED;
 
-	 TIM3->CR1 &= ~TIM_CR1_CEN; //disable baudrate timer
-	 TIM1->CR1 &= ~TIM_CR1_CEN; //disable DAC timer
-	 TIM2->CR1 |= TIM_CR1_CEN; //enable RX timer
+	 MODEM_LL_BAUDRATE_TIMER_DISABLE();
+	 MODEM_LL_DAC_TIMER_DISABLE(); //disable DAC timer
+	 MODEM_LL_ADC_TIMER_ENABLE(); //enable RX timer
 
-	 NVIC_DisableIRQ(TIM3_IRQn);
-	 NVIC_DisableIRQ(TIM1_UP_IRQn);
-	 NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+	 NVIC_DisableIRQ(MODEM_LL_BAUDRATE_TIMER_IRQ);
+	 NVIC_DisableIRQ(MODEM_LL_DAC_IRQ);
+	 NVIC_EnableIRQ(MODEM_LL_DMA_IRQ);
 
-	 setPtt(0); //PTT off
+	 setPtt(false); //PTT off
 }
 
 
 void ModemTransmitStart(void)
 {
-	 setPtt(1); //PTT on
+	 setPtt(true); //PTT on
 	 if(ModemConfig.modem == MODEM_9600)
-		 TIM1->ARR = markStep;
+	 {
+		 MODEM_LL_DAC_TIMER_SET_RELOAD_VALUE(markStep);
+	 }
 
-	 TIM3->CR1 = TIM_CR1_CEN;
-	 TIM1->CR1 = TIM_CR1_CEN;
-	 TIM2->CR1 &= ~TIM_CR1_CEN;
+	 MODEM_LL_BAUDRATE_TIMER_ENABLE();
+	 MODEM_LL_DAC_TIMER_ENABLE();
+	 MODEM_LL_ADC_TIMER_DISABLE();
 
-	 NVIC_DisableIRQ(DMA1_Channel2_IRQn);
-	 NVIC_EnableIRQ(TIM1_UP_IRQn);
-	 NVIC_EnableIRQ(TIM3_IRQn);
+	 NVIC_DisableIRQ(MODEM_LL_DMA_IRQ);
+	 NVIC_EnableIRQ(MODEM_LL_DAC_IRQ);
+	 NVIC_EnableIRQ(MODEM_LL_BAUDRATE_TIMER_IRQ);
 }
 
 
@@ -655,29 +656,31 @@ void ModemTransmitStart(void)
  */
 void ModemTransmitStop(void)
 {
-	 TIM2->CR1 |= TIM_CR1_CEN;
-	 TIM3->CR1 &= ~TIM_CR1_CEN;
-	 TIM1->CR1 &= ~TIM_CR1_CEN;
+	 MODEM_LL_ADC_TIMER_ENABLE();
+	 MODEM_LL_DAC_TIMER_DISABLE();
+	 MODEM_LL_BAUDRATE_TIMER_DISABLE();
 
-	 NVIC_DisableIRQ(TIM1_UP_IRQn);
-	 NVIC_DisableIRQ(TIM3_IRQn);
-	 NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+	 NVIC_DisableIRQ(MODEM_LL_DAC_IRQ);
+	 NVIC_DisableIRQ(MODEM_LL_BAUDRATE_TIMER_IRQ);
+	 NVIC_EnableIRQ(MODEM_LL_DMA_IRQ);
 
-	 setPtt(0);
-
-	 TIM4->CCR1 = 44; //set around 50% duty cycle
+	 setPtt(false);
 }
 
 /**
  * @brief Controls PTT output
- * @param state 0 - PTT off, 1 - PTT on
+ * @param state False - PTT off, true - PTT on
  */
-static void setPtt(uint8_t state)
+static void setPtt(bool state)
 {
 	 if(state)
-	 	GPIOB->BSRR = GPIO_BSRR_BS7;
+	 {
+	 	MODEM_LL_PTT_ON();
+	 }
 	 else
-	 	GPIOB->BSRR = GPIO_BSRR_BR7;
+	 {
+	 	MODEM_LL_PTT_OFF();
+	 }
 }
 
 
@@ -688,92 +691,24 @@ void ModemInit(void)
 {
 	memset(demodState, 0, sizeof(demodState));
 
-	/**
-	 * TIM1 is used for pushing samples to DAC (R2R or PWM) (clocked at 18 MHz)
-	 * TIM3 is the baudrate generator for TX (clocked at 18 MHz)
-	 * TIM4 is the PWM generator with no software interrupt
-	 * TIM2 is the RX sampling timer with no software interrupt, but it directly calls DMA
-	 */
+	MODEM_LL_INITIALIZE_RCC(); //initialize peripheral clocks
 
-	 RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
-	 RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
-	 RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-	 RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-	 RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
-	 RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
-	 RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
-	 RCC->AHBENR |= RCC_AHBENR_DMA1EN;
+	MODEM_LL_INITIALIZE_OUTPUTS();
 
+	MODEM_LL_INITIALIZE_ADC();
 
-	 GPIOC->CRH |= GPIO_CRH_MODE13_1; //DCD LED on PC13
-	 GPIOC->CRH &= ~GPIO_CRH_MODE13_0;
-	 GPIOC->CRH &= ~GPIO_CRH_CNF13;
+	MODEM_LL_INITIALIZE_DMA(samples);
 
-	 GPIOB->CRH &= ~0xFFFF0000; //R2R output on PB12-PB15
-	 GPIOB->CRH |= 0x22220000;
+	NVIC_EnableIRQ(MODEM_LL_DMA_IRQ);
 
-	 GPIOA->CRL &= ~GPIO_CRL_CNF0; //ADC input on PA0
-	 GPIOA->CRL &= ~GPIO_CRL_MODE0;
+	MODEM_LL_ADC_TIMER_INITIALIZE();
 
+	MODEM_LL_DAC_TIMER_INITIALIZE();
 
-	 GPIOB->CRL |= GPIO_CRL_MODE7_1; //PTT output on PB7
-	 GPIOB->CRL &= ~GPIO_CRL_MODE7_0;
-	 GPIOB->CRL &= ~GPIO_CRL_CNF7;
+	MODEM_LL_BAUDRATE_TIMER_INITIALIZE();
 
-	 GPIOB->CRL |= GPIO_CRL_MODE5_1; //2nd DCD LED on PB5
-	 GPIOB->CRL &= ~GPIO_CRL_MODE5_0;
-	 GPIOB->CRL &= ~GPIO_CRL_CNF5;
-
-
-	 RCC->CFGR |= RCC_CFGR_ADCPRE_1; //ADC prescaler /6
-	 RCC->CFGR &= ~RCC_CFGR_ADCPRE_0;
-
-	 ADC1->CR2 |= ADC_CR2_CONT; //continuous conversion
-	 ADC1->CR2 |= ADC_CR2_EXTSEL;
-	 ADC1->SQR1 &= ~ADC_SQR1_L; //1 conversion
-     ADC1->SMPR2 |= ADC_SMPR2_SMP0_2; //41.5 cycle sampling
-	 ADC1->SQR3 &= ~ADC_SQR3_SQ1; //channel 0 is first in the sequence
-     ADC1->CR2 |= ADC_CR2_ADON; //ADC on
-
-	 ADC1->CR2 |= ADC_CR2_RSTCAL; //calibrate ADC
-	 while(ADC1->CR2 & ADC_CR2_RSTCAL)
-	 	;
-	 ADC1->CR2 |= ADC_CR2_CAL;
-	 while(ADC1->CR2 & ADC_CR2_CAL)
-	 	;
-
-	 ADC1->CR2 |= ADC_CR2_EXTTRIG;
-	 ADC1->CR2 |= ADC_CR2_SWSTART; //start ADC conversion
-
-	 //prepare DMA
-	 DMA1_Channel2->CCR |= DMA_CCR_MSIZE_0; //16 bit memory region
-	 DMA1_Channel2->CCR &= ~DMA_CCR_MSIZE_1;
-     DMA1_Channel2->CCR |= DMA_CCR_PSIZE_0;
-	 DMA1_Channel2->CCR &= ~DMA_CCR_PSIZE_1;
-
-	 DMA1_Channel2->CCR |= DMA_CCR_MINC | DMA_CCR_CIRC| DMA_CCR_TCIE; //circular mode, memory increment and interrupt
-     DMA1_Channel2->CNDTR = 4; //4 samples
-	 DMA1_Channel2->CPAR = (uint32_t)&(ADC1->DR); //ADC data register address
-	 DMA1_Channel2->CMAR = (uint32_t)samples; //sample buffer address
-	 DMA1_Channel2->CCR |= DMA_CCR_EN; //enable DMA
-
-	 NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-
-
-	 //RX sampling timer
-	 TIM2->PSC = 8; //72/9=8 MHz
-	 TIM2->DIER |= TIM_DIER_UDE; //enable calling DMA on timer tick
-
-	 //TX DAC timer
-	 TIM1->PSC = 3; //72/4=18 MHz
-	 TIM1->DIER |= TIM_DIER_UIE;
-
-	 //baudrate timer
-	 TIM3->PSC = 3; //72/4=18 MHz
-	 TIM3->DIER |= TIM_DIER_UIE;
-
-	 if(ModemConfig.modem > MODEM_9600)
-		 ModemConfig.modem = MODEM_1200;
+	if(ModemConfig.modem > MODEM_9600)
+	 ModemConfig.modem = MODEM_1200;
 
 	if((ModemConfig.modem == MODEM_1200) || (ModemConfig.modem == MODEM_1200_V23))
 	{
@@ -852,8 +787,6 @@ void ModemInit(void)
 			spaceFreq = 2100.f;
 		}
 
-
-		TIM2->ARR = 207; //8MHz / 208 =~38400 Hz (4*9600 Hz for 4x oversampling)
 	}
 	else if(ModemConfig.modem == MODEM_300)
 	{
@@ -878,8 +811,6 @@ void ModemInit(void)
 		demodState[0].lpf.coeffs = (int16_t*)lpf300;
 		demodState[0].lpf.taps = sizeof(lpf300) / sizeof(*lpf300);
 		demodState[0].lpf.gainShift = 15;
-
-		TIM2->ARR = 207; //8MHz / 208 =~38400 Hz (4*9600 Hz for 4x oversampling)
 	}
 	else if(ModemConfig.modem == MODEM_9600)
 	{
@@ -902,17 +833,18 @@ void ModemInit(void)
 		demodState[0].lpf.taps = sizeof(lpf9600) / sizeof(*lpf9600);
 		demodState[0].lpf.gainShift = 16;
 
-		TIM2->ARR = 51; //8MHz / 52 =~153600 Hz (4*38400 Hz for 4x oversampling)
 	}
 
-	TIM2->CR1 |= TIM_CR1_CEN; //enable DMA timer
+	MODEM_LL_ADC_SET_SAMPLE_RATE(baudRate * N * MODEM_LL_OVERSAMPLING_FACTOR);
 
-	markStep = 18000000 / (DAC_SINE_SIZE * markFreq) - 1;
-	spaceStep = 18000000 / (DAC_SINE_SIZE * spaceFreq) - 1;
-	baudRateStep = 18000000 / baudRate - 1;
+	MODEM_LL_ADC_TIMER_ENABLE();
+
+	markStep =  MODEM_LL_DAC_TIMER_CALCULATE_STEP(DAC_SINE_SIZE * markFreq);
+	spaceStep = MODEM_LL_DAC_TIMER_CALCULATE_STEP(DAC_SINE_SIZE * spaceFreq);
+	baudRateStep = MODEM_LL_BAUDRATE_TIMER_CALCULATE_STEP(baudRate);
 
 
-	TIM3->ARR = baudRateStep;
+	MODEM_LL_BAUDRATE_TIMER_SET_RELOAD_VALUE(baudRateStep);
 
 	for(uint8_t i = 0; i < N; i++) //calculate correlator coefficients
 	{
@@ -933,21 +865,7 @@ void ModemInit(void)
 
 	if(ModemConfig.usePWM)
 	{
-		 RCC->APB1ENR |= RCC_APB1ENR_TIM4EN; //configure timer
-
-		 GPIOB->CRL |= GPIO_CRL_CNF6_1; //configure pin for PWM
-		 GPIOB->CRL |= GPIO_CRL_MODE6;
-		 GPIOB->CRL &= ~GPIO_CRL_CNF6_0;
-
-		 //set up PWM generation
-		 TIM4->PSC = 2; //72MHz/3=24MHz
-		 TIM4->ARR = 257; //18MHz/258=93kHz
-
-		 TIM4->CCMR1 |= TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2;
-		 TIM4->CCER |= TIM_CCER_CC1E;
-		 TIM4->CCR1 = 127; //initial duty cycle
-
-		 TIM4->CR1 |= TIM_CR1_CEN;
+		MODEM_LL_PWM_INITIALIZE();
 	}
 
 }

@@ -19,7 +19,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TERMINAL_H_
 #define TERMINAL_H_
 
-#include "drivers/uart.h"
+#include "uart.h"
 #include <stdint.h>
 
 /**

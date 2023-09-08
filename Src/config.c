@@ -16,16 +16,15 @@ You should have received a copy of the GNU General Public License
 along with VP-DigiConfig.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "modem.h"
+#include "uart.h"
 #include "config.h"
 #include "common.h"
-#include "drivers/uart.h"
 #include "usbd_cdc_if.h"
 #include "digipeater.h"
-#include "drivers/uart.h"
 #include "ax25.h"
 #include "beacon.h"
 #include "stm32f1xx.h"
-#include "drivers/modem.h"
 
 #define CONFIG_ADDRESS 0x800F000
 #define CONFIG_PAGE_COUNT 2

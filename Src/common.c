@@ -16,11 +16,10 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common.h"
-#include "ax25.h"
 #include <math.h>
 #include <stdlib.h>
-#include "drivers/uart.h"
+#include "common.h"
+#include "ax25.h"
 #include "usbd_cdc_if.h"
 
 struct _GeneralConfig GeneralConfig =

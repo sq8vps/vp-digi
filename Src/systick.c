@@ -16,21 +16,30 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SYSTICK_H_
-#define SYSTICK_H_
+#include "stm32f1xx.h"
+#include "systick.h"
 
-#include <stdint.h>
+volatile uint32_t ticks = 0; //SysTick counter
 
+//with HAL enabled, the handler is in stm32f1xx_it.c
+//void SysTick_Handler(void)
+//{
+	//ticks++;
+//}
 
-#define SYSTICK_FREQUENCY 100 //systick frequency in Hz
-#define SYSTICK_INTERVAL (1000 / SYSTICK_FREQUENCY) //systick interval in milliseconds
+void SysTickInit(void)
+{
+	SysTick_Config(SystemCoreClock / SYSTICK_FREQUENCY); //SysTick every 10 ms
+}
 
-extern volatile uint32_t ticks;
+uint32_t SysTickGet(void)
+{
+	return ticks;
+}
 
-void SysTickInit(void);
-
-uint32_t SysTickGet(void);
-
-void Delay(uint32_t ms);
-
-#endif /* SYSTICK_H_ */
+void Delay(uint32_t ms)
+{
+	uint32_t target = SysTickGet() + ms / SYSTICK_INTERVAL;
+	while(target > SysTickGet())
+		;
+}

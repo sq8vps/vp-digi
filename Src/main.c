@@ -41,18 +41,18 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "drivers/modem.h"
 #include <stdint.h>
+#include "systick.h"
+#include "modem.h"
 #include "ax25.h"
-#include "drivers/uart.h"
-#include "drivers/systick.h"
-#include "stm32f1xx.h"
 #include "digipeater.h"
 #include "common.h"
 #include "drivers/watchdog.h"
 #include "beacon.h"
 #include "terminal.h"
 #include "config.h"
+#include "uart.h"
+#include "drivers/usb.h"
 #ifdef ENABLE_FX25
 #include "fx25.h"
 #endif
@@ -196,14 +196,7 @@ int main(void)
 
   SysTickInit();
 
-  //force usb re-enumeration after reset
-  RCC->APB2ENR |= RCC_APB2ENR_IOPAEN; //pull D+ to ground for a moment
-  GPIOA->CRH |= GPIO_CRH_MODE12_1;
-  GPIOA->CRH &= ~GPIO_CRH_CNF12;
-  GPIOA->BSRR = GPIO_BSRR_BR12;
-  Delay(100);
-  GPIOA->CRH &= ~GPIO_CRH_MODE12;
-  GPIOA->CRH |= GPIO_CRH_CNF12_0;
+  USB_FORCE_REENUMERATION();
 
 
   /* USER CODE END SysInit */
@@ -224,7 +217,10 @@ int main(void)
 
 	//set some initial values in case there is no configuration saved in memory
 	Uart1.baudrate = 9600;
+	Uart1.defaultMode = MODE_KISS;
 	Uart2.baudrate = 9600;
+	Uart2.defaultMode = MODE_KISS;
+	UartUsb.defaultMode = MODE_KISS;
 	ModemConfig.usePWM = 1; //use PWM by default
 	ModemConfig.flatAudioIn = 0;
 	Ax25Config.quietTime = 300;
@@ -241,8 +237,8 @@ int main(void)
 	Fx25Init();
 #endif
 
-	UartInit(&Uart1, USART1, Uart1.baudrate);
-	UartInit(&Uart2, USART2, Uart2.baudrate);
+	UartInit(&Uart1, UART_LL_UART1_STRUCTURE, Uart1.baudrate);
+	UartInit(&Uart2, UART_LL_UART2_STRUCTURE, Uart2.baudrate);
 	UartInit(&UartUsb, NULL, 1);
 
 	UartConfig(&Uart1, 1);

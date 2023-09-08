@@ -19,10 +19,10 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef UART_H_
 #define UART_H_
 
-#include "stm32f1xx.h"
 #include <stdint.h>
 #include "usbd_cdc_if.h"
 #include "ax25.h"
+#include "drivers/uart_ll.h"
 
 #define UART_BUFFER_SIZE 130
 

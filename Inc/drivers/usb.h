@@ -16,30 +16,27 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "drivers/systick.h"
+
+#ifndef DRIVERS_USB_H_
+#define DRIVERS_USB_H_
+
+#include "systick.h"
+
+#if defined(STM32F103xB) || defined(STM32F103x8)
+
 #include "stm32f1xx.h"
 
-volatile uint32_t ticks = 0; //SysTick counter
+#define USB_FORCE_REENUMERATION() { \
+	/* Pull D+ to ground for a moment to force reenumeration */ \
+	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN; \
+	GPIOA->CRH |= GPIO_CRH_MODE12_1; \
+	GPIOA->CRH &= ~GPIO_CRH_CNF12; \
+	GPIOA->BSRR = GPIO_BSRR_BR12; \
+	Delay(100); \
+	GPIOA->CRH &= ~GPIO_CRH_MODE12; \
+	GPIOA->CRH |= GPIO_CRH_CNF12_0; \
+} \
 
-//with HAL enabled, the handler is in stm32f1xx_it.c
-//void SysTick_Handler(void)
-//{
-	//ticks++;
-//}
+#endif
 
-void SysTickInit(void)
-{
-	SysTick_Config(SystemCoreClock / SYSTICK_FREQUENCY); //SysTick every 10 ms
-}
-
-uint32_t SysTickGet(void)
-{
-	return ticks;
-}
-
-void Delay(uint32_t ms)
-{
-	uint32_t target = SysTickGet() + ms / SYSTICK_INTERVAL;
-	while(target > SysTickGet())
-		;
-}
+#endif /* DRIVERS_USB_H_ */

@@ -19,7 +19,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define COMMON_H_
 
 #include <stdint.h>
-#include "drivers/uart.h"
+#include "uart.h"
 
 #define IS_UPPERCASE_ALPHANUMERIC(x) ((((x) >= '0') && ((x) <= '9')) || (((x) >= 'A') && ((x) <= 'Z')))
 #define IS_NUMBER(x) (((x) >= '0') && ((x) <= '9'))

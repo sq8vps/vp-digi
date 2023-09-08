@@ -23,8 +23,6 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-#include "drivers/uart.h"
-#include "drivers/systick.h"
 #include "terminal.h"
 #include "kiss.h"
 /* USER CODE END INCLUDE */

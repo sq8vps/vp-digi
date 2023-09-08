@@ -16,19 +16,29 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "drivers/watchdog.h"
-#include "stm32f1xx.h"
+#ifndef SYSTICK_H_
+#define SYSTICK_H_
 
-void WdogInit(void)
-{
-	IWDG->KR = 0x5555; //configuration mode
-	IWDG->PR = 0b101; //prescaler
-	IWDG->RLR = 0xFFF; //timeout register
-	IWDG->KR = 0xCCCC; //start
-}
+#include <stdint.h>
 
+#define SYSTICK_FREQUENCY 100 //systick frequency in Hz
+#define SYSTICK_INTERVAL (1000 / SYSTICK_FREQUENCY) //systick interval in milliseconds
 
-void WdogReset(void)
-{
-	IWDG->KR = 0xAAAA; //reset
-}
+/**
+ * @brief Initialize SysTick
+ */
+void SysTickInit(void);
+
+/**
+ * @brief Get current SysTick counter value
+ * @return Current SysTick counter value
+ */
+uint32_t SysTickGet(void);
+
+/**
+ * @brief Execute a blocking delay
+ * @param ms Time in milliseconds
+ */
+void Delay(uint32_t ms);
+
+#endif /* SYSTICK_H_ */

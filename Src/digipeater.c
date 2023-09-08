@@ -18,12 +18,12 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "digipeater.h"
 #include "terminal.h"
-#include "drivers/modem.h"
 #include <string.h>
 #include "common.h"
 #include "ax25.h"
 #include <math.h>
-#include "drivers/systick.h"
+#include <modem.h>
+#include <systick.h>
 
 struct _DigiConfig DigiConfig;
 

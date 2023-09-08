@@ -18,13 +18,13 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+#include "modem.h"
 #include "ax25.h"
 #include <stdlib.h>
-#include "drivers/modem.h"
 #include "common.h"
 #include <stdbool.h>
 #include <string.h>
-#include "drivers/systick.h"
+#include "systick.h"
 #include "digipeater.h"
 
 struct Ax25ProtoConfig Ax25Config;

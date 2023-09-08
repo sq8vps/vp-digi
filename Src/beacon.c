@@ -20,9 +20,9 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "digipeater.h"
 #include "common.h"
 #include <string.h>
+#include <systick.h>
 #include "ax25.h"
 #include "terminal.h"
-#include "drivers/systick.h"
 
 struct Beacon beacon[8];
 
