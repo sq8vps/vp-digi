@@ -775,25 +775,15 @@ void ModemInit(void)
 	 if(ModemConfig.modem > MODEM_9600)
 		 ModemConfig.modem = MODEM_1200;
 
-	if((ModemConfig.modem == MODEM_1200) || (ModemConfig.modem == MODEM_1200_V23)
-#ifdef ENABLE_PSK
-		|| (ModemConfig.modem == MODEM_BPSK_1200) || (ModemConfig.modem == MODEM_QPSK_1200)
-#endif
-	)
+	if((ModemConfig.modem == MODEM_1200) || (ModemConfig.modem == MODEM_1200_V23))
 	{
-
-
 		//use one modem in FX.25 mode
 		//FX.25 (RS) functions are not reentrant
-		//also they are BIG
 		if(
 #ifdef ENABLE_FX25
 			Ax25Config.fx25
 #else
 			0
-#endif
-#ifdef ENABLE_PSK
-		|| (ModemConfig.modem == MODEM_BPSK_1200) || (ModemConfig.modem == MODEM_QPSK_1200)
 #endif
 		)
 			demodCount = 1;
@@ -830,10 +820,6 @@ void ModemInit(void)
 		demodState[0].lpf.gainShift = 15;
 		demodState[0].prefilter = PREFILTER_NONE;
 
-#ifdef ENABLE_PSK
-		if((ModemConfig.modem != MODEM_BPSK_1200) && (ModemConfig.modem != MODEM_QPSK_1200))
-		{
-#endif
 		if(ModemConfig.flatAudioIn) //when used with flat audio input, use deemphasis and flat modems
 		{
 #ifdef ENABLE_FX25
@@ -865,13 +851,7 @@ void ModemInit(void)
 			markFreq = 1300.f;
 			spaceFreq = 2100.f;
 		}
-#ifdef ENABLE_PSK
-		}
-		else
-		{
-			markFreq = 1700.f; //use as center frequency in PSK
-		}
-#endif
+
 
 		TIM2->ARR = 207; //8MHz / 208 =~38400 Hz (4*9600 Hz for 4x oversampling)
 	}
