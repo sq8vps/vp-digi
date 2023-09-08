@@ -911,7 +911,7 @@ void Ax25TransmitBuffer(void)
  * @brief Start transmission immediately
  * @warning Transmission should be initialized using Ax25_transmitBuffer
  */
-/*static */void transmitStart(void)
+static void transmitStart(void)
 {
 	txCrc = 0xFFFF; //initial CRC value
 	txStage = TX_STAGE_PREAMBLE;

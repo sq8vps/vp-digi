@@ -7,6 +7,7 @@
 * none
 ## Other
 * New signal level measurement method
+* Got rid of float operations for PLL adjustment
 * Full documentation (English and Polish) in Markdown
 * Project moved to STM32CubeIDE
 * Updated HAL version used for USB

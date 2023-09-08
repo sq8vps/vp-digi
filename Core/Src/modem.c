@@ -18,7 +18,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include <math.h>
-#include <modem.h>
+#include "modem.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include "ax25.h"
@@ -28,28 +28,39 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 /*
  * Configuration for PLL-based data carrier detection
- * DCD_MAXPULSE is the maximum value of the DCD pulse counter
- * DCD_THRES is the threshold value of the DCD pulse counter. When reached the input signal is assumed to be valid
- * DCD_MAXPULSE and DCD_THRES difference sets the DCD "inertia" so that the DCD state won't change rapidly when a valid signal is present
- * DCD_DEC is the DCD pulse counter decrementation value when symbol changes too far from PLL counter zero
- * DCD_INC is the DCD pulse counter incrementation value when symbol changes near the PLL counter zero
+ * 1. MAXPULSE - the maximum value of the DCD pulse counter. Higher values allow for more stability when a correct signal is detected,
+ * but introduce a delay when releasing DCD
+ * 2. THRES - the threshold value of the DCD pulse counter. When reached the input signal is assumed to be valid. Higher values mean more immunity to noise,
+ * but introduce delay when setting DCD
+ * 3. MAXPULSE and THRES difference sets the DCD "inertia" so that the DCD state won't change rapidly when a valid signal is present
+ * 4. INC is the DCD pulse counter incrementation value when symbol changes near the PLL counter zero
+ * 5. DEC is the DCD pulse counter decrementation value when symbol changes too far from PLL counter zero
+ * 6. TUNE is the PLL counter tuning coefficient. It is applied when there is a symbol change (as the symbol change should occur when the PLL counter crosses zero)
+ *
+ * [       DCD OFF    *      |    DCD ON   ]
+ * 0               COUNTER THRES        MAXPULSE
+ *        <-DEC INC->
+ *
  * The DCD mechanism is described in demodulate().
  * All values were selected by trial and error
  */
-#define DCD1200_MAXPULSE 100
-#define DCD1200_THRES 30
-#define DCD1200_DEC 2
-#define DCD1200_INC 1
+#define DCD1200_MAXPULSE 60
+#define DCD1200_THRES 20
+#define DCD1200_INC 2
+#define DCD1200_DEC 1
+#define DCD1200_TUNE 0.74f
 
-#define DCD9600_MAXPULSE 70
-#define DCD9600_THRES 50
-#define DCD9600_DEC 5
+#define DCD9600_MAXPULSE 60
+#define DCD9600_THRES 40
 #define DCD9600_INC 1
+#define DCD9600_DEC 1
+#define DCD9600_TUNE 0.74f
 
-#define DCD300_MAXPULSE 140
-#define DCD300_THRES 120
-#define DCD300_DEC 3
-#define DCD300_INC 5
+#define DCD300_MAXPULSE 80
+#define DCD300_THRES 20
+#define DCD300_INC 4
+#define DCD300_DEC 1
+#define DCD300_TUNE 0.74f
 
 #define N1200 8 //samples per symbol @ fs=9600, oversampling = 38400 Hz
 #define N9600 4 //fs=38400, oversampling = 153600 Hz
@@ -72,6 +83,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #define DAC_SINE_SIZE 128 //DAC sine table size
+
+#define PLL_TUNE_BITS 8 //number of bits when tuning PLL to avoid floating point operations
 
 
 struct ModemDemodConfig ModemConfig;
@@ -161,7 +174,7 @@ static const int16_t lpf1200[15] =
 
 //fs=38400 Hz, Gaussian, fc=4800 Hz (9600 Bd), N=9, gain=65536
 //seems like there is almost no difference between N=9 and any higher order
-static int16_t lpf9600[9] = {497, 2360, 7178, 13992, 17478, 13992, 7178, 2360, 497};
+static const int16_t lpf9600[9] = {497, 2360, 7178, 13992, 17478, 13992, 7178, 2360, 497};
 
 #define LPF_MAX_TAPS 15
 
@@ -190,8 +203,8 @@ struct DemodState
 
 	int32_t pll; //bit recovery PLL counter
 	int32_t pllStep;
-	float pllLockedAdjust;
-	float pllNotLockedAdjust;
+	int32_t pllLockedTune;
+	int32_t pllNotLockedTune;
 
 	int32_t dcdPll; //DCD PLL main counter
 	uint8_t dcdLastSymbol; //last symbol for DCD
@@ -200,6 +213,7 @@ struct DemodState
 	uint16_t dcdThres;
 	uint16_t dcdInc;
 	uint16_t dcdDec;
+	int32_t dcdTune;
 
 	int16_t peak;
 	int16_t valley;
@@ -476,17 +490,18 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 		sample = (abs(outLoI) + abs(outLoQ)) - (abs(outHiI) + abs(outHiQ));
 	}
 
-
 	//DCD using "PLL"
 	//PLL is running nominally at the frequency equal to the baudrate
 	//PLL timer is counting up and eventually overflows to a minimal negative value
 	//so it crosses zero in the middle
 	//tone change should happen somewhere near this zero-crossing (in ideal case of exactly same TX and RX baudrates)
 	//nothing is ideal, so we need to have some region around zero where tone change is expected
-	//if tone changed inside this region, then we add something to the DCD pulse counter (and adjust counter phase for the counter to be closer to 0)
+	//however in case of noise the demodulated output is completely random and has many symbol changes in different places
+	//other than the PLL zero-crossing, thus making it easier to utilize this mechanism
+	//if tone changed inside this region, then we add something to the DCD pulse counter and adjust counter phase for the counter to be closer to 0
 	//if tone changes outside this region, then we subtract something from the DCD pulse counter
 	//if some DCD pulse threshold is reached, then we claim that the incoming signal is correct and set DCD flag
-	//when configured properly, it's generally immune to noise, as the detected tone changes much faster than 1200 baud
+	//when configured properly, it's generally immune to noise and sensitive to correct signal
 	//it's also important to set some maximum value for DCD counter, otherwise the DCD is "sticky"
 
 
@@ -494,20 +509,26 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 
 	if((sample > 0) != dem->dcdLastSymbol) //tone changed
 	{
-		if((uint32_t)abs(dem->dcdPll) <= (uint32_t)(dem->pllStep)) //tone change occurred near zero
+		if((uint32_t)abs(dem->dcdPll) < (uint32_t)(dem->pllStep)) //tone change occurred near zero
+		{
 			dem->dcdCounter += dem->dcdInc; //increase DCD counter
+			if(dem->dcdCounter > dem->dcdMax) //maximum DCD counter value reached
+				dem->dcdCounter = dem->dcdMax; //avoid "sticky" DCD and counter overflow
+		}
 		else //tone change occurred far from zero
 		{
 			if(dem->dcdCounter >= dem->dcdDec) //avoid overflow
 				dem->dcdCounter -= dem->dcdDec; //decrease DCD counter
+			else
+				dem->dcdCounter = 0;
 		}
-		dem->dcdPll = 0;
+
+		//avoid floating point operations
+		dem->dcdPll = ((int64_t)dem->dcdPll * (int64_t)dem->dcdTune) >> PLL_TUNE_BITS;
 	}
 
 	dem->dcdLastSymbol = sample > 0; //store last symbol for symbol change detection
 
-	if(dem->dcdCounter > dem->dcdMax) //maximum DCD counter value reached
-		dem->dcdCounter = dem->dcdMax; //avoid "sticky" DCD and counter overflow
 
 	if(dem->dcdCounter > dem->dcdThres) //DCD threshold reached
 		dem->dcd = 1; //DCD!
@@ -565,13 +586,14 @@ static void decode(uint8_t symbol, uint8_t demod)
 
 	if(((dem->rawSymbols & 0x03) == 0b10) || ((dem->rawSymbols & 0x03) == 0b01)) //if there was a symbol transition, adjust PLL
 	{
+		//avoid floating point operations. Multiply by n-bit value and shift by n bits
 		if(!dem->dcd) //PLL not locked
 		{
-			dem->pll = (int)(dem->pll * dem->pllNotLockedAdjust); //adjust PLL faster
+			dem->pll = ((int64_t)dem->pll * (int64_t)dem->pllNotLockedTune) >> PLL_TUNE_BITS; //adjust PLL faster
 		}
 		else //PLL locked
 		{
-			dem->pll = (int)(dem->pll * dem->pllLockedAdjust); //adjust PLL slower
+			dem->pll = ((int64_t)dem->pll * (int64_t)dem->pllLockedTune) >> PLL_TUNE_BITS; //adjust PLL slower
 		}
 	}
 
@@ -729,20 +751,22 @@ void ModemInit(void)
 		baudRate = 1200.f;
 
 		demodState[0].pllStep = PLL1200_STEP;
-		demodState[0].pllLockedAdjust = PLL1200_LOCKED_TUNE;
-		demodState[0].pllNotLockedAdjust = PLL1200_NOT_LOCKED_TUNE;
+		demodState[0].pllLockedTune = PLL1200_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
+		demodState[0].pllNotLockedTune = PLL1200_NOT_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 		demodState[0].dcdMax = DCD1200_MAXPULSE;
 		demodState[0].dcdThres = DCD1200_THRES;
 		demodState[0].dcdInc = DCD1200_INC;
 		demodState[0].dcdDec = DCD1200_DEC;
+		demodState[0].dcdTune = DCD1200_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 
 		demodState[1].pllStep = PLL1200_STEP;
-		demodState[1].pllLockedAdjust = PLL1200_LOCKED_TUNE;
-		demodState[1].pllNotLockedAdjust = PLL1200_NOT_LOCKED_TUNE;
+		demodState[1].pllLockedTune = PLL1200_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
+		demodState[1].pllNotLockedTune = PLL1200_NOT_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 		demodState[1].dcdMax = DCD1200_MAXPULSE;
 		demodState[1].dcdThres = DCD1200_THRES;
 		demodState[1].dcdInc = DCD1200_INC;
 		demodState[1].dcdDec = DCD1200_DEC;
+		demodState[1].dcdTune = DCD1200_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 
 		demodState[1].prefilter = PREFILTER_NONE;
 		demodState[1].lpf.coeffs = (int16_t*)lpf1200;
@@ -797,12 +821,13 @@ void ModemInit(void)
 		spaceFreq = 1800.f;
 
 		demodState[0].pllStep = PLL300_STEP;
-		demodState[0].pllLockedAdjust = PLL300_LOCKED_TUNE;
-		demodState[0].pllNotLockedAdjust = PLL300_NOT_LOCKED_TUNE;
+		demodState[0].pllLockedTune = PLL300_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
+		demodState[0].pllNotLockedTune = PLL300_NOT_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 		demodState[0].dcdMax = DCD300_MAXPULSE;
 		demodState[0].dcdThres = DCD300_THRES;
 		demodState[0].dcdInc = DCD300_INC;
 		demodState[0].dcdDec = DCD300_DEC;
+		demodState[0].dcdTune = DCD300_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 
 		demodState[0].prefilter = PREFILTER_FLAT;
 		demodState[0].bpf.coeffs = (int16_t*)bpf300;
@@ -820,12 +845,13 @@ void ModemInit(void)
 		markFreq = 38400.f / (float)DAC_SINE_SIZE; //use as DAC sample rate
 
 		demodState[0].pllStep = PLL9600_STEP;
-		demodState[0].pllLockedAdjust = PLL9600_LOCKED_TUNE;
-		demodState[0].pllNotLockedAdjust = PLL9600_NOT_LOCKED_TUNE;
+		demodState[0].pllLockedTune = PLL9600_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
+		demodState[0].pllNotLockedTune = PLL9600_NOT_LOCKED_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 		demodState[0].dcdMax = DCD9600_MAXPULSE;
 		demodState[0].dcdThres = DCD9600_THRES;
 		demodState[0].dcdInc = DCD9600_INC;
 		demodState[0].dcdDec = DCD9600_DEC;
+		demodState[0].dcdTune = DCD9600_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 
 		demodState[0].prefilter = PREFILTER_NONE;
 		//this filter will be used for RX and TX

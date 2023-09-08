@@ -115,7 +115,6 @@ static void handleFrame(void)
 			{
 				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too low! Please increase so most stations are around 30-50%.\r\n", 0);
 			}
-
 			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0);
 			for(uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
 			{
