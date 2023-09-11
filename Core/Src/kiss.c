@@ -49,8 +49,27 @@ void KissSend(Uart *port, uint8_t *buf, uint16_t size)
 
 void KissParse(Uart *port, uint8_t data)
 {
+	volatile uint8_t *buf = NULL;
+	volatile uint16_t *index = NULL;
+	if(!port->kissProcessingOngoing)
+	{
+		buf = port->kissBuffer;
+		index = &port->kissBufferHead;
+	}
+	else
+	{
+		buf = port->kissTempBuffer;
+		index = &port->kissTempBufferHead;
+	}
+
 	if(data == 0xC0) //frame end marker
 	{
+		if(port->kissProcessingOngoing)
+		{
+			*index = 0;
+			return;
+		}
+
 		if(port->kissBufferHead < 16) //command+source+destination+Control=16
 		{
 			port->kissBufferHead = 0;
@@ -75,24 +94,40 @@ void KissParse(Uart *port, uint8_t data)
 			}
 		}
 
+		__disable_irq();
+		port->kissProcessingOngoing = 1;
+		__enable_irq();
 		Ax25WriteTxFrame((uint8_t*)&port->kissBuffer[1], port->kissBufferHead - 1);
 		DigiStoreDeDupe((uint8_t*)&port->kissBuffer[1], port->kissBufferHead - 1);
 		port->kissBufferHead = 0;
+		__disable_irq();
+		port->kissProcessingOngoing = 0;
+		if(port->kissTempBufferHead > 0)
+		{
+			memcpy((uint8_t*)port->kissBuffer, (uint8_t*)port->kissTempBuffer, port->kissTempBufferHead);
+			port->kissBufferHead = port->kissTempBufferHead;
+			port->kissTempBufferHead = 0;
+		}
+		__enable_irq();
 		return;
 	}
-	else if(port->kissBufferHead > 0)
+	else if(*index > 0)
 	{
-		if((data == 0xDC) && (port->kissBuffer[port->kissBufferHead - 1] == 0xDB)) //escape character with transposed frame end
+		if((data == 0xDC) && (buf[*index - 1] == 0xDB)) //escape character with transposed frame end
 		{
-			port->kissBuffer[port->kissBufferHead - 1] = 0xC0;
+			buf[*index - 1] = 0xC0;
 			return;
 		}
-		else if((data == 0xDD) && (port->kissBuffer[port->kissBufferHead - 1] == 0xDB)) //escape character with transposed escape character
+		else if((data == 0xDD) && (buf[*index - 1] == 0xDB)) //escape character with transposed escape character
 		{
-			port->kissBuffer[port->kissBufferHead - 1] = 0xDB;
+			buf[*index - 1] = 0xDB;
 			return;
 		}
 	}
-	port->kissBuffer[port->kissBufferHead++] = data;
-	port->kissBufferHead %= sizeof(port->kissBuffer);
+	buf[(*index)++] = data;
+
+	if(!port->kissProcessingOngoing)
+		port->kissBufferHead %= sizeof(port->kissBuffer);
+	else
+		port->kissTempBufferHead %= sizeof(port->kissTempBuffer);
 }

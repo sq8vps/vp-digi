@@ -32,11 +32,6 @@ enum ModemType
 	MODEM_1200_V23,
 	MODEM_300,
 	MODEM_9600,
-
-#ifdef ENABLE_PSK
-	MODEM_BPSK_1200,
-	MODEM_QPSK_1200,
-#endif
 };
 
 enum ModemTxTestMode
@@ -64,8 +59,6 @@ enum ModemPrefilter
 	PREFILTER_DEEMPHASIS,
 	PREFILTER_FLAT,
 };
-
-void pushSample(float s);
 
 /**
  * @brief Get measured signal level
@@ -150,10 +143,5 @@ void ModemTransmitStop(void);
  * @brief Initialize modem module
  */
 void ModemInit(void);
-
-
-#if (MODEM_DEMODULATOR_COUNT > 8)
-#error There may be at most 8 parallel demodulators/decoders
-#endif
 
 #endif

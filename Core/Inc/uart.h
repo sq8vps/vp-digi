@@ -57,6 +57,9 @@ typedef struct
 	volatile uint16_t lastRxBufferHead; //for special characters handling
 	volatile uint8_t kissBuffer[AX25_FRAME_MAX_SIZE + 1];
 	volatile uint16_t kissBufferHead;
+	volatile uint8_t kissProcessingOngoing;
+	volatile uint8_t kissTempBuffer[10];
+	volatile uint16_t kissTempBufferHead;
 } Uart;
 
 extern Uart Uart1, Uart2, UartUsb;

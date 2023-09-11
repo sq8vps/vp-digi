@@ -199,7 +199,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-	//WdogInit(); //initialize watchdog
+	WdogInit(); //initialize watchdog
 
 	memset(&beacon, 0, sizeof(beacon));
 	memset(&Ax25Config, 0, sizeof(Ax25Config));
@@ -246,7 +246,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  //WdogReset();
+	  WdogReset();
 
 	  if(Ax25GetReceivedFrameBitmap())
 		  handleFrame();
