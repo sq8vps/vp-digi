@@ -121,7 +121,7 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 		"txtail <10-2550> - sets TXTail time (ms)\r\n"
 		"quiet <100-2550> - sets quiet time (ms)\r\n"
 		"rs1baud/rs2baud <1200-115200> - sets UART1/UART2 baudrate\r\n"
-		"pwm [on/off] - enables/disables PWM. If PWM is off, R2R will be used instead\r\n"
+		"pwm [on/off] - enables/disables PWM. If PWM is off, R2R will be used instead. \"save\" command is required.\r\n"
 		"flat [on/off] - set to \"on\" if flat audio input is used\r\n"
 		"beacon <0-7> [on/off] - enables/disables specified beacon\r\n"
 		"beacon <0-7> [iv/dl] <0-720> - sets interval/delay for the specified beacon (min)\r\n"
@@ -346,21 +346,21 @@ void TermParse(Uart *src)
 	 */
 	if(!strncmp(cmd, "kiss", 4))
 	{
-		UartSendString(src, (uint8_t*)"Switched to KISS mode\r\n", 0);
+		UartSendString(src, (uint8_t*)"Switched to KISS mode.\r\n", 0);
 		src->mode = MODE_KISS;
 		return;
 	}
 	else if(!strncmp(cmd, "config", 6))
 	{
-		UartSendString(src, (uint8_t*)"Switched to configuration mode\r\n"
+		UartSendString(src, (uint8_t*)"Switched to configuration mode.\r\n"
 				"Most settings will take effect immediately, but\r\n"
-				"remember to save the configuration using \"save\"\r\n", 0);
+				"remember to save the configuration using \"save\" for **all** settings to take effect.\r\n", 0);
 		src->mode = MODE_TERM;
 		return;
 	}
 	else if(!strncmp(cmd, "monitor", 7))
 	{
-		UartSendString(src, (uint8_t*)"Switched to monitor mode\r\n", 0);
+		UartSendString(src, (uint8_t*)"Switched to monitor mode.\r\n", 0);
 		src->mode = MODE_MONITOR;
 		return;
 	}
@@ -413,29 +413,29 @@ void TermParse(Uart *src)
 		{
 			if(!strncmp(&cmd[4], "low", 3))
 			{
-				UartSendString(src, "Starting low tone calibration transmission\r\n", 0);
+				UartSendString(src, "Starting low tone calibration transmission.\r\n", 0);
 				ModemTxTestStart(TEST_MARK);
 			}
 			else if(!strncmp(&cmd[4], "high", 4))
 			{
-				UartSendString(src, "Starting high tone calibration transmission\r\n", 0);
+				UartSendString(src, "Starting high tone calibration transmission.\r\n", 0);
 				ModemTxTestStart(TEST_SPACE);
 			}
 			else if(!strncmp(&cmd[4], "alt", 3))
 			{
-				UartSendString(src, "Starting alternating tones calibration transmission\r\n", 0);
+				UartSendString(src, "Starting alternating tones calibration transmission.\r\n", 0);
 				ModemTxTestStart(TEST_ALTERNATING);
 			}
 			else if(!strncmp(&cmd[4], "stop", 4))
 			{
-				UartSendString(src, "Stopping calibration transmission\r\n", 0);
+				UartSendString(src, "Stopping calibration transmission.\r\n", 0);
 				ModemTxTestStop();
 			}
 			else
 				UartSendString(src, "Usage: cal {low|high|alt|stop}\r\n", 0);
 		}
 		else
-			UartSendString(src, "Unknown command. For command list type \"help\"\r\n", 0);
+			UartSendString(src, "Unknown command. For command list type \"help\".\r\n", 0);
 
 		return;
 	}
