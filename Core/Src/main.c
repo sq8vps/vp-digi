@@ -51,6 +51,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "uart.h"
 #include "drivers/usb.h"
+#include "kiss.h"
 #ifdef ENABLE_FX25
 #include "fx25.h"
 #endif
@@ -260,8 +261,13 @@ int main(void)
 	  if(UartUsb.rxType != DATA_NOTHING)
 	  {
 		  TermHandleSpecial(&UartUsb);
-		  if(UartUsb.rxType != DATA_USB)
+		  if(UartUsb.rxType == DATA_KISS)
 		  {
+			  KissProcess(&UartUsb);
+		  }
+		  else if(UartUsb.rxType != DATA_USB)
+		  {
+
 			  TermParse(&UartUsb);
 		  	  UartClearRx(&UartUsb);
 		  }
@@ -269,13 +275,27 @@ int main(void)
 	  }
 	  if(Uart1.rxType != DATA_NOTHING)
 	  {
-		  TermParse(&Uart1);
-		  UartClearRx(&Uart1);
+		  if(Uart1.rxType == DATA_KISS)
+		  {
+			  KissProcess(&Uart1);
+		  }
+		  else
+		  {
+			  TermParse(&Uart1);
+			  UartClearRx(&Uart1);
+		  }
 	  }
 	  if(Uart2.rxType != DATA_NOTHING)
 	  {
-		  TermParse(&Uart2);
-		  UartClearRx(&Uart2);
+		  if(Uart2.rxType == DATA_KISS)
+		  {
+			  KissProcess(&Uart2);
+		  }
+		  else
+		  {
+			  TermParse(&Uart2);
+			  UartClearRx(&Uart2);
+		  }
 	  }
 
 	  BeaconCheck(); //check beacons

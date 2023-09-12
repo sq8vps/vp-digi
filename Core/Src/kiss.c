@@ -96,19 +96,9 @@ void KissParse(Uart *port, uint8_t data)
 
 		__disable_irq();
 		port->kissProcessingOngoing = 1;
+		port->kissTempBufferHead = 0;
 		__enable_irq();
-		Ax25WriteTxFrame((uint8_t*)&port->kissBuffer[1], port->kissBufferHead - 1);
-		DigiStoreDeDupe((uint8_t*)&port->kissBuffer[1], port->kissBufferHead - 1);
-		port->kissBufferHead = 0;
-		__disable_irq();
-		port->kissProcessingOngoing = 0;
-		if(port->kissTempBufferHead > 0)
-		{
-			memcpy((uint8_t*)port->kissBuffer, (uint8_t*)port->kissTempBuffer, port->kissTempBufferHead);
-			port->kissBufferHead = port->kissTempBufferHead;
-			port->kissTempBufferHead = 0;
-		}
-		__enable_irq();
+		port->rxType = DATA_KISS;
 		return;
 	}
 	else if(*index > 0)
@@ -130,4 +120,24 @@ void KissParse(Uart *port, uint8_t data)
 		port->kissBufferHead %= sizeof(port->kissBuffer);
 	else
 		port->kissTempBufferHead %= sizeof(port->kissTempBuffer);
+}
+
+void KissProcess(Uart *port)
+{
+	if(port->rxType == DATA_KISS)
+	{
+		Ax25WriteTxFrame((uint8_t*)&port->kissBuffer[1], port->kissBufferHead - 1);
+		DigiStoreDeDupe((uint8_t*)&port->kissBuffer[1], port->kissBufferHead - 1);
+		port->kissBufferHead = 0;
+		__disable_irq();
+		port->kissProcessingOngoing = 0;
+		if(port->kissTempBufferHead > 0)
+		{
+			memcpy((uint8_t*)port->kissBuffer, (uint8_t*)port->kissTempBuffer, port->kissTempBufferHead);
+			port->kissBufferHead = port->kissTempBufferHead;
+			port->kissTempBufferHead = 0;
+		}
+		__enable_irq();
+		port->rxType = DATA_NOTHING;
+	}
 }

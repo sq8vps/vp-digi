@@ -37,6 +37,7 @@ enum UartDataType
 {
 	DATA_NOTHING = 0,
 	DATA_TERM,
+	DATA_KISS,
 	DATA_USB,
 };
 

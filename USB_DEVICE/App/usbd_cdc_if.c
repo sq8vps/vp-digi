@@ -269,8 +269,8 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 		KissParse(&UartUsb, Buf[i]);
 		UartUsb.rxBufferHead %= UART_BUFFER_SIZE;
 	}
-
-	UartUsb.rxType = DATA_USB;
+	if(UartUsb.rxType != DATA_KISS)
+		UartUsb.rxType = DATA_USB;
 	handleUsbInterrupt(&UartUsb);
 
 	return (USBD_OK);
