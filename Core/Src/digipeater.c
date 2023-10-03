@@ -454,6 +454,8 @@ void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
     while((buf[i] & 1) == 0) //look for path end bit (skip path)
     {
         i++;
+        if(i == size)
+        	return;
     }
     i++;
 

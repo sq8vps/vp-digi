@@ -95,6 +95,26 @@ void KissParse(Uart *port, uint8_t data)
 			}
 		}
 
+		uint16_t pathEnd = 0;
+
+		//find path end bit (C-bit)
+		for(uint16_t i = 0; i < port->kissBufferHead; i++)
+		{
+			if((port->kissBuffer[i + 1] & 1) != 0)
+			{
+				pathEnd = i + 1;
+				break;
+			}
+		}
+
+		//C-bit must lay on a 7 byte boundary (every path element is 7 bytes long)
+		if(pathEnd % 7)
+		{
+			port->kissBufferHead = 0;
+			return;
+		}
+
+
 		__disable_irq();
 		port->kissProcessingOngoing = 1;
 		port->kissTempBufferHead = 0;
