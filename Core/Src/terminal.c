@@ -22,17 +22,13 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "modem.h"
-#include <systick.h>
 #include "terminal.h"
 #include "common.h"
 #include "beacon.h"
 #include "digipeater.h"
 #include "config.h"
 #include "ax25.h"
-<<<<<<< HEAD:Core/Src/terminal.c
-=======
-#include "drivers/systick.h"
->>>>>>> e9a5ebd2c6fc83adbfacb614029274ed01491d16:Src/terminal.c
+#include "systick.h"
 #include "kiss.h"
 
 void TermHandleSpecial(Uart *u)
@@ -68,10 +64,7 @@ void TermHandleSpecial(Uart *u)
 
 }
 
-<<<<<<< HEAD:Core/Src/terminal.c
-=======
 
->>>>>>> e9a5ebd2c6fc83adbfacb614029274ed01491d16:Src/terminal.c
 void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size)
 {
 	if(MODE_KISS == mode)
@@ -105,8 +98,6 @@ void TermSendNumberToAll(enum UartMode mode, int32_t n)
 
 }
 
-<<<<<<< HEAD:Core/Src/terminal.c
-
 static const char monitorHelp[] = "\r\nCommands available in monitor mode:\r\n"
 		"help - show this help page\r\n"
 		"cal {low|high|alt|stop} - transmit/stop transmitter calibration pattern\r\n"
@@ -115,16 +106,6 @@ static const char monitorHelp[] = "\r\nCommands available in monitor mode:\r\n"
 		"kiss - switch to KISS mode\r\n"
 		"config - switch to config mode\r\n"
 		"reboot - reboot the device\r\n"
-=======
-static const char monitorHelp[] = "\r\nCommans available in monitor mode:\r\n"
-		"help - shows this help page\r\n"
-		"cal {low|high|alt|stop} - transmits/stops transmitter calibration pattern\r\n"
-		"\tlow - transmits MARK tone, high - transmits SPACE tone, alt - transmits alternating tones (null bytes)\r\n"
-		"beacon <beacon_number> - immediately transmits selected beacon (number from 0 to 7)\r\n"
-		"kiss - switches to KISS mode\r\n"
-		"config - switches to config mode\r\n"
-		"reboot - reboots the device\r\n"
->>>>>>> e9a5ebd2c6fc83adbfacb614029274ed01491d16:Src/terminal.c
 		"time - show time since boot\r\n"
 		"version - show full firmware version info\r\n\r\n\r\n";
 
