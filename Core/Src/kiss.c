@@ -49,6 +49,7 @@ void KissSend(Uart *port, uint8_t *buf, uint16_t size)
 
 void KissParse(Uart *port, uint8_t data)
 {
+
 	volatile uint8_t *buf = NULL;
 	volatile uint16_t *index = NULL;
 	if(!port->kissProcessingOngoing)

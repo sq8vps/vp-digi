@@ -27,7 +27,12 @@ Since version 2.0.0, the component values have changed to provide support for fa
 
 ## Description, schematic, instructions
 
+<<<<<<< HEAD
 The user manual and technical description are available [here](doc/manual.md).
+=======
+## Source code usage
+The firmware was written using System Workbench for STM32 (SW4STM32) and you should be able to import this repository directly to the IDE. The source code is publicly available since version 1.2.0.
+>>>>>>> e9a5ebd2c6fc83adbfacb614029274ed01491d16
 
 ## Source code
 

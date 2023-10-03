@@ -39,5 +39,4 @@ void KissSend(Uart *port, uint8_t *buf, uint16_t size);
 void KissParse(Uart *port, uint8_t data);
 
 void KissProcess(Uart *port);
-
 #endif /* KISS_H_ */

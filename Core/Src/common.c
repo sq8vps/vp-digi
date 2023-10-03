@@ -1,5 +1,6 @@
 /*
 Copyright 2020-2023 Piotr Wilkon
+
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -30,11 +31,13 @@ struct _GeneralConfig GeneralConfig =
 		.kissMonitor = 0,
 };
 
+
 const char versionString[] = "VP-Digi v. 2.0.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
 #ifdef ENABLE_FX25
 		"With FX.25 support compiled-in\r\n"
 #endif
 		;
+
 
 static uint64_t pow10i(uint16_t exp)
 {
@@ -158,6 +161,8 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
     }
     else
     	UartSendString(uart, "<not UI packet>", 0);
+
+    UartSendByte(uart, 0); //terminate with NULL
 }
 
 void SendTNC2(uint8_t *from, uint16_t len)
