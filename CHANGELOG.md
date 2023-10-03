@@ -1,3 +1,18 @@
+# 2.0.0 (2023-09-09)
+## New features
+* New modems: AFSK Bell 103 (300 Bd, 1600/1800 Hz), GFSK G3RUH (9600 Bd), AFSK V.23 (1200 Bd, 1300/2100 Hz)
+* FX.25 (AX.25 with Reed-Solomon FEC) support
+* Default UART/USB modes can be configured
+## Bug fixes
+* none
+## Other
+* New signal level measurement method
+* Got rid of float operations for PLL adjustment
+* Full documentation (English and Polish) in Markdown
+* Project moved to STM32CubeIDE
+* Updated HAL version used for USB
+## Known bugs
+* none
 # 1.3.3 (2023-09-04)
 ## New features
 * none

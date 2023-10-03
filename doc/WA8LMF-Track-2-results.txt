@@ -1,0 +1,1162 @@
+1(AX.25) Frame received [PN], signal level 11% (11%/-11%): WA6YLB-4>APRS,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+2(AX.25) Frame received [PN], signal level 34% (33%/-35%): KD6FVP-2>APS224,N6EX-1,WIDE1:>152343z[224]*We know most of your faults!!!
+3(AX.25) Frame received [PN], signal level 16% (17%/-16%): KD6FVP-2>APS224,N6EX-1*,WIDE1:>152343z[224]*We know most of your faults!!!
+4(AX.25) Frame received [PN], signal level 19% (19%/-19%): N6XQY-12>GPSLJ,RELAY,WIDE2-2:$GPRMC,013641.06,A,3348.1607,N,11807.4631,W,34.0,090.5,231105,13.,E*73
+5(AX.25) Frame received [PN], signal level 8% (8%/-9%): WA6YLB>APRX46,WA6YLB-7*,W6SCE-10*:>081839z wa6ylb@theworks.com
+6(AX.25) Frame received [PN], signal level 9% (9%/-9%): KC6HUR-1>S4QVYV,W6SCE-10*:'.4&l-/k/]"7q}
+7(AX.25) Frame received [PN], signal level 8% (9%/-9%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,013641.06,A,3348.1607,N,11807.4631,W,34.0,090.5,231105,13.,E*73
+8(AX.25) Frame received [PN], signal level 10% (11%/-10%): KC6BLF-14>S4PWYS,N6EX-5*:'-U l{(u/]"5\}Lost in the West!
+9(AX.25) Frame received [PN], signal level 15% (14%/-17%): K6KMA-1>GPSLK,N6EX-1*:$GPRMC,013647,A,3350.076,N,11806.996,W,028.3,180.5,231105,013.5,E*69
+
+10(AX.25) Frame received [PN], signal level 17% (17%/-18%): AE6GR-7>S4PXYW,N6EX-1*:'._|l tv/]"6[}
+11(AX.25) Frame received [P_], signal level 37% (36%/-38%): AE6MP>SS5PPQ-2,WIDE2-2:`.](n->>/"4W}
+12(AX.25) Frame received [PN], signal level 8% (9%/-8%): AE6MP>SS5PPQ-2,N6EX-4*:`.](n->>/"4W}
+13(AX.25) Frame received [PN], signal level 16% (16%/-17%): AE6MP>SS5PPQ-2,N6EX-1*:`.](n->>/"4W}
+14(AX.25) Frame received [PN], signal level 11% (12%/-11%): AE6MP>SS5PPQ-1,N6EX-5*:`.](n->>/"4W}
+15(AX.25) Frame received [PN], signal level 11% (12%/-11%): WA6YLB-12>S6QWSY,WA6YLB-7*,N6EX-5*:'/`0n>vR/]"56}
+16(AX.25) Frame received [PN], signal level 16% (17%/-16%): K6LAR-1>APRS,N6EX-1*:$GPGGA,040332,3405.438,N,11801.836,W,1,06,1.1,114.2,M,-31.5,M,,*75
+
+17(AX.25) Frame received [P_], signal level 26% (22%/-31%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":r}
+18(AX.25) Frame received [PN], signal level 17% (18%/-17%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":r}
+19(AX.25) Frame received [PN], signal level 11% (12%/-11%): N6QFD-9>GPSLJ,N6EX-5*:$GPRMC,013714,A,3408.6360,N,11812.0716,W,0.0,88.1,231105,13.5,E,D*09
+
+20(AX.25) Frame received [PN], signal level 5% (6%/-6%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230135z3350.28N/11818.85W_269/010g010t065r000P000p000h64b10155v6
+21(AX.25) Frame received [PN], signal level 9% (10%/-9%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230135z3350.28N/11818.85W_269/010g010t065r000P000p000h64b10155v6
+22(AX.25) Frame received [PN], signal level 15% (14%/-17%): N6EX-3>APJI23,N6EX-1*,SOCAL1:}W6AHM>APRS,TCPIP,N6EX-3*:@230135z3350.28N/11818.85W_269/010g010t065r000P000p000h64b10155v6
+23(AX.25) Frame received [PN], signal level 10% (11%/-10%): N6EX-3>APJI23,W6SCE-10*,SOCAL1:}W6AHM>APRS,TCPIP,N6EX-3*:@230135z3350.28N/11818.85W_269/010g010t065r000P000p000h64b10155v6
+24(AX.25) Frame received [PN], signal level 9% (8%/-10%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kel ~v/]"6A}TM-D700
+25(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kel ~v/]"6A}TM-D700
+26(AX.25) Frame received [P_], signal level 31% (26%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+27(AX.25) Frame received [PN], signal level 9% (10%/-10%): KD6EDM>APW275,N6EX-4*:=3340.25N/11754.88WKPHG2100/WinAPRS 2.7.5 -CAORACOSTA ME-275-<530>
+28(AX.25) Frame received [PN], signal level 8% (9%/-8%): W6SCE-10>BEACON:>WIDE2-2 is best path in SoCal
+29(AX.25) Frame received [P_], signal level 44% (39%/-49%): NZ6L-9>SS4WVR,WIDE2-2:`.01l#%k/"4E}Monitoring 146.235(+)127.3
+30(AX.25) Frame received [PN], signal level 8% (9%/-9%): NZ6L-9>SS4WVR,N6EX-4*:`.01l#%k/"4E}Monitoring 146.235(+)127.3
+31(AX.25) Frame received [P_], signal level 10% (10%/-10%): WD6BYM-1>ID,N6EX-5*:WD6BYM-1/R WIDE/D
+32(AX.25) Frame received [PN], signal level 8% (7%/-9%): WA8LMF>APU25N,WIDE1-1:>202337zhttp://wa8lmf.com
+33(AX.25) Frame received [P_], signal level 10% (11%/-10%): WA8LMF>APU25N,N6EX-5*:>202337zhttp://wa8lmf.com
+34(AX.25) Frame received [PN], signal level 17% (18%/-17%): WA8LMF>APU25N,N6EX-1*:>202337zhttp://wa8lmf.com
+35(AX.25) Frame received [PN], signal level 8% (9%/-9%): WA6TK>ID,N6EX-4*:WA6TK/R RELAY/D KC7FD-1/B
+36(AX.25) Frame received [P_], signal level 28% (23%/-33%): WA6TK>ID,N6EX-2*,WB6JAR-10*,WIDE2*:WA6TK/R RELAY/D KC7FD-1/B
+37(AX.25) Frame received [PN], signal level 15% (16%/-16%): KA1WCC-9>ST0XPR,N6EX-1*:`-T0m4>/
+38(AX.25) Frame received [PN], signal level 9% (9%/-9%): WA6TK>ID,W6SCE-10*:WA6TK/R RELAY/D KC7FD-1/B
+39(AX.25) Frame received [P_], signal level 30% (24%/-36%): K7GIL-1>BEACON,WB6JAR-10*,WIDE3-2,N7ZEV-1:!3436.62NN11717.30W#PHG5760/A=004530/W-R-T-CA Victorville, CA
+40(AX.25) Frame received [PN], signal level 10% (11%/-10%): K7GIL-1>BEACON,N6EX-4*,N7ZEV-1:!3436.62NN11717.30W#PHG5760/A=004530/W-R-T-CA Victorville, CA
+41(AX.25) Frame received [PN], signal level 16% (17%/-16%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,013801,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*73
+
+42(AX.25) Frame received [P_], signal level 41% (40%/-43%): KB6CYS>BEACON,WIDE3-3:WEATHER STATION ON-LINE
+43(AX.25) Frame received [PN], signal level 9% (10%/-10%): KB6CYS>BEACON,N6EX-4*:WEATHER STATION ON-LINE
+44(AX.25) Frame received [PN], signal level 16% (14%/-18%): KB6CYS>BEACON,N6EX-1*:WEATHER STATION ON-LINE
+45(AX.25) Frame received [P_], signal level 9% (10%/-9%): KB6CYS>BEACON,W6SCE-10*:WEATHER STATION ON-LINE
+46(AX.25) Frame received [PN], signal level 8% (8%/-10%): KD6LAY>APW277,W6PVG-3*,W6SCE-10*:=3438.88N/11815.40WyPHG5660/WinAPRS 2.7.7 -277-<630>
+47(AX.25) Frame received [PN], signal level 14% (14%/-15%): KF6WJS-14>S4PWYR,WIDE2-2:`.a"l!^k/"6b}
+48(AX.25) Frame received [PN], signal level 9% (10%/-9%): KF6WJS-14>S4PWYR,N6EX-4*:`.a"l!^k/"6b}
+49(AX.25) Frame received [PN], signal level 17% (17%/-17%): KF6WJS-14>S4PWYR,N6EX-1*:`.a"l!^k/"6b}
+50(AX.25) Frame received [PN], signal level 9% (10%/-10%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,013818,A,3347.6421,N,11805.4956,W,000.0,111.4,231105,013.4,E*61
+
+51(AX.25) Frame received [P_], signal level 28% (21%/-36%): K6EKB-5>APRS,K6TUO-3*,W6PVG-3*,WB6JAR-10*,WIDE3*:!3842.78N/12059.21W_PHG2133/A=000600/ k6ekb@arrl.net - Ed's remote WX station
+52(AX.25) Frame received [P_], signal level 10% (11%/-10%): KF6DQ-5>S4QUYZ,N6EX-5*:'.Kel ~v/]"6?}TM-D700
+53(AX.25) Frame received [PN], signal level 10% (10%/-10%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kel ~v/]"6?}TM-D700
+54(AX.25) Frame received [P_], signal level 30% (25%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+55(AX.25) Frame received [PN], signal level 9% (10%/-10%): AE6MP>SS5PTP-2,N6EX-4*:`.]>oA>>/"4G}
+56(AX.25) Frame received [PN], signal level 15% (15%/-17%): N6EX-1>APN382,WIDE2-1:!3411.21N111802.13W#PHG5664/W1 for LA area/A=003000/sceara@ham-radio.com
+57(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6MP>SS5PTP-2,N6EX-1*:`.]>oA>>/"4G}
+58(AX.25) Frame received [P_], signal level 10% (10%/-11%): AE6MP>SS5PTP-1,N6EX-5*:`.]>oA>>/"4G}
+59(AX.25) Frame received [P_], signal level 28% (25%/-32%): KD7FNO-5>S5RTQP,W6PVG-3*,WB6JAR-10*,WIDE2*:'/3hl"Ku/]"4t}
+60(AX.25) Frame received [PN], signal level 10% (11%/-10%): KD7FNO-5>S5RTQP,W6PVG-3*,N6EX-5*:'/3hl"Ku/]"4t}
+61(AX.25) Frame received [PN], signal level 8% (8%/-8%): KD7FNO-5>S5RTQP,W6PVG-3*,W6SCE-10*:'/3hl"Ku/]"4t}
+62(AX.25) Frame received [PN], signal level 10% (10%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-4*:'-_jl"k/]"=n}Out and About.
+63(AX.25) Frame received [P_], signal level 30% (25%/-36%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-2*,WB6JAR-10*,WIDE2*:'-_jl"k/]"=n}Out and About.
+64(AX.25) Frame received [P_], signal level 40% (39%/-43%): N6XQY-12>GPSLJ,RELAY*,WIDE2-2:$GPRMC,013840.62,A,3347.6058,N,11806.1945,W,46.0,131.9,231105,13.,E*71
+65(AX.25) Frame received [PN], signal level 10% (11%/-10%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,013840.62,A,3347.6058,N,11806.1945,W,46.0,131.9,231105,13.,E*71
+66(AX.25) Frame received [PN], signal level 17% (17%/-18%): N6XQY-12>GPSLJ,RELAY*,N6EX-1*:$GPRMC,013840.62,A,3347.6058,N,11806.1945,W,46.0,131.9,231105,13.,E*71
+67(AX.25) Frame received [P_], signal level 29% (26%/-32%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230138z3329.92N/11709.77Wk125/007/A=000984
+68(AX.25) Frame received [PN], signal level 8% (8%/-10%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230138z3329.92N/11709.77Wk125/007/A=000984
+69(AX.25) Frame received [P_], signal level 25% (23%/-27%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4N}
+70(AX.25) Frame received [P_], signal level 19% (16%/-24%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4N}
+71(AX.25) Frame received [P_], signal level 34% (37%/-31%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4N}
+72(AX.25) Frame received [PN], signal level 8% (8%/-10%): K6TZ-10>APJI20,W6SCE-10*:!3424.34NI11942.91W&Santa Barbara ARC Inc. javAPRSIgate on La Vigia Hill
+73(AX.25) Frame received [PN], signal level 10% (10%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-4*:'-_jl"k/]"=n}
+74(AX.25) Frame received [PN], signal level 9% (9%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,W6SCE-10*:'-_jl"k/]"=n}
+75(AX.25) Frame received [P_], signal level 31% (25%/-38%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230139z3329.91N/11709.71Wk072/019/A=000934
+76(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230139z3329.91N/11709.71Wk072/019/A=000934
+77(AX.25) Frame received [P_], signal level 28% (25%/-33%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000/kf6yvs, Mike
+78(AX.25) Frame received [P_], signal level 46% (45%/-48%): AD6NH>APU25N,WIDE2-2:@230139z3352.18N/11749.77W_240/000g000t069r000p000P000b10161h38/PHG52605/Placentia WX {UIV32}
+79(AX.25) Frame received [PN], signal level 15% (15%/-17%): AD6NH>APU25N,N6EX-1*:@230139z3352.18N/11749.77W_240/000g000t069r000p000P000b10161h38/PHG52605/Placentia WX {UIV32}
+80(AX.25) Frame received [P_], signal level 28% (23%/-34%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+81(AX.25) Frame received [PN], signal level 10% (10%/-11%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-5*:!3417.73N/11647.90W>353/023/A=006600
+82(AX.25) Frame received [P_], signal level 28% (22%/-34%): W6MAF>APTW01,WB6JAR-10*,WIDE3-2:_11221839c046s000g000t054r000p000P000h32b10185tU2k
+83(AX.25) Frame received [PN], signal level 8% (8%/-8%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3417.73N/11647.90W>353/023/A=006600
+84(AX.25) Frame received [PN], signal level 11% (12%/-11%): WA6YLB-4>APRS,W6PVG-3*,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+85(AX.25) Frame received [P_], signal level 27% (23%/-33%): KD6VLP-2>SSUUUP,WB6JAR-10*,WIDE3-2:',Leo}(j/]":Z}
+86(AX.25) Frame received [PN], signal level 9% (10%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-5*:'-_jl"k/]"=r}
+87(AX.25) Frame received [PN], signal level 9% (9%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,W6SCE-10*:'-_jl"k/]"=r}
+88(AX.25) Frame received [PN], signal level 21% (22%/-20%): AE6GR-7>STPYVU,WIDE2-2:'._wlzzv/]Stopped
+89(AX.25) Frame received [P_], signal level 12% (12%/-13%): AE6GR-7>STPYVU,N6EX-5*:'._wlzzv/]Stopped
+90(AX.25) Frame received [PN], signal level 9% (9%/-10%): AE6GR-7>STPYVU,N6EX-4*:'._wlzzv/]Stopped
+91(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6GR-7>STPYVU,N6EX-1*:'._wlzzv/]Stopped
+92(AX.25) Frame received [PN], signal level 8% (9%/-7%): W6SCE-10>APN382,WIDE2-1:!3419.82N111836.06W#PHG6860/W1 on Oat Mtn./A=003747/k6ccc@amsat.org for info
+93(AX.25) Frame received [P_], signal level 10% (11%/-10%): W6SCE-10>APN382,N6EX-5*:!3419.82N111836.06W#PHG6860/W1 on Oat Mtn./A=003747/k6ccc@amsat.org for info
+94(AX.25) Frame received [P_], signal level 21% (21%/-22%): KF6MDF-2>GPS,WIDE2-2:$GPRMC,014001,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7C
+
+95(AX.25) Frame received [PN], signal level 16% (15%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,014001,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7C
+
+96(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6TK>APS227,W6PVG-3*,N6EX-5*:@230139z3451.81N/11810.37W_151/000g001t060r000p000P000b10196h27
+97(AX.25) Frame received [PN], signal level 8% (9%/-8%): KC6HUR-1>S4QWUP,W6SCE-10*:'.4_m7/k/]"7m}
+98(AX.25) Frame received [PN], signal level 8% (8%/-9%): WA6TK>APS227,W6SCE-10*:@230139z3451.81N/11810.37W_151/000g001t060r000p000P000b10196h27
+99(AX.25) Frame received [PN], signal level 7% (8%/-7%): WA6TK>APS227,W6PVG-3*,W6SCE-10*:@230139z3451.81N/11810.37W_151/000g001t060r000p000P000b10196h27
+100(AX.25) Frame received [PN], signal level 15% (13%/-17%): KF6WJS-14>S4PWYR,WIDE2-2:`.a"l"Hk/"6f}KF6WJS@ARRL.NET
+101(AX.25) Frame received [PN], signal level 16% (17%/-17%): KF6WJS-14>S4PWYR,N6EX-1*:`.a"l"Hk/"6f}KF6WJS@ARRL.NET
+
+Input level too low! Please increase so most stations are around 30-50%.
+102(AX.25) Frame received [PN], signal level 4% (5%/-4%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:!3406.35NI11742.72W&PHG5340/LA IGate/A=1350/sceara@ham-radio.com
+103(AX.25) Frame received [PN], signal level 11% (11%/-11%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:!3406.35NI11742.72W&PHG5340/LA IGate/A=1350/sceara@ham-radio.com
+104(AX.25) Frame received [PN], signal level 15% (15%/-17%): N6EX-3>APJI23,N6EX-1*,SOCAL1:!3406.35NI11742.72W&PHG5340/LA IGate/A=1350/sceara@ham-radio.com
+105(AX.25) Frame received [P_], signal level 31% (28%/-34%): K5MTN-1>SUPVYV,N6EX-2*,WB6JAR-10*,WIDE3*:`.'D",lk/>">Q}Monitoring 146.90
+106(AX.25) Frame received [P_], signal level 29% (24%/-35%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+107(AX.25) Frame received [P_], signal level 29% (22%/-37%): K6TJS-1>APU25N,WB6JAR-10*,WIDE2-1:@230140z3318.51N/11728.61Wv134/060I love LA! {UIV32N}
+108(AX.25) Frame received [PN], signal level 17% (17%/-17%): K6TJS-1>APU25N,WB6JAR-10*,N6EX-1*:@230140z3318.51N/11728.61Wv134/060I love LA! {UIV32N}
+109(AX.25) Frame received [PN], signal level 8% (8%/-9%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3418.01N/11648.07W>285/022/A=006420
+110(AX.25) Frame received [PN], signal level 22% (23%/-22%): W2NKM-2>STQRTP,RELAY,WIDE:`.'/l"tR/]"8:}
+111(AX.25) Frame received [PN], signal level 36% (37%/-36%): W2NKM-2>STQRTP,RELAY*,WIDE:`.'/l"tR/]"8:}
+112(AX.25) Frame received [PN], signal level 11% (11%/-12%): KN6KS-2>APX161,N6EX-5*:=3440.77N/11807.24WxPHG7130Tom - Relay Digi - tdhart@ureach.com - Xastir Linux 1.6.1
+113(AX.25) Frame received [PN], signal level 9% (9%/-9%): KN6KS-2>APX161,W6SCE-10*:=3440.77N/11807.24WxPHG7130Tom - Relay Digi - tdhart@ureach.com - Xastir Linux 1.6.1
+114(AX.25) Frame received [PN], signal level 10% (11%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-4*:'-_jl"k/]"=r}
+115(AX.25) Frame received [PN], signal level 9% (10%/-9%): KE6IYC-2>S4SPTT,K7GIL-1*,W6SCE-10*:'-_jl"k/]"=r}
+116(AX.25) Frame received [PN], signal level 8% (9%/-8%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-4*:!3418.08N/11648.14W>347/022/A=006328
+117(AX.25) Frame received [P_], signal level 30% (27%/-33%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-2*,WB6JAR-10*,WIDE2*:!3418.08N/11648.14W>347/022/A=006328
+118(AX.25) Frame received [PN], signal level 8% (7%/-9%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3418.08N/11648.14W>347/022/A=006328
+119(AX.25) Frame received [P_], signal level 25% (26%/-25%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4O}
+120(AX.25) Frame received [P_], signal level 31% (26%/-37%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Jl!h>/]"4O}
+121(AX.25) Frame received [PN], signal level 11% (13%/-11%): WA6YLB-4>APRS,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+122(AX.25) Frame received [PN], signal level 9% (9%/-10%): KG6SKQ-1>APT311,N6EX-4*:/230141z3343.89N/11801.89Wk315/000/A=000013/TT3
+123(AX.25) Frame received [P_], signal level 29% (24%/-36%): K7ACS-2>APRS,WB6WLV-11*,WB6JAR-10*,WIDE2*:=3242.36N\11435.89W? PHG92603/Probe Enabled
+124(AX.25) Frame received [PN], signal level 10% (11%/-10%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,014118,A,3347.6411,N,11805.4960,W,000.0,111.4,231105,013.4,E*69
+
+125(AX.25) Frame received [PN], signal level 9% (10%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-4*:'-_jl"k/]"=m}Out and About.
+126(AX.25) Frame received [PN], signal level 9% (9%/-9%): N6EX-4>APNU18,WIDE2-1:!3336.35N111748.63W#PHG5660/W1 for Orange County
+127(AX.25) Frame received [PN], signal level 17% (17%/-17%): N6EX-4>APNU18,N6EX-1*:!3336.35N111748.63W#PHG5660/W1 for Orange County
+128(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6DQ-5>S4QUYZ,N6EX-4*:'.Kfl ~v/]"6E}TM-D700
+129(AX.25) Frame received [PN], signal level 8% (9%/-9%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kfl ~v/]"6E}TM-D700
+130(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kfl ~v/]"6E}TM-D700
+131(AX.25) Frame received [PN], signal level 9% (10%/-10%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-4*:!3418.27N/11648.26W>024/024/A=006213
+132(AX.25) Frame received [P_], signal level 26% (23%/-31%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-2*,WB6JAR-10*,WIDE2*:!3418.27N/11648.26W>024/024/A=006213
+133(AX.25) Frame received [PN], signal level 8% (8%/-8%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3418.27N/11648.26W>024/024/A=006213
+134(AX.25) Frame received [PN], signal level 9% (9%/-10%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3418.27N/11648.26W>024/024/A=006213
+135(AX.25) Frame received [P_], signal level 27% (23%/-32%): KE6ITF-7>S6QYXU,W6PVG-3*,WB6JAR-10*,WIDE3*:'/,dnIkk/]"5"}
+136(AX.25) Frame received [P_], signal level 30% (24%/-37%): K6TJS-1>APU25N,WB6JAR-10*,WIDE2-1:@230141z3317.91N/11727.88Wv044/025I love LA! {UIV32N}
+137(AX.25) Frame received [PN], signal level 16% (16%/-16%): K6TJS-1>APU25N,WB6JAR-10*,N6EX-1*:@230141z3317.91N/11727.88Wv044/025I love LA! {UIV32N}
+138(AX.25) Frame received [PN], signal level 8% (9%/-9%): AE6MP>SS5QWP-2,N6EX-4*:`.]nmiF>/"4<}
+139(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6MP>SS5QWP-2,N6EX-1*:`.]nmiF>/"4<}
+140(AX.25) Frame received [PN], signal level 9% (10%/-9%): AE6MP>SS5QWP-1,N6EX-5*:`.]nmiF>/"4<}
+141(AX.25) Frame received [P_], signal level 10% (10%/-10%): KD7FNO-5>S5RTQP,W6PVG-3*,N6EX-5*:'/3hl"Ku/]"4j}
+142(AX.25) Frame received [PN], signal level 8% (8%/-8%): KD7FNO-5>S5RTQP,W6PVG-3*,W6SCE-10*:'/3hl"Ku/]"4j}
+143(AX.25) Frame received [PN], signal level 8% (9%/-9%): N7WLC>APJI22,W6SCE-10*:!3412.13NI11853.48W&Thousand Oaks - n7wlc@arrl.net
+144(AX.25) Frame received [P_], signal level 27% (21%/-35%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-2*,WB6JAR-10*,WIDE2*:'-_jl"k/]"=s}
+145(AX.25) Frame received [PN], signal level 9% (10%/-9%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-2*,N6EX-4*:'-_jl"k/]"=s}
+146(AX.25) Frame received [PN], signal level 10% (11%/-10%): AD6NH>APRS,N6EX-4*:;LA LOAD  *220941z3352.18N\11749.77W? 114 In 10 Minutes
+147(AX.25) Frame received [P_], signal level 21% (22%/-22%): KF6MDF-2>GPS,WIDE2-2:$GPRMC,014201,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7E
+
+148(AX.25) Frame received [P_], signal level 10% (10%/-11%): KF6MDF-2>GPS,N6EX-4*:$GPRMC,014201,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7E
+
+149(AX.25) Frame received [PN], signal level 8% (8%/-8%): KF6MDF-2>GPS,W6SCE-10*:$GPRMC,014201,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7E
+
+150(AX.25) Frame received [P_], signal level 42% (43%/-41%): LGB>BEACON,WIDE2-1:!3349.10N/11808.67W^  [by K6KMA]
+151(AX.25) Frame received [PN], signal level 9% (9%/-9%): LGB>BEACON,N6EX-4*:!3349.10N/11808.67W^  [by K6KMA]
+152(AX.25) Frame received [PN], signal level 16% (17%/-15%): LGB>BEACON,N6EX-1*:!3349.10N/11808.67W^  [by K6KMA]
+153(AX.25) Frame received [PN], signal level 13% (13%/-13%): KF6WJS-14>S4PWYR,WIDE2-2:`.a"l"Hk/"6f}
+154(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6WJS-14>S4PWYR,N6EX-4*:`.a"l"Hk/"6f}
+155(AX.25) Frame received [PN], signal level 17% (17%/-17%): KF6WJS-14>S4PWYR,N6EX-1*:`.a"l"Hk/"6f}
+156(AX.25) Frame received [P_], signal level 28% (22%/-35%): KC6YRU>APU25N,W6PVG-3*,WB6JAR-10*,WIDE2*:}KG6OWS-7>APK101,TCPIP,KC6YRU*::K6XTY    : o3{P
+157(AX.25) Frame received [P_], signal level 29% (25%/-33%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000/kf6yvs, Mike
+158(AX.25) Frame received [P_], signal level 9% (11%/-9%): KF6DQ-5>S4QUYZ,N6EX-5*:'.Kfl ~v/]"6Q}TM-D700
+159(AX.25) Frame received [PN], signal level 9% (9%/-9%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kfl ~v/]"6Q}TM-D700
+160(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kfl ~v/]"6Q}TM-D700
+161(AX.25) Frame received [P_], signal level 27% (22%/-33%): KG6ULN-14>S3PRWP,WB6WLV-11*,WB6JAR-10*,WIDE2*:',Pdl"Gk/]Tania's Crusin
+162(AX.25) Frame received [PN], signal level 11% (11%/-12%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-5*:!3418.98N/11648.75W>299/047/A=006010
+163(AX.25) Frame received [PN], signal level 9% (9%/-9%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3418.98N/11648.75W>299/047/A=006010
+164(AX.25) Frame received [P_], signal level 28% (24%/-32%): KD6VLP-2>SSUUVQ,WB6JAR-10*,WIDE3-2:',O+ ,Kj/]";8}
+165(AX.25) Frame received [PN], signal level 20% (22%/-20%): AC6VV-9>S4PXYQ,WIDE1-1:`.aF!*U>/]"6l}
+166(AX.25) Frame received [PN], signal level 9% (10%/-10%): AC6VV-9>S4PXYQ,N6EX-4*:`.aF!*U>/]"6l}
+167(AX.25) Frame received [PN], signal level 15% (17%/-14%): AC6VV-9>S4PXYQ,N6EX-1*:`.aF!*U>/]"6l}
+168(AX.25) Frame received [PN], signal level 8% (8%/-8%): N7WLC>APJI22,W6SCE-10*:<IGATE,MSG_CNT=0,LOC_CNT=3
+169(AX.25) Frame received [PN], signal level 8% (9%/-7%): N7WLC>APJI22,W6SCE-10*:>Mike in Thousand Oaks
+170(AX.25) Frame received [PN], signal level 9% (9%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-4*:'-_jl"k/]"=o}
+171(AX.25) Frame received [PN], signal level 9% (10%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,W6PVG-3*,N6EX-5*:'-_jl"k/]"=o}
+172(AX.25) Frame received [PN], signal level 9% (9%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,W6SCE-10*:'-_jl"k/]"=o}
+173(AX.25) Frame received [PN], signal level 8% (8%/-8%): KE6IYC-2>S4SPTT,K7GIL-1*,W6PVG-3*,W6SCE-10*:'-_jl"k/]"=o}
+174(AX.25) Frame received [PN], signal level 8% (9%/-9%): KC6HUR-1>S4QXVT,W6SCE-10*:'.5x!#)k/]"8,}
+175(AX.25) Frame received [P_], signal level 25% (22%/-28%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4S}
+176(AX.25) Frame received [P_], signal level 28% (23%/-34%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Jl!h>/]"4S}
+177(AX.25) Frame received [P_], signal level 39% (42%/-37%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4S}
+178(AX.25) Frame received [P_], signal level 26% (21%/-32%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":l}
+179(AX.25) Frame received [PN], signal level 17% (18%/-16%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":l}
+180(AX.25) Frame received [PN], signal level 10% (10%/-10%): KK6T-9>APT311,N6EX-4*:>TinyTrak3 v1.1
+181(AX.25) Frame received [P_], signal level 19% (19%/-19%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,014314,A,3408.5368,N,11810.3940,W,38.9,66.1,231105,13.5,E,D*3F
+
+182(AX.25) Frame received [PN], signal level 15% (15%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,014314,A,3408.5368,N,11810.3940,W,38.9,66.1,231105,13.5,E,D*3F
+
+183(AX.25) Frame received [PN], signal level 10% (11%/-9%): K6NR>S3TRXX,N6EX-4*:`-JClf0>/&/q}
+
+Input level too low! Please increase so most stations are around 30-50%.
+184(AX.25) Frame received [PN], signal level 4% (4%/-5%): W6OFR>SSTXPX,WIDE2-2:`./_lr[v>
+185(AX.25) Frame received [P_], signal level 31% (27%/-37%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+186(AX.25) Frame received [PN], signal level 8% (9%/-8%): W6OFR>SSTXPW,N6EX-4*:`./am!{v>
+187(AX.25) Frame received [PN], signal level 8% (8%/-8%): KE6IYC-2>S4SPTS,K7GIL-1*,N6EX-4*:'-_jl"k/]"=q}
+188(AX.25) Frame received [PN], signal level 9% (10%/-9%): KE6IYC-2>S4SPTS,K7GIL-1*,W6SCE-10*:'-_jl"k/]"=q}
+189(AX.25) Frame received [P_], signal level 11% (12%/-10%): KG6OWS-7>APK101,KG6OWS-3*,WIDE1*,W6PVG-3*,N6EX-5*::K6XTY    : o3{P
+190(AX.25) Frame received [PN], signal level 10% (11%/-10%): KG6OWS-7>APK101,KG6OWS-3*,WIDE1*,W6PVG-3*,W6SCE-10*::K6XTY    : o3{P
+191(AX.25) Frame received [PN], signal level 9% (10%/-10%): WA6YLB-4>APRS,W6PVG-3*,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+192(AX.25) Frame received [PN], signal level 10% (11%/-10%): KC6JTN-9>APT311,K7GIL-1*,N6EX-4*:!3419.56N/11649.35W>304/036/A=005829
+193(AX.25) Frame received [PN], signal level 10% (10%/-11%): KC6JTN-9>APT311,K7GIL-1*,W6PVG-3*,N6EX-5*:!3419.56N/11649.35W>304/036/A=005829
+194(AX.25) Frame received [PN], signal level 8% (8%/-9%): KC6JTN-9>APT311,K7GIL-1*,W6SCE-10*:!3419.56N/11649.35W>304/036/A=005829
+195(AX.25) Frame received [PN], signal level 9% (9%/-9%): KC6JTN-9>APT311,K7GIL-1*,W6PVG-3*,W6SCE-10*:!3419.56N/11649.35W>304/036/A=005829
+196(AX.25) Frame received [PN], signal level 11% (12%/-11%): N6EX-5>APNU19:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+197(AX.25) Frame received [PN], signal level 8% (9%/-9%): N6EX-4>APNU18:!3336.35N111748.63W#PHG5660/W1 for Orange County
+198(AX.25) Frame received [P_], signal level 24% (24%/-24%): KF6MDF-2>GPS,WIDE2-2:$GPRMC,014401,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*78
+
+199(AX.25) Frame received [PN], signal level 7% (8%/-8%): WA8LMF-14>APU25N,WIDE2-2:;146.70   *020658z3412.83N/11741.68WmPL 146.2 APRN & Mic-E Rpt on Sunset
+200(AX.25) Frame received [PN], signal level 17% (17%/-18%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,014401,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*78
+
+201(AX.25) Frame received [PN], signal level 16% (15%/-17%): WA8LMF-14>APU25N,N6EX-1*:;146.70   *020658z3412.83N/11741.68WmPL 146.2 APRN & Mic-E Rpt on Sunset
+202(AX.25) Frame received [PN], signal level 10% (10%/-10%): KC6JTN-9>APT311,K7GIL-1*,N6EX-4*:!3419.64N/11649.57W>310/027/A=005731
+203(AX.25) Frame received [P_], signal level 33% (30%/-36%): KC6JTN-9>APT311,K7GIL-1*,N6EX-2*,WB6JAR-10*,WIDE2*:!3419.64N/11649.57W>310/027/A=005731
+204(AX.25) Frame received [PN], signal level 9% (9%/-9%): KC6JTN-9>APT311,K7GIL-1*,W6SCE-10*:!3419.64N/11649.57W>310/027/A=005731
+205(AX.25) Frame received [PN], signal level 14% (14%/-16%): KF6WJS-14>S4PWYR,WIDE2-2:`.a"l"Hk/"6g}
+206(AX.25) Frame received [PN], signal level 8% (8%/-9%): KF6WJS-14>S4PWYR,N6EX-4*:`.a"l"Hk/"6g}
+207(AX.25) Frame received [PN], signal level 16% (17%/-17%): KF6WJS-14>S4PWYR,N6EX-1*:`.a"l"Hk/"6g}
+208(AX.25) Frame received [PN], signal level 9% (10%/-9%): KF6KOI>GPSMV,N6EX-4*:$GPGGA,014418,3347.6417,N,11805.4954,W,2,08,1.2,13.3,M,-32.1,M,,*4A
+
+209(AX.25) Frame received [P_], signal level 32% (28%/-37%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+210(AX.25) Frame received [P_], signal level 24% (22%/-27%): KF6MDF-2>ID,RELAY,WIDE:KF6MDF-2/R RELAY/D KF6MDF-1/B
+211(AX.25) Frame received [P_], signal level 28% (23%/-33%): KF6MDF-2>ID,WB6JAR-10*,WIDE:KF6MDF-2/R RELAY/D KF6MDF-1/B
+212(AX.25) Frame received [P_], signal level 29% (21%/-38%): W6MAF>APTW01,N6EX-2*,WB6JAR-10*,WIDE3-1:_11221844c046s000g000t054r000p000P000h32b10186tU2k
+213(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kel ~v/]"6:}TM-D700
+214(AX.25) Frame received [PN], signal level 9% (10%/-10%): KE6IYC-2>S4SPTT,K7GIL-1*,N6EX-4*:'-_jl"k/]"=j}
+215(AX.25) Frame received [PN], signal level 7% (8%/-7%): KE6IYC-2>S4SPTT,K7GIL-1*,W6SCE-10*:'-_jl"k/]"=j}
+216(AX.25) Frame received [P_], signal level 18% (19%/-18%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,014444,A,3409.0147,N,11809.2303,W,39.2,62.0,231105,13.5,E,A*38
+
+217(AX.25) Frame received [PN], signal level 36% (36%/-38%): N6XQY-12>GPSLJ,RELAY*,WIDE2-2:$GPRMC,014440.81,A,3346.4556,N,11801.1698,W,54.5,090.2,231105,13.,E*70
+218(AX.25) Frame received [PN], signal level 8% (8%/-10%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,014440.81,A,3346.4556,N,11801.1698,W,54.5,090.2,231105,13.,E*70
+219(AX.25) Frame received [PN], signal level 16% (16%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,014444,A,3409.0147,N,11809.2303,W,39.2,62.0,231105,13.5,E,A*38
+
+220(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6XQY-12>GPSLJ,RELAY*,N6EX-1*:$GPRMC,014440.81,A,3346.4556,N,11801.1698,W,54.5,090.2,231105,13.,E*70
+221(AX.25) Frame received [P_], signal level 59% (64%/-55%): AE6MP>SS5SPS-2,WIDE2-2:`.^5p_U>/"4=}
+222(AX.25) Frame received [PN], signal level 17% (16%/-18%): AE6MP>SS5SPS-2,N6EX-1*:`.^5p_U>/"4=}
+223(AX.25) Frame received [PN], signal level 7% (7%/-9%): N6XQY-12>GPSLJ,RELAY*,W6SCE-10*:$GPRMC,014440.81,A,3346.4556,N,11801.1698,W,54.5,090.2,231105,13.,E*70
+224(AX.25) Frame received [PN], signal level 8% (10%/-8%): KA6IHT-3>APS221,W6SCE-10*:=3411.05N/11820.25W.APRS+SA
+225(AX.25) Frame received [PN], signal level 8% (9%/-8%): K6TZ>APTW01,W6SCE-10*:_11230145c288s009g009t066r000p000P000h20b10158tU2k
+226(AX.25) Frame received [PN], signal level 8% (8%/-8%): K6TZ>APTW01,W6SCE-10*:_11230145c288s009g009t066r000p000P000h20b10158tU2k
+227(AX.25) Frame received [PN], signal level 9% (9%/-9%): K6TZ>APTW01,W6SCE-10*:!3401.75N/11947.06W_SBARC Diablo Peak, Santa Cruz Island
+228(AX.25) Frame received [PN], signal level 8% (8%/-8%): K6TZ>APTW01,W6SCE-10*:!3401.75N/11947.06W_SBARC Diablo Peak, Santa Cruz Island
+229(AX.25) Frame received [PN], signal level 9% (9%/-10%): KC6JTN-9>APT311,K7GIL-1*,N6EX-4*:!3419.90N/11649.79W>044/021/A=005544
+230(AX.25) Frame received [P_], signal level 29% (23%/-36%): KC6JTN-9>APT311,K7GIL-1*,N6EX-2*,WB6JAR-10*,WIDE2*:!3419.90N/11649.79W>044/021/A=005544
+231(AX.25) Frame received [PN], signal level 9% (10%/-10%): KC6JTN-9>APT311,K7GIL-1*,W6SCE-10*:!3419.90N/11649.79W>044/021/A=005544
+232(AX.25) Frame received [PN], signal level 8% (8%/-9%): K6GER>APU25N,KG6OWS-3*,W6PVG-3*,W6SCE-10*:=3845.28N/12035.51W-Jerry & Donna in Pollock Pines {UIV32N}
+233(AX.25) Frame received [P_], signal level 25% (24%/-27%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4M}
+234(AX.25) Frame received [P_], signal level 30% (25%/-36%): KC6JTN-9>APT311,K7GIL-1*,N6EX-2*,WB6JAR-10*,WIDE2*:!3419.94N/11649.74W>345/012/A=005514
+235(AX.25) Frame received [P_], signal level 38% (42%/-36%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4M}
+236(AX.25) Frame received [PN], signal level 8% (8%/-9%): KC6JTN-9>APT311,K7GIL-1*,W6SCE-10*:!3419.94N/11649.74W>345/012/A=005514
+237(AX.25) Frame received [PN], signal level 10% (11%/-9%): KC6JTN-9>APT311,K7GIL-1*,N6EX-4*:!3419.93N/11649.78W>238/024/A=005498
+238(AX.25) Frame received [PN], signal level 9% (9%/-9%): KC6JTN-9>APT311,K7GIL-1*,W6SCE-10*:!3419.93N/11649.78W>238/024/A=005498
+239(AX.25) Frame received [P_], signal level 27% (17%/-37%): N6PHX-12>APT311,WB6JAR-10*,WIDE3-2:> Steve's Rig
+240(AX.25) Frame received [PN], signal level 23% (25%/-22%): WA8LMF>STPYXT,WIDE2-2:'._l#?>/]"7,}
+241(AX.25) Frame received [PN], signal level 9% (10%/-9%): WA8LMF>STPYXT,N6EX-5*:'._l#?>/]"7,}
+242(AX.25) Frame received [PN], signal level 17% (17%/-17%): WA8LMF>STPYXT,N6EX-1*:'._l#?>/]"7,}
+243(AX.25) Frame received [P_], signal level 29% (26%/-33%): K5MTN-1>SUPVPV,W6PVG-3*,WB6JAR-10*,WIDE3-1:`.-0!|Sk/>"@N}
+244(AX.25) Frame received [PN], signal level 9% (9%/-11%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-5*:!3419.88N/11649.85W>338/014/A=005458
+245(AX.25) Frame received [PN], signal level 7% (7%/-8%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3419.88N/11649.85W>338/014/A=005458
+246(AX.25) Frame received [PN], signal level 9% (9%/-9%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3419.88N/11649.85W>338/014/A=005458
+247(AX.25) Frame received [P_], signal level 30% (26%/-35%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230145z3331.36N/11709.71Wk109/020/A=000957
+248(AX.25) Frame received [PN], signal level 16% (15%/-17%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230145z3331.36N/11709.71Wk109/020/A=000957
+249(AX.25) Frame received [PN], signal level 9% (9%/-10%): KC6JTN-9>APT311,K7GIL-1*,N6EX-4*:!3419.90N/11649.84W>026/026/A=005445
+250(AX.25) Frame received [PN], signal level 8% (8%/-8%): KC6JTN-9>APT311,K7GIL-1*,N6EX-2*,N6EX-4*:!3419.90N/11649.84W>026/026/A=005445
+251(AX.25) Frame received [P_], signal level 31% (24%/-38%): KE6IYC-2>S4SPTS,K7GIL-1*,WB6JAR-10*,WIDE2-1:'-_jl"k/]">2}
+252(AX.25) Frame received [PN], signal level 10% (11%/-9%): KE6IYC-2>S4SPTS,K7GIL-1*,N6EX-4*:'-_jl"k/]">2}
+253(AX.25) Frame received [PN], signal level 14% (17%/-13%): KE6IYC-2>S4SPTS,K7GIL-1*,WB6JAR-10*,N6EX-1*:'-_jl"k/]">2}
+254(AX.25) Frame received [PN], signal level 9% (8%/-10%): KE6IYC-2>S4SPTS,K7GIL-1*,WB6JAR-10*,W6SCE-10*:'-_jl"k/]">2}
+255(AX.25) Frame received [PN], signal level 8% (9%/-8%): KE6IYC-2>S4SPTS,K7GIL-1*,W6SCE-10*:'-_jl"k/]">2}
+256(AX.25) Frame received [PN], signal level 17% (17%/-18%): KA1WCC-9>ST0XTU,N6EX-1*:`-R{mRl>/
+257(AX.25) Frame received [PN], signal level 20% (20%/-21%): AC6VV-9>S4PYPW,WIDE1-1:`.`:oHv>/]"6\}Reachable via arrl.net
+258(AX.25) Frame received [P_], signal level 30% (30%/-31%): KN6DB-14>GPSLK,WIDE2-2:$GPGGA,014551,3348.8478,N,11800.1699,W,2,08,1.1,10.1,M,-32.0,M,,*43
+
+259(AX.25) Frame received [PN], signal level 8% (9%/-9%): KN6DB-14>GPSLK,N6EX-4*:$GPRMC,014551,A,3348.8478,N,11800.1699,W,000.0,274.0,231105,013.4,E*63
+
+260(AX.25) Frame received [PN], signal level 8% (9%/-9%): KN6DB-14>GPSLK,N6EX-4*:$GPGGA,014551,3348.8478,N,11800.1699,W,2,08,1.1,10.1,M,-32.0,M,,*43
+
+261(AX.25) Frame received [PN], signal level 15% (14%/-18%): AC6VV-9>S4PYPW,N6EX-1*:`.`:oHv>/]"6\}Reachable via arrl.net
+262(AX.25) Frame received [PN], signal level 17% (17%/-18%): KN6DB-14>GPSLK,N6EX-1*:$GPGGA,014551,3348.8478,N,11800.1699,W,2,08,1.1,10.1,M,-32.0,M,,*43
+
+263(AX.25) Frame received [P_], signal level 31% (37%/-26%): KF6MDF-2>GPS,WIDE2-2:$GPRMC,014601,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7A
+
+264(AX.25) Frame received [PN], signal level 17% (18%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,014601,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7A
+
+265(AX.25) Frame received [PN], signal level 10% (11%/-10%): KC6JTN-9>APT311,K7GIL-1*,N6EX-4*:!3420.01N/11649.84W>317/028/A=005360
+266(AX.25) Frame received [P_], signal level 26% (21%/-32%): KC6JTN-9>APT311,K7GIL-1*,N6EX-2*,WB6JAR-10*,WIDE2*:!3420.01N/11649.84W>317/028/A=005360
+267(AX.25) Frame received [PN], signal level 9% (9%/-10%): KC6HUR-1>S4QYTQ,W6SCE-10*:'.69l#)k/]"8b}
+268(AX.25) Frame received [PN], signal level 8% (7%/-9%): KC6JTN-9>APT311,K7GIL-1*,W6SCE-10*:!3420.01N/11649.84W>317/028/A=005360
+269(AX.25) Frame received [PN], signal level 15% (15%/-15%): KF6WJS-14>S4PWYR,WIDE2-2:`.a"l"Hk/"6c}KF6WJS@ARRL.NET
+270(AX.25) Frame received [PN], signal level 8% (8%/-9%): KF6WJS-14>S4PWYR,N6EX-4*:`.a"l"Hk/"6c}KF6WJS@ARRL.NET
+271(AX.25) Frame received [PN], signal level 16% (14%/-18%): KF6WJS-14>S4PWYR,N6EX-1*:`.a"l"Hk/"6c}KF6WJS@ARRL.NET
+272(AX.25) Frame received [P_], signal level 29% (24%/-35%): KG6TZL-14>APT311,WB6JAR-10*,WIDE2-1:/230146z3356.76N/11713.78Wk194/000/A=001423
+273(AX.25) Frame received [PN], signal level 17% (17%/-18%): KG6TZL-14>APT311,WB6JAR-10*,N6EX-1*:/230146z3356.76N/11713.78Wk194/000/A=001423
+274(AX.25) Frame received [P_], signal level 30% (25%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+275(AX.25) Frame received [PN], signal level 11% (11%/-11%): AE6MP>SS5SVS-2,N6EX-5*:`.^8lsU>/"4@}
+276(AX.25) Frame received [PN], signal level 15% (16%/-16%): AE6MP>SS5SVS-2,N6EX-1*:`.^8lsU>/"4@}
+277(AX.25) Frame received [PN], signal level 7% (8%/-7%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kfl ~v/]"6A}TM-D700
+278(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6DQ-5>S4QUYZ,W6SCE-10*:'.Kfl ~v/]"6A}TM-D700
+279(AX.25) Frame received [PN], signal level 9% (10%/-10%): W6CSP-2>GPSLK,N6EX-4*:$GPRMC,014639,A,3350.7370,N,11756.4782,W,000.0,036.7,231105,013.7,E*65
+
+280(AX.25) Frame received [PN], signal level 35% (31%/-40%): KD6FVP-2>APS224,N6EX-1,WIDE1:>152343z[224]*We know most of your faults!!!
+281(AX.25) Frame received [PN], signal level 9% (9%/-10%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,014639.97,A,3346.2428,N,11759.1411,W,52.9,093.8,231105,13.,E*77
+282(AX.25) Frame received [P_], signal level 27% (23%/-33%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+283(AX.25) Frame received [P_], signal level 38% (43%/-34%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+
+Input level too low! Please increase so most stations are around 30-50%.
+284(AX.25) Frame received [PN], signal level 4% (4%/-4%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230145z3350.28N/11818.85W_252/009g010t065r000P000p000h61b10154v6
+285(AX.25) Frame received [PN], signal level 9% (9%/-9%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230145z3350.28N/11818.85W_252/009g010t065r000P000p000h61b10154v6
+286(AX.25) Frame received [P_], signal level 27% (24%/-31%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-2*,WB6JAR-10*,WIDE2*:!3420.22N/11650.26W>290/031/A=005048
+287(AX.25) Frame received [PN], signal level 16% (16%/-17%): N6EX-3>APJI23,N6EX-1*,SOCAL1:}W6AHM>APRS,TCPIP,N6EX-3*:@230145z3350.28N/11818.85W_252/009g010t065r000P000p000h61b10154v6
+288(AX.25) Frame received [PN], signal level 11% (12%/-11%): KG6OWS-7>APK101,KG6OWS-3*,WIDE1*,W6PVG-3*,N6EX-5*::K6XTY    : o3{P
+289(AX.25) Frame received [PN], signal level 9% (9%/-9%): KG6OWS-7>APK101,KG6OWS-3*,WIDE1*,W6PVG-3*,W6SCE-10*::K6XTY    : o3{P
+290(AX.25) Frame received [P_], signal level 26% (28%/-25%): KE6RYZ>S3UUXS,RELAY,WIDE:`.[Jl!h>/]"4B}
+291(AX.25) Frame received [P_], signal level 40% (43%/-38%): KE6RYZ>S3UUXS,RELAY*,WIDE:`.[Jl!h>/]"4B}
+292(AX.25) Frame received [PN], signal level 7% (7%/-8%): KD6UZM-15>S3UWTS,WB6JAR-10*,W6SCE-10*:`-)l v\":Z}TinyTrak3
+293(AX.25) Frame received [PN], signal level 8% (8%/-9%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,014718,A,3347.6420,N,11805.4956,W,000.0,111.4,231105,013.4,E*68
+
+294(AX.25) Frame received [P_], signal level 28% (22%/-35%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+295(AX.25) Frame received [P_], signal level 31% (27%/-36%): WB6JAR-10>APN383,10LNK2-2:!3345.71NK11644.26W#PHG5760/PineCove R,Wn,10LNKn/A=006300/www.rivcoraces.org
+296(AX.25) Frame received [PN], signal level 11% (11%/-12%): WD5EHM-3>APT311,N6EX-5*:/230147z3412.28N/11813.30W>000/000/A=001059
+297(AX.25) Frame received [P_], signal level 29% (22%/-37%): N6EDL-2>S3STWX,WB6JAR-10*,WIDE:`-'dns->/>"87}ERNIE IN GMC ENVOY
+298(AX.25) Frame received [PN], signal level 11% (11%/-12%): WA6YLB-4>APRS,W6PVG-3*,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+299(AX.25) Frame received [PN], signal level 11% (11%/-11%): WA6YLB-4>APRS,W6PVG-3*,N6EX-5*:!3521.07NN11740.38W_PHG5730 /A=004738/ aprs@ember2ash.com
+300(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QUXZ,W6SCE-10*:'.Kgl"`v/]"6;}TM-D700
+301(AX.25) Frame received [PN], signal level 8% (9%/-7%): WA6YLB-4>APRS,W6PVG-3*,W6SCE-10*:!3521.07NN11740.38W_PHG5730 /A=004738/ aprs@ember2ash.com
+302(AX.25) Frame received [PN], signal level 19% (20%/-20%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,014744,A,3409.0756,N,11808.4349,W,25.9,89.9,231105,13.5,E,A*3E
+
+303(AX.25) Frame received [PN], signal level 16% (17%/-15%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,014744,A,3409.0756,N,11808.4349,W,25.9,89.9,231105,13.5,E,A*3E
+
+304(AX.25) Frame received [PN], signal level 34% (31%/-37%): KD6FVP-2>APS224,N6EX-1,WIDE1:=3408.19N/11807.72W-USGS Pasadena,CA Field office
+305(AX.25) Frame received [PN], signal level 16% (17%/-16%): KD6FVP-2>APS224,N6EX-1*,WIDE1:=3408.19N/11807.72W-USGS Pasadena,CA Field office
+306(AX.25) Frame received [P_], signal level 31% (28%/-36%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+307(AX.25) Frame received [P_], signal level 28% (24%/-33%): N3DAB-3>APT311,W6PVG-3*,WB6JAR-10*,WIDE3-1:/230147z3501.16N/11801.12Wk274/060/A=002644
+308(AX.25) Frame received [P_], signal level 35% (35%/-36%): W6KL>APS210,WIDE2-2:>072151z[210]APRS+SA  Burbank, CA.  (Weather)
+309(AX.25) Frame received [PN], signal level 8% (7%/-9%): W6KL>APS210,W6SCE-10*:>072151z[210]APRS+SA  Burbank, CA.  (Weather)
+310(AX.25) Frame received [P_], signal level 32% (30%/-35%): AE6MP>SS5SYP-2,WIDE2-2:`.^9lsT>/"4I}
+311(AX.25) Frame received [PN], signal level 9% (9%/-10%): AE6MP>SS5SYP-2,W6SCE-10*:`.^9lsT>/"4I}
+312(AX.25) Frame received [PN], signal level 17% (17%/-17%): AE6MP>SS5SYP-2,N6EX-1*:`.^9lsT>/"4I}
+313(AX.25) Frame received [PN], signal level 15% (13%/-17%): KF6WJS-14>S4PWYR,WIDE2-2:`.a"l"Hk/"6c}
+314(AX.25) Frame received [PN], signal level 10% (10%/-10%): KF6WJS-14>S4PWYR,N6EX-4*:`.a"l"Hk/"6c}
+315(AX.25) Frame received [PN], signal level 16% (16%/-17%): KF6WJS-14>S4PWYR,N6EX-1*:`.a"l"Hk/"6c}
+316(AX.25) Frame received [P_], signal level 28% (19%/-37%): N6PHX-12>APT311,WB6JAR-10*,WIDE3-2:> Steve's Rig
+317(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6PHX-12>APT311,N6EX-1*:> Steve's Rig
+318(AX.25) Frame received [P_], signal level 29% (23%/-35%): N6GOF-1>S3TSRX,WB6JAR-10*,WIDE3-2:`,),l v/]"3u}eric@goforthtech.com
+319(AX.25) Frame received [PN], signal level 10% (11%/-11%): N6EX-5>APNU19:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+320(AX.25) Frame received [P_], signal level 28% (21%/-35%): WA6LAW-14>SSPUXT,WB6WLV-11*,WB6JAR-10*,WIDE2*:'+K4!rk/]"44}
+321(AX.25) Frame received [PN], signal level 15% (15%/-16%): N6EX-1>APN382:!3411.21N111802.13W#PHG5664/W1 for LA area/A=003000/sceara@ham-radio.com
+322(AX.25) Frame received [P_], signal level 40% (43%/-37%): KF6ICC>ID,RELAY,WIDE:KF6ICC/R RELAY/D KF6ICC-1/B
+
+Input level too low! Please increase so most stations are around 30-50%.
+323(AX.25) Frame received [PN], signal level 3% (4%/-4%): KF6ICC>ID,RELAY*,WIDE:KF6ICC/R RELAY/D KF6ICC-1/B
+324(AX.25) Frame received [PN], signal level 8% (8%/-8%): KF6DQ-5>S4QUWZ,W6SCE-10*:'.KjnSkv/]"6@}TM-D700
+325(AX.25) Frame received [PN], signal level 8% (9%/-9%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,014841.91,A,3345.9549,N,11757.1965,W,49.4,090.0,231105,13.,E*72
+326(AX.25) Frame received [P_], signal level 32% (33%/-33%): KN6DB-14>GPSLK,WIDE2-2:$GPRMC,014851,A,3348.8483,N,11800.1700,W,000.0,274.0,231105,013.4,E*6B
+
+327(AX.25) Frame received [P_], signal level 8% (9%/-9%): KN6DB-14>GPSLK,N6EX-4*:$GPRMC,014851,A,3348.8483,N,11800.1700,W,000.0,274.0,231105,013.4,E*6B
+
+328(AX.25) Frame received [PN], signal level 16% (17%/-17%): KN6DB-14>GPSLK,N6EX-1*:$GPRMC,014851,A,3348.8483,N,11800.1700,W,000.0,274.0,231105,013.4,E*6B
+
+329(AX.25) Frame received [PN], signal level 11% (12%/-10%): AA6VH>APW275,KF6RAL*,N6EX-5*:=3413.31N/11910.36W-PHG3130/Ventura County ARES/RACES -CAVENOXNARD  -275-<630>
+330(AX.25) Frame received [P_], signal level 29% (26%/-33%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":`}
+331(AX.25) Frame received [PN], signal level 16% (17%/-15%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":`}
+332(AX.25) Frame received [PN], signal level 11% (12%/-11%): WA6YLB>APRX46,WA6YLB-7*,N6EX-5*:=3617.37N/11908.94W_009/000g000t064r000p000....h00b10175dU2ks.c
+333(AX.25) Frame received [P_], signal level 18% (19%/-19%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,014914,A,3409.0778,N,11807.7926,W,24.4,89.6,231105,13.5,E,A*35
+
+334(AX.25) Frame received [PN], signal level 17% (18%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,014914,A,3409.0778,N,11807.7926,W,24.4,89.6,231105,13.5,E,A*35
+
+335(AX.25) Frame received [P_], signal level 38% (40%/-36%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4R}
+336(AX.25) Frame received [P_], signal level 31% (26%/-37%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+337(AX.25) Frame received [P_], signal level 26% (20%/-33%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,WIDE2-2:'-+(l!X>/]"5.}
+338(AX.25) Frame received [PN], signal level 15% (15%/-16%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,N6EX-1*:'-+(l!X>/]"5.}
+339(AX.25) Frame received [P_], signal level 26% (22%/-31%): WD6V-5>WB6JAR-10,WB6JAR-10*,WIDE2-1:=3330.60N/11711.80W-DIGI on WD6V-5 {Uź€32N}
+340(AX.25) Frame received [PN], signal level 17% (17%/-17%): WD6V-5>WB6JAR-10,WB6JAR-10*,N6EX-1*:=3330.60N/11711.80W-DIGI on WD6V-5 {Uź€32N}
+341(AX.25) Frame received [P_], signal level 46% (43%/-51%): AE6MP>SS5TQS-2,WIDE2-2:`.^:lKS>/"4W}
+342(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6MP>SS5TQS-2,N6EX-1*:`.^:lKS>/"4W}
+343(AX.25) Frame received [PN], signal level 11% (12%/-11%): AE6MP>SS5TQS-1,N6EX-5*:`.^:lKS>/"4W}
+344(AX.25) Frame received [PN], signal level 10% (10%/-10%): WA6YLB>APRX46,WA6YLB-7*,W6SCE-10*:=3617.37N/11908.94W_009/000g000t064r000p000....h00b10175dU2ks.c
+345(AX.25) Frame received [PN], signal level 8% (9%/-9%): W6SCE-10>APN382:!3419.82N111836.06W#PHG6860/W1 on Oat Mtn./A=003747/k6ccc@amsat.org for info
+346(AX.25) Frame received [PN], signal level 9% (9%/-11%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-4*:!3421.94N/11651.50W>352/049/A=003995
+347(AX.25) Frame received [P_], signal level 28% (24%/-33%): KC6JTN-9>APT311,WA6YLB-4*,N6EX-2*,WB6JAR-10*,WIDE2*:!3421.94N/11651.50W>352/049/A=003995
+348(AX.25) Frame received [PN], signal level 8% (9%/-9%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3421.94N/11651.50W>352/049/A=003995
+349(AX.25) Frame received [PN], signal level 9% (9%/-10%): KC6JTN-9>APT311,WA6YLB-4*,W6SCE-10*:!3421.94N/11651.50W>352/049/A=003995
+350(AX.25) Frame received [PN], signal level 13% (14%/-14%): KF6WJS-14>S4PWYR,WIDE2-2:`.a"l"Hk/"6b}
+351(AX.25) Frame received [PN], signal level 16% (18%/-15%): KF6WJS-14>S4PWYR,N6EX-1*:`.a"l"Hk/"6b}
+352(AX.25) Frame received [PN], signal level 9% (10%/-10%): WA6YLB-4>APRS,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+353(AX.25) Frame received [PN], signal level 9% (8%/-11%): WA6YLB-4>APRS,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+354(AX.25) Frame received [PN], signal level 9% (10%/-10%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,015018,A,3347.6422,N,11805.4960,W,000.0,111.4,231105,013.4,E*69
+
+355(AX.25) Frame received [P_], signal level 28% (23%/-34%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+356(AX.25) Frame received [PN], signal level 9% (10%/-10%): KY6F-9>S5PYXU,W6PVG-3*,N6EX-5*:`.B0l v/"Ac}
+357(AX.25) Frame received [PN], signal level 8% (8%/-10%): N6EX-2>APN383,N6EX-4*:!3415.46NL11719.90W#PHG4760/W3 in Crestline/A=005300/sceara@ham-radio.com
+358(AX.25) Frame received [P_], signal level 30% (24%/-38%): N6EDL-2>S3SUSV,WB6JAR-10*,WIDE:`-(l f>/>"8W}ERNIE IN GMC ENVOY
+359(AX.25) Frame received [PN], signal level 8% (9%/-9%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,015042.06,A,3345.9217,N,11756.2873,W,00.0,000.0,231105,13.,E*7E
+360(AX.25) Frame received [PN], signal level 21% (19%/-24%): W2NKM-2>STQRTP,RELAY,WIDE:`.'/l"tR/]"83}
+361(AX.25) Frame received [P_], signal level 27% (18%/-36%): W2NKM-2>STQRTP,WB6JAR-10*,WIDE:`.'/l"tR/]"83}
+362(AX.25) Frame received [P_], signal level 31% (28%/-36%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+363(AX.25) Frame received [PN], signal level 10% (10%/-10%): K6KMA-1>GPSLK,N6EX-4*:$GPRMC,015100,A,3349.511,N,11806.927,W,000.0,001.4,231105,013.5,E*6D
+
+364(AX.25) Frame received [PN], signal level 8% (9%/-9%): AE6MP>SS5TSR-2,N6EX-4*:`.^:l*!>/"4_}
+365(AX.25) Frame received [P_], signal level 37% (37%/-38%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4N}
+366(AX.25) Frame received [P_], signal level 28% (20%/-37%): N6PHX-12>APT311,WB6JAR-10*,WIDE3-2:> Steve's Rig
+367(AX.25) Frame received [P_], signal level 30% (25%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000/kf6yvs, Mike
+368(AX.25) Frame received [PN], signal level 11% (11%/-11%): WA6YLB>APRX46,WA6YLB-7*,N6EX-5*:=3617.37N/11908.94W_009/000g000t064r000p000....h00b10176dU2ks.c
+369(AX.25) Frame received [P_], signal level 29% (25%/-33%): WA6YLB-4>APRS,W6PVG-3*,WB6JAR-10*,WIDE1*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+370(AX.25) Frame received [PN], signal level 8% (8%/-8%): WA6YLB>APRX46,WA6YLB-7*,W6SCE-10*:=3617.37N/11908.94W_009/000g000t064r000p000....h00b10176dU2ks.c
+371(AX.25) Frame received [P_], signal level 30% (25%/-37%): WA6YLB>APRX46,WA6YLB-5*,W6PVG-3*,WB6JAR-10*,WIDE2*:>081839z wa6ylb@theworks.com
+372(AX.25) Frame received [PN], signal level 12% (13%/-12%): WA6YLB>APRX46,WA6YLB-5*,W6PVG-3*,N6EX-5*:>081839z wa6ylb@theworks.com
+373(AX.25) Frame received [PN], signal level 8% (9%/-9%): KN6DB-14>GPSLK,N6EX-4*:$GPRMC,015151,A,3348.8480,N,11800.1697,W,000.0,274.0,231105,013.4,E*6F
+
+374(AX.25) Frame received [PN], signal level 9% (8%/-10%): WA6YLB>APRX46,WA6YLB-5*,W6PVG-3*,W6SCE-10*:>081839z wa6ylb@theworks.com
+375(AX.25) Frame received [PN], signal level 9% (10%/-10%): AD6NH>APRS,N6EX-4*:;LA LOAD  *220951z3352.18N\11749.77W? 108 In 10 Minutes
+376(AX.25) Frame received [P_], signal level 24% (23%/-25%): AC6VV-9>S4PXYX,WIDE1-1:`._l [>/]"6n}
+377(AX.25) Frame received [P_], signal level 40% (42%/-38%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.06N/11758.01Wk Geo & Kris LaHabra,CA
+378(AX.25) Frame received [PN], signal level 10% (11%/-10%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230150z3350.28N/11818.85W_298/002g010t065r000P000p000h60b10154v6
+379(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6EX-3>APJI23,N6EX-1*,SOCAL1:}W6AHM>APRS,TCPIP,N6EX-3*:@230150z3350.28N/11818.85W_298/002g010t065r000P000p000h60b10154v6
+380(AX.25) Frame received [P_], signal level 30% (27%/-34%): N3DAB-3>APT311,W6PVG-3*,WB6JAR-10*,WIDE3-1:/230152z3501.99N/11806.01Wk302/044/A=002608/In Service - TT3
+381(AX.25) Frame received [P_], signal level 39% (42%/-38%): W6KL>APS210,WIDE2-2:$ULTW0000000002E2000027AD00058F90000101780145043300000000
+382(AX.25) Frame received [P_], signal level 20% (21%/-20%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,015214,A,3409.1107,N,11806.8100,W,0.0,84.9,231105,13.5,E,D*07
+
+383(AX.25) Frame received [PN], signal level 16% (18%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,015214,A,3409.1107,N,11806.8100,W,0.0,84.9,231105,13.5,E,D*07
+
+384(AX.25) Frame received [P_], signal level 29% (26%/-34%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+385(AX.25) Frame received [P_], signal level 28% (23%/-35%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,WIDE2-2:'-+(l!X>/]"5)}
+386(AX.25) Frame received [PN], signal level 16% (15%/-17%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,N6EX-1*:'-+(l!X>/]"5)}
+387(AX.25) Frame received [P_], signal level 30% (26%/-36%): WB6JAR-10>BEACON:>WIDE2-2 is best path in SoCal
+388(AX.25) Frame received [PN], signal level 15% (15%/-16%): AE6MP>SS5TTX-2,N6EX-1*:`.^:l*!>/"4a}
+389(AX.25) Frame received [PN], signal level 9% (10%/-10%): KF6DQ-5>S4QTUZ,W6SCE-10*:'.N? "@v/]"6l}TM-D700
+390(AX.25) Frame received [PN], signal level 10% (11%/-10%): K6JLW>APT310,N6EX-5*:!0000.000/00000.000-000/000/!3410.30N/11911.33W->k6jlw@arrl.net 146.970
+
+Input level too low! Please increase so most stations are around 30-50%.
+391(AX.25) Frame received [PN], signal level 4% (4%/-6%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+392(AX.25) Frame received [PN], signal level 16% (15%/-18%): KB6CYS>BEACON,N6EX-1*:WEATHER STATION ON-LINE
+393(AX.25) Frame received [PN], signal level 8% (8%/-9%): KB6CYS>BEACON,N6EX-4*:WEATHER STATION ON-LINE
+394(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6EX-1>BEACON:>WIDE2-2 is best path in SoCal
+
+Input level too low! Please increase so most stations are around 30-50%.
+395(AX.25) Frame received [PN], signal level 3% (4%/-4%): W6OFR>SSTWUT,WIDE2-2:`./km@Fv>
+396(AX.25) Frame received [PN], signal level 10% (10%/-10%): W6OFR>SSTWUT,N6EX-4*:`./km@Fv>
+
+Input level too low! Please increase so most stations are around 30-50%.
+397(AX.25) Frame received [PN], signal level 4% (5%/-4%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:<IGATE,MSG_CNT=19,LOC_CNT=44
+398(AX.25) Frame received [PN], signal level 5% (6%/-5%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:>Greater LA IGate
+399(AX.25) Frame received [PN], signal level 8% (9%/-8%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:<IGATE,MSG_CNT=19,LOC_CNT=44
+400(AX.25) Frame received [PN], signal level 9% (10%/-10%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:>Greater LA IGate
+401(AX.25) Frame received [PN], signal level 16% (16%/-17%): N6EX-3>APJI23,N6EX-1*,SOCAL1:<IGATE,MSG_CNT=19,LOC_CNT=44
+402(AX.25) Frame received [PN], signal level 16% (17%/-15%): N6EX-3>APJI23,N6EX-1*,SOCAL1:>Greater LA IGate
+403(AX.25) Frame received [P_], signal level 26% (27%/-26%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4@}
+404(AX.25) Frame received [P_], signal level 37% (40%/-36%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4@}
+405(AX.25) Frame received [P_], signal level 28% (22%/-34%): N3DAB-3>APT311,W6PVG-3*,WB6JAR-10*,WIDE3-1:/230153z3502.78N/11806.71Wk346/049/A=002644
+406(AX.25) Frame received [P_], signal level 27% (19%/-35%): N6EDL-2>S3SUSV,WB6JAR-10*,WIDE:`-(l f>/>"8G}ERNIE IN GMC ENVOY
+407(AX.25) Frame received [PN], signal level 32% (32%/-33%): KD6FVP-2>APS224,N6EX-1,WIDE1:=3408.19N/11807.72W-USGS Pasadena,CA Field office
+408(AX.25) Frame received [PN], signal level 9% (9%/-9%): KF6DQ-5>S4QTQZ,W6SCE-10*:'.NP ?|v/]"7/}TM-D700
+409(AX.25) Frame received [PN], signal level 10% (10%/-11%): KF6DQ-5>S4QTQZ,W6SCE-10*:'.NP ?|v/]"7/}TM-D700
+410(AX.25) Frame received [PN], signal level 16% (15%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,015401,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*79
+
+411(AX.25) Frame received [PN], signal level 22% (22%/-23%): K6TVI-14>SSTSVT,WIDE2-2:'.[Gl"dk/]"3j}
+412(AX.25) Frame received [PN], signal level 16% (16%/-17%): K6TVI-14>SSTSVT,N6EX-1*:'.[Gl"dk/]"3j}
+413(AX.25) Frame received [PN], signal level 9% (10%/-9%): K6TVI-14>SSTSVT,N6EX-4*:'.[Gl"dk/]"3j}
+414(AX.25) Frame received [PN], signal level 7% (8%/-8%): KD7FNO-5>S5RTQQ,W6PVG-3*,W6SCE-10*:'/3hl"Ku/]"4b}
+415(AX.25) Frame received [P_], signal level 26% (22%/-32%): KE6ITF-7>S6QWTV,W6PVG-3*,WB6JAR-10*,WIDE3*:'//u ]kk/]"4l}D700 stand alone
+416(AX.25) Frame received [PN], signal level 10% (11%/-10%): AE6MP>SS5TVQ-2,N6EX-4*:`.^9lH>/"4W}
+417(AX.25) Frame received [PN], signal level 17% (17%/-18%): AE6MP>SS5TVQ-2,N6EX-1*:`.^9lH>/"4W}
+418(AX.25) Frame received [PN], signal level 10% (11%/-10%): AE6MP>SS5TVQ-1,N6EX-5*:`.^9lH>/"4W}
+419(AX.25) Frame received [P_], signal level 50% (49%/-52%): AD6NH>APU25N,WIDE2-2:>070421zPlacentia WX & APRS Email - T2SOCAL www.aprsca.net
+420(AX.25) Frame received [PN], signal level 16% (16%/-17%): AD6NH>APU25N,N6EX-1*:>070421zPlacentia WX & APRS Email - T2SOCAL www.aprsca.net
+421(AX.25) Frame received [PN], signal level 9% (10%/-10%): AD6NH>APU25N,N6EX-4*:@230154z3352.18N/11749.77W_240/000g000t068r000p000P000b10162h41/PHG52605/Placentia WX {UIV32}
+422(AX.25) Frame received [PN], signal level 10% (10%/-10%): AD6NH>APU25N,N6EX-4*:>070421zPlacentia WX & APRS Email - T2SOCAL www.aprsca.net
+423(AX.25) Frame received [P_], signal level 23% (28%/-20%): K6GTZ>APU25N,WIDE2-2:=3351.95N/11807.02W-
+424(AX.25) Frame received [PN], signal level 17% (17%/-17%): K6GTZ>APU25N,N6EX-1*:=3351.95N/11807.02W-
+425(AX.25) Frame received [PN], signal level 7% (7%/-7%): K6GTZ>APU25N,W6SCE-10*:=3351.95N/11807.02W-
+426(AX.25) Frame received [PN], signal level 10% (10%/-10%): WA6YLB-4>APRS,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+427(AX.25) Frame received [PN], signal level 16% (15%/-17%): AB6WU>APU25N,WB6JAR-10*,N6EX-1*:=3335.23N/11627.17W-Pinyon Pines, Riverside County {UIV32N}
+428(AX.25) Frame received [PN], signal level 9% (10%/-9%): N6EX-5>APNU19,WIDE2-1:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+429(AX.25) Frame received [PN], signal level 16% (15%/-18%): N6EX-5>APNU19,N6EX-1*:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+430(AX.25) Frame received [P_], signal level 30% (30%/-31%): KN6DB-14>GPSLK,WIDE2-2:$GPRMC,015451,A,3348.8475,N,11800.1696,W,000.0,274.0,231105,013.4,E*61
+
+431(AX.25) Frame received [PN], signal level 16% (17%/-16%): KN6DB-14>GPSLK,N6EX-1*:$GPRMC,015451,A,3348.8475,N,11800.1696,W,000.0,274.0,231105,013.4,E*61
+
+432(AX.25) Frame received [PN], signal level 10% (11%/-10%): KN6DB-14>GPSLK,N6EX-4*:$GPRMC,015451,A,3348.8475,N,11800.1696,W,000.0,274.0,231105,013.4,E*61
+
+433(AX.25) Frame received [PN], signal level 9% (10%/-8%): WA6TK>APS227,N6EX-4*:@230154z3451.81N/11810.37W_151/001g002t059r000p000P000b10197h27
+434(AX.25) Frame received [P_], signal level 28% (21%/-36%): WA6TK>APS227,N6EX-2*,WB6JAR-10*,WIDE2*:@230154z3451.81N/11810.37W_151/001g002t059r000p000P000b10197h27
+435(AX.25) Frame received [PN], signal level 36% (36%/-38%): W6KL>APS210,WIDE2-2:=3410.20N/11819.98W_Home QTH, Burbank, CA.
+436(AX.25) Frame received [P_], signal level 31% (25%/-37%): W6KL>APS210,WB6JAR-10*,WIDE2-1:=3410.20N/11819.98W_Home QTH, Burbank, CA.
+437(AX.25) Frame received [PN], signal level 16% (17%/-17%): W6KL>APS210,WB6JAR-10*,N6EX-1*:=3410.20N/11819.98W_Home QTH, Burbank, CA.
+438(AX.25) Frame received [PN], signal level 7% (8%/-8%): WA6TK>APS227,W6SCE-10*:@230154z3451.81N/11810.37W_151/001g002t059r000p000P000b10197h27
+439(AX.25) Frame received [PN], signal level 7% (7%/-9%): W6KL>APS210,W6SCE-10*:=3410.20N/11819.98W_Home QTH, Burbank, CA.
+440(AX.25) Frame received [PN], signal level 8% (8%/-8%): W6KL>APS210,WB6JAR-10*,W6SCE-10*:=3410.20N/11819.98W_Home QTH, Burbank, CA.
+441(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6DQ-5>S4QSSZ,W6SCE-10*:'.N~!Iyv/]"7O}TM-D700
+442(AX.25) Frame received [PN], signal level 21% (19%/-23%): AC6VV-9>S4PXYX,WIDE1-1:`._l [>/]"6o}
+443(AX.25) Frame received [P_], signal level 25% (20%/-31%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":l}
+444(AX.25) Frame received [PN], signal level 17% (17%/-18%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":l}
+445(AX.25) Frame received [PN], signal level 8% (9%/-7%): KD6UZM-15>S3UWTS,WB6JAR-10*,W6SCE-10*:`-)l v\":l}
+446(AX.25) Frame received [PN], signal level 21% (21%/-23%): KB6CUS-1>S3URPP,N6EX-1,N6EX-4:'._0l -/]Ted@Home in Lakewood,CA.USA
+447(AX.25) Frame received [PN], signal level 16% (17%/-16%): KB6CUS-1>S3URPP,N6EX-1*,N6EX-4:'._0l -/]Ted@Home in Lakewood,CA.USA
+448(AX.25) Frame received [PN], signal level 9% (10%/-10%): KB6CUS-1>S3URPP,N6EX-1*,N6EX-4*:'._0l -/]Ted@Home in Lakewood,CA.USA
+449(AX.25) Frame received [PN], signal level 9% (9%/-10%): N6QFD-9>GPSLJ,N6EX-4*:$GPRMC,015514,A,3409.1800,N,11805.8995,W,27.6,356.8,231105,13.5,E,D*07
+
+450(AX.25) Frame received [P_], signal level 32% (28%/-37%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+451(AX.25) Frame received [P_], signal level 26% (26%/-27%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4;}
+452(AX.25) Frame received [P_], signal level 28% (24%/-32%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Jl!h>/]"4;}
+453(AX.25) Frame received [P_], signal level 27% (27%/-29%): KM6AF>APT311,WIDE2-2:!3345.48N/11811.35WY035/000
+454(AX.25) Frame received [PN], signal level 17% (17%/-18%): KM6AF>APT311,N6EX-1*:!3345.48N/11811.35WY035/000
+455(AX.25) Frame received [PN], signal level 9% (10%/-8%): KM6AF>APT311,W6SCE-10*:!3345.48N/11811.35WY035/000
+456(AX.25) Frame received [P_], signal level 25% (25%/-26%): KB6CUS>APK101,WIDE2-2::KB6CUR   :O MAMA{1
+457(AX.25) Frame received [PN], signal level 9% (10%/-10%): KB6CUS>APK101,N6EX-4*::KB6CUR   :O MAMA{1
+458(AX.25) Frame received [PN], signal level 17% (17%/-17%): KB6CUS>APK101,N6EX-1*::KB6CUR   :O MAMA{1
+459(AX.25) Frame received [P_], signal level 29% (24%/-35%): WA6MHZ-9>APRS,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:$GPRMC,015525,A,3251.7683,N,11655.3818,W,14.424,77.3,231105,13.3,E*58
+
+460(AX.25) Frame received [P_], signal level 30% (26%/-34%): K7ELH-7>S3QRTX,K7ELH*,WB6JAR-10*,WIDE2-1:'-+(l!X>/]"4y}Just Cruisin'
+461(AX.25) Frame received [PN], signal level 16% (17%/-17%): K7ELH-7>S3QRTX,K7ELH*,WB6JAR-10*,N6EX-1*:'-+(l!X>/]"4y}Just Cruisin'
+462(AX.25) Frame received [PN], signal level 8% (7%/-9%): K7ELH-7>S3QRTX,K7ELH*,WB6JAR-10*,W6SCE-10*:'-+(l!X>/]"4y}Just Cruisin'
+463(AX.25) Frame received [PN], signal level 8% (8%/-8%): WA6YLB-4>APRS,W6PVG-3*,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+464(AX.25) Frame received [P_], signal level 31% (26%/-38%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230155z3335.22N/11710.84Wk005/021/A=001282/Mobile, TT3
+465(AX.25) Frame received [PN], signal level 10% (11%/-9%): WB6ZSU-9>SSSYWU,N6EX-4*:'-D5l >/]"5k}
+466(AX.25) Frame received [PN], signal level 15% (14%/-17%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230155z3335.22N/11710.84Wk005/021/A=001282/Mobile, TT3
+467(AX.25) Frame received [PN], signal level 7% (7%/-8%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230155z3335.22N/11710.84Wk005/021/A=001282/Mobile, TT3
+468(AX.25) Frame received [PN], signal level 21% (19%/-23%): W2NKM-2>STQRTP,RELAY,WIDE:`.'/l"tR/]"88}
+469(AX.25) Frame received [P_], signal level 29% (21%/-37%): W2NKM-2>STQRTP,WB6JAR-10*,WIDE:`.'/l"tR/]"88}
+470(AX.25) Frame received [PN], signal level 9% (9%/-10%): AE6MP>SS5TXP-2,N6EX-4*:`.^8lp>/"4i}
+471(AX.25) Frame received [PN], signal level 17% (18%/-17%): AE6MP>SS5TXP-2,N6EX-1*:`.^8lp>/"4i}
+472(AX.25) Frame received [PN], signal level 11% (10%/-12%): AE6MP>SS5TXP-1,N6EX-5*:`.^8lp>/"4i}
+
+Input level too low! Please increase so most stations are around 30-50%.
+473(AX.25) Frame received [PN], signal level 4% (4%/-5%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:}KC6HUR-13>APVR27,TCPIP,N6EX-3*:;IRLP-4494*230156z3419.32NI11826.52W0440220s110IDLE
+474(AX.25) Frame received [PN], signal level 9% (10%/-10%): KF6MDF-2>GPS,N6EX-4*:$GPRMC,015601,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7B
+
+475(AX.25) Frame received [PN], signal level 9% (10%/-10%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:}KC6HUR-13>APVR27,TCPIP,N6EX-3*:;IRLP-4494*230156z3419.32NI11826.52W0440220s110IDLE
+476(AX.25) Frame received [PN], signal level 16% (16%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,015601,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7B
+
+477(AX.25) Frame received [PN], signal level 17% (17%/-18%): N6EX-3>APJI23,N6EX-1*,SOCAL1:}KC6HUR-13>APVR27,TCPIP,N6EX-3*:;IRLP-4494*230156z3419.32NI11826.52W0440220s110IDLE
+478(AX.25) Frame received [P_], signal level 28% (23%/-35%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.06N/11758.01Wk Geo & Kris LaHabra,CA
+479(AX.25) Frame received [PN], signal level 8% (9%/-9%): KG6SKQ-1>APT311,N6EX-4*:/230156z3343.89N/11801.89Wk315/000/A=000039/TT3
+480(AX.25) Frame received [P_], signal level 32% (30%/-34%): KA6IHT-3>ID,WIDE2-2:KA6IHT-3/R RELAY/D ADE2-1/B
+481(AX.25) Frame received [P_], signal level 29% (26%/-33%): KA6IHT-3>ID,WB6JAR-10*,WIDE2-1:KA6IHT-3/R RELAY/D ADE2-1/B
+482(AX.25) Frame received [PN], signal level 15% (17%/-15%): KA6IHT-3>ID,WB6JAR-10*,N6EX-1*:KA6IHT-3/R RELAY/D ADE2-1/B
+483(AX.25) Frame received [PN], signal level 9% (10%/-10%): KA6IHT-3>ID,W6SCE-10*:KA6IHT-3/R RELAY/D ADE2-1/B
+484(AX.25) Frame received [PN], signal level 8% (8%/-9%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,015618,A,3347.6380,N,11805.4948,W,000.0,111.4,231105,013.4,E*6A
+
+485(AX.25) Frame received [PN], signal level 9% (9%/-10%): W6AMH-3>APS224,W6PVG-3*,W6SCE-10*:=3503.85N/11756.96WrPHG5260 CALCTY
+486(AX.25) Frame received [PN], signal level 17% (17%/-17%): KB6CUS>APK101,N6EX-1*::KB6CUR   :O MAMA{1
+487(AX.25) Frame received [PN], signal level 10% (10%/-10%): KB6CUS>APK101,N6EX-4*::KB6CUR   :O MAMA{1
+488(AX.25) Frame received [P_], signal level 30% (26%/-35%): K7ACS>APU25N,WB6WLV-11*,WB6JAR-10*,WIDE2*:>230156zDX: WB6WLV-11 32.52.60N 116.24.89W 103.4 miles 277ř 18:46
+489(AX.25) Frame received [PN], signal level 8% (9%/-8%): W1ERG>BEACON,W6SCE-10*,WIDE2-2:!3425.09N/11828.25W-APRS Canyon Country, CA w1erg@arrl.net
+490(AX.25) Frame received [PN], signal level 34% (30%/-39%): KD6FVP-2>APS224,N6EX-1,WIDE1:>152343z[224]*We know most of your faults!!!
+491(AX.25) Frame received [P_], signal level 29% (23%/-35%): N6EDL-2>S3SUSU,WB6JAR-10*,WIDE:`-(l f>/>"8W}ERNIE IN GMC ENVOY
+492(AX.25) Frame received [PN], signal level 8% (8%/-9%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,015641.03,A,3346.1329,N,11755.4069,W,00.0,000.0,231105,13.,E*7F
+493(AX.25) Frame received [PN], signal level 22% (22%/-22%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,015644,A,3409.5048,N,11805.6745,W,0.0,89.4,231105,13.5,E,D*02
+
+494(AX.25) Frame received [PN], signal level 16% (16%/-17%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,015644,A,3409.5048,N,11805.6745,W,0.0,89.4,231105,13.5,E,D*02
+
+495(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230156z3335.62N/11710.68Wk028/023/A=001364
+496(AX.25) Frame received [PN], signal level 8% (8%/-9%): KF6DQ-5>S4QQUZ,W6SCE-10*:'.Oc!|v/]"6R}TM-D700
+497(AX.25) Frame received [PN], signal level 11% (11%/-11%): KF6DQ-5>S4QQUZ,N6EX-5*:'.Oc!|v/]"6R}TM-D700
+498(AX.25) Frame received [P_], signal level 30% (27%/-34%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":o}
+499(AX.25) Frame received [PN], signal level 16% (18%/-16%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":o}
+500(AX.25) Frame received [P_], signal level 30% (26%/-35%): KE6ITF-7>S6QTWY,W6PVG-3*,WB6JAR-10*,WIDE3-1:'//r!+kk/]"4f}
+501(AX.25) Frame received [P_], signal level 28% (23%/-34%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000/kf6yvs, Mike
+502(AX.25) Frame received [P_], signal level 27% (26%/-28%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Kl!h>/]"49}
+503(AX.25) Frame received [P_], signal level 38% (40%/-36%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Kl!h>/]"49}
+504(AX.25) Frame received [PN], signal level 17% (17%/-18%): AE6MP>SS5TYY-2,N6EX-1*:`.^8lz>/"4k}
+505(AX.25) Frame received [P_], signal level 26% (22%/-32%): WB6JAR-10>APN383:!3345.71NK11644.26W#PHG5760/PineCove R,Wn,10LNKn/A=006300/www.rivcoraces.org
+506(AX.25) Frame received [PN], signal level 10% (10%/-10%): KB6CUS>APK101,N6EX-4*::KB6CUR   :O MAMA{1
+507(AX.25) Frame received [P_], signal level 28% (23%/-34%): WA6LAW-14>SSPWUQ,WB6WLV-11*,WB6JAR-10*,WIDE2*:'+O8l#Jk/]"44}
+508(AX.25) Frame received [PN], signal level 10% (12%/-10%): WA6YLB-4>BEACON,N6EX-5*:Located 18 miles south of Ridgecrest. KPC3/DR1200/Weatherbase10
+509(AX.25) Frame received [PN], signal level 9% (11%/-9%): WA6YLB-4>APRS,N6EX-5*:!3521.07NN11740.38W_PHG5730 /A=004738/ aprs@ember2ash.com
+510(AX.25) Frame received [PN], signal level 8% (8%/-9%): WA6YLB-4>APRS,W6SCE-10*:!3521.07NN11740.38W_PHG5730 /A=004738/ aprs@ember2ash.com
+511(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6YLB-4>BEACON,W6SCE-10*:Located 18 miles south of Ridgecrest. KPC3/DR1200/Weatherbase10
+512(AX.25) Frame received [PN], signal level 9% (8%/-10%): WA6YLB-4>APRS,W6SCE-10*:!3521.07NN11740.38W_PHG5730 /A=004738/ aprs@ember2ash.com
+513(AX.25) Frame received [P_], signal level 32% (28%/-36%): KK7MQ>APU25N,WB6WLV-11*,WB6JAR-10*,WIDE2*:}KK7MQ-9>S2SVYQ-3,TCPIP,KK7MQ*:`-X\l k"5H}Monitoring 446.00 simplex
+514(AX.25) Frame received [P_], signal level 32% (27%/-39%): KD6VLP-2>STPPVR,WB6JAR-10*,WIDE3-2:'-\+!i2j/]";Z}
+515(AX.25) Frame received [PN], signal level 10% (11%/-11%): KN6DB-14>GPSLK,N6EX-4*:$GPRMC,015751,A,3348.8474,N,11800.1693,W,000.0,274.0,231105,013.4,E*66
+
+516(AX.25) Frame received [PN], signal level 27% (27%/-28%): KF6MDF-2>GPS,WIDE2-2:$GPRMC,015801,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*75
+
+517(AX.25) Frame received [PN], signal level 19% (20%/-18%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,015801,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*75
+
+518(AX.25) Frame received [PN], signal level 24% (25%/-24%): AC6VV-9>S4PXYW,WIDE1-1:`._l [>/]"6i}Reachable via arrl.net
+519(AX.25) Frame received [PN], signal level 20% (19%/-21%): KF6KED>GPSMV,N6EX-1*:$GPGGA,015802,3347.7842,N,11806.5087,W,1,08,1.2,3.7,M,-32.1,M,,*72
+
+520(AX.25) Frame received [PN], signal level 18% (18%/-18%): AC6VV-9>S4PXYW,N6EX-1*:`._l [>/]"6i}Reachable via arrl.net
+521(AX.25) Frame received [PN], signal level 11% (12%/-12%): K6KMA-1>GPSLK,N6EX-4*:$GPRMC,015806,A,3349.513,N,11806.930,W,000.0,001.4,231105,013.5,E*66
+
+522(AX.25) Frame received [P_], signal level 25% (25%/-25%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,015814,A,3409.6818,N,11805.4525,W,32.1,86.6,231105,13.5,E,A*39
+
+523(AX.25) Frame received [PN], signal level 16% (16%/-17%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,015814,A,3409.6818,N,11805.4525,W,32.1,86.6,231105,13.5,E,A*39
+
+524(AX.25) Frame received [P_], signal level 29% (24%/-34%): KE6ITF-7>S6QTTR,W6PVG-3*,N6EX-2*,WB6JAR-10*,WIDE3*:'//rl!jk/]"4k}
+525(AX.25) Frame received [P_], signal level 33% (29%/-37%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+526(AX.25) Frame received [P_], signal level 29% (26%/-33%): N6GOF-1>S3TSRX,WB6JAR-10*,WIDE3-2:>Temporary Indio Digi
+527(AX.25) Frame received [P_], signal level 29% (22%/-36%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,WIDE2-2:'-+(l!X>/]"5(}
+528(AX.25) Frame received [PN], signal level 16% (16%/-17%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,N6EX-1*:'-+(l!X>/]"5(}
+529(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6EX-1>APN382:!3411.21N111802.13W#PHG5664/W1 for LA area/A=003000/sceara@ham-radio.com
+530(AX.25) Frame received [PN], signal level 9% (9%/-9%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,W6SCE-10*:'-+(l!X>/]"5(}
+531(AX.25) Frame received [PN], signal level 8% (7%/-10%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,W6PVG-3*,W6SCE-10*:'-+(l!X>/]"5(}
+532(AX.25) Frame received [PN], signal level 23% (23%/-23%): AE6NM-1>S4PWPW,WIDE2-2:'-M(l K\]
+533(AX.25) Frame received [PN], signal level 16% (16%/-17%): AE6NM-1>S4PWPW,N6EX-1*:'-M(l K\]
+534(AX.25) Frame received [PN], signal level 10% (11%/-10%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,015840.44,A,3346.1365,N,11755.4079,W,00.0,000.0,231105,13.,E*7A
+535(AX.25) Frame received [P_], signal level 29% (24%/-35%): WB6BSA>APZ036,WB6WLV-11*,WB6JAR-10*,WIDE2*:=3244.34N/11709.26W; Camp Balboa  wb6bsa@cox.net
+536(AX.25) Frame received [P_], signal level 30% (26%/-35%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230158z3336.27N/11710.28Wk002/025/A=001433/Mobile, TT3
+537(AX.25) Frame received [PN], signal level 16% (16%/-16%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230158z3336.27N/11710.28Wk002/025/A=001433/Mobile, TT3
+538(AX.25) Frame received [PN], signal level 8% (9%/-7%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230158z3336.27N/11710.28Wk002/025/A=001433/Mobile, TT3
+539(AX.25) Frame received [P_], signal level 29% (23%/-36%): AE6MP>SS5URV-2,WB6JAR-10*,WIDE2-1:`.^6lR>/"4o}
+540(AX.25) Frame received [PN], signal level 17% (16%/-18%): AE6MP>SS5URV-2,N6EX-1*:`.^6lR>/"4o}
+541(AX.25) Frame received [PN], signal level 16% (17%/-17%): AE6MP>SS5URV-2,WB6JAR-10*,N6EX-1*:`.^6lR>/"4o}
+542(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QPXZ,W6SCE-10*:'.O]lSsv/]"6U}TM-D700
+543(AX.25) Frame received [PN], signal level 10% (11%/-11%): WA6YLB-4>APRS,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+544(AX.25) Frame received [P_], signal level 7% (8%/-8%): WA6YLB-4>APRS,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+545(AX.25) Frame received [P_], signal level 31% (26%/-37%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+546(AX.25) Frame received [PN], signal level 10% (11%/-9%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,015918,A,3347.6383,N,11805.4958,W,000.0,111.4,231105,013.4,E*67
+
+547(AX.25) Frame received [P_], signal level 38% (37%/-39%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4P}
+548(AX.25) Frame received [P_], signal level 35% (39%/-33%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4P}
+549(AX.25) Frame received [PN], signal level 7% (8%/-8%): WA8LMF-14>APU25N,WIDE2-2:>202339zAPRN on Socal 146.70  Sunset Mic-E Repeater
+550(AX.25) Frame received [PN], signal level 16% (15%/-17%): WA8LMF-14>APU25N,N6EX-1*:>202339zAPRN on Socal 146.70  Sunset Mic-E Repeater
+551(AX.25) Frame received [PN], signal level 9% (10%/-10%): KB6CUS>APK101,N6EX-4*::KB6CUR   :O MAMA{1
+552(AX.25) Frame received [PN], signal level 16% (17%/-17%): KB6CUS>APK101,N6EX-1*::KB6CUR   :O MAMA{1
+553(AX.25) Frame received [P_], signal level 29% (26%/-33%): WA6YLB-4>APRS,W6PVG-3*,WB6JAR-10*,WIDE1*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+554(AX.25) Frame received [PN], signal level 19% (19%/-19%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,015944,A,3409.6933,N,11804.6341,W,29.1,89.0,231105,13.5,E,A*31
+
+555(AX.25) Frame received [PN], signal level 10% (10%/-10%): KI6LO-10>APC102,WA6YLB-4*,N6EX-5*:>230201zOFF DUTY
+556(AX.25) Frame received [PN], signal level 16% (16%/-17%): KD6FVP-2>APS224,N6EX-1*,WIDE1:=3408.19N/11807.72W-USGS Pasadena,CA Field office
+557(AX.25) Frame received [PN], signal level 11% (13%/-11%): K6TZ>APTW01,N6EX-5*:_11230200c288s010g012t066r000p000P000h21b10160tU2k
+558(AX.25) Frame received [PN], signal level 8% (8%/-9%): K6TZ>APTW01,W6SCE-10*:_11230200c288s010g012t066r000p000P000h21b10160tU2k
+559(AX.25) Frame received [PN], signal level 8% (8%/-10%): K6TZ>APTW01,W6SCE-10*:_11230200c288s010g012t066r000p000P000h21b10160tU2k
+560(AX.25) Frame received [PN], signal level 10% (11%/-11%): N6EX-5>UIDIGI:UIDIGI 1.9
+561(AX.25) Frame received [PN], signal level 10% (10%/-10%): WA6TK>APS227,N6EX-5*:@230159z3451.81N/11810.37W_151/001g002t059r000p000P000b10197h27
+562(AX.25) Frame received [PN], signal level 9% (10%/-10%): W6SCE-10>APN382:!3419.82N111836.06W#PHG6860/W1 on Oat Mtn./A=003747/k6ccc@amsat.org for info
+563(AX.25) Frame received [PN], signal level 16% (16%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,020001,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7B
+
+564(AX.25) Frame received [P_], signal level 29% (24%/-36%): K7ACS-2>APRS,WB6WLV-11*,WB6JAR-10*,WIDE2*:;YUMALOAD *221859z3242.36N\11435.89W? 144 In 10 Minutes
+565(AX.25) Frame received [PN], signal level 11% (12%/-11%): KF6DQ-5>S4QPWZ,N6EX-5*:'.O_l]wv/]"6R}TM-D700
+566(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QPWZ,W6SCE-10*:'.O_l]wv/]"6R}TM-D700
+567(AX.25) Frame received [P_], signal level 20% (23%/-18%): AE6GR-7>STPYPR,WIDE2-2:'.`Ql@Zv/]Stopped
+568(AX.25) Frame received [PN], signal level 15% (15%/-15%): AE6GR-7>STPYPR,N6EX-1*:'.`Ql@Zv/]Stopped
+569(AX.25) Frame received [P_], signal level 42% (44%/-40%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+570(AX.25) Frame received [PN], signal level 22% (23%/-22%): AE6GR-7>STPYPR,WIDE2-2:'.`Ql@Zv/]Stopped
+571(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6GR-7>STPYPR,N6EX-1*:'.`Ql@Zv/]Stopped
+572(AX.25) Frame received [PN], signal level 22% (22%/-22%): AE6GR-7>STPYPR,WIDE2-2:'.`Ql@Zv/]Stopped
+573(AX.25) Frame received [PN], signal level 15% (16%/-15%): AE6GR-7>STPYPR,N6EX-1*:'.`Ql@Zv/]Stopped
+574(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6MP>SS5UTV-2,N6EX-1*:`.^4m %>/"4w}
+575(AX.25) Frame received [PN], signal level 12% (13%/-11%): AE6MP>SS5UTV-1,N6EX-5*:`.^4m %>/"4w}
+576(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6YLB>APRX46,WA6YLB-7*,W6SCE-10*:=3617.37N/11908.94W_009/000g000t063r000p000....h00b10175dU2ks.c
+577(AX.25) Frame received [PN], signal level 29% (28%/-32%): KA6IHT-3>APS221,WIDE2-2:>212359z[221]APRS+SA Startup 011853 No Status Entered
+578(AX.25) Frame received [P_], signal level 29% (25%/-35%): KA6IHT-3>APS221,WB6JAR-10*,WIDE2-1:>212359z[221]APRS+SA Startup 011853 No Status Entered
+579(AX.25) Frame received [PN], signal level 17% (18%/-17%): KA6IHT-3>APS221,WB6JAR-10*,N6EX-1*:>212359z[221]APRS+SA Startup 011853 No Status Entered
+580(AX.25) Frame received [PN], signal level 9% (9%/-9%): KA6IHT-3>APS221,N6EX-4*:>212359z[221]APRS+SA Startup 011853 No Status Entered
+581(AX.25) Frame received [PN], signal level 8% (8%/-9%): KA6IHT-3>APS221,W6SCE-10*:>212359z[221]APRS+SA Startup 011853 No Status Entered
+582(AX.25) Frame received [PN], signal level 8% (9%/-7%): KA6IHT-3>APS221,WB6JAR-10*,W6SCE-10*:>212359z[221]APRS+SA Startup 011853 No Status Entered
+583(AX.25) Frame received [P_], signal level 28% (21%/-36%): W6PVG-3>APN382,N6EX-2*,WB6JAR-10*,WIDE2*:!3502.75NS11827.65W#PHG5380/Wn,SCAn/Tehachapi/A=007600
+584(AX.25) Frame received [PN], signal level 8% (7%/-9%): W6PVG-3>APN382,W6SCE-10*:!3502.75NS11827.65W#PHG5380/Wn,SCAn/Tehachapi/A=007600
+585(AX.25) Frame received [PN], signal level 8% (8%/-8%): W6PVG-3>APN382,W6SCE-10*:!3502.75NS11827.65W#PHG5380/Wn,SCAn/Tehachapi/A=007600
+586(AX.25) Frame received [PN], signal level 16% (17%/-17%): KN6DB-14>GPSLK,N6EX-1*:$GPGGA,020051,3348.8472,N,11800.1692,W,2,10,1.0,17.8,M,-32.0,M,,*46
+
+587(AX.25) Frame received [PN], signal level 21% (22%/-21%): W2NKM-2>STQRTP,RELAY,WIDE:`.'/l"tR/]"8;}
+588(AX.25) Frame received [P_], signal level 29% (23%/-35%): W2NKM-2>STQRTP,WB6JAR-10*,WIDE:`.'/l"tR/]"8;}
+589(AX.25) Frame received [P_], signal level 28% (22%/-35%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230200z3337.70N/11710.26Wk000/048/A=001535
+590(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230200z3337.70N/11710.26Wk000/048/A=001535
+591(AX.25) Frame received [PN], signal level 9% (9%/-9%): N6EX-4>UIDIGI:UIDIGI 1.8 BETA 6
+592(AX.25) Frame received [P_], signal level 40% (43%/-38%): W2NKM-2>STQRTP,RELAY*,WIDE:`.'/l"tR/]"8;}
+593(AX.25) Frame received [PN], signal level 21% (22%/-22%): AC6VV-9>S4PXYX,WIDE1-1:`._l [>/]"6_}
+594(AX.25) Frame received [PN], signal level 15% (16%/-16%): AC6VV-9>S4PXYX,N6EX-1*:`._l [>/]"6_}
+595(AX.25) Frame received [PN], signal level 8% (7%/-9%): KF6DQ-5>S4QPVZ,W6SCE-10*:'.OjlhOv/]"6Z}TM-D700
+596(AX.25) Frame received [P_], signal level 20% (20%/-20%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,020114,A,3409.7103,N,11804.0209,W,14.6,89.2,231105,13.5,E,A*30
+
+597(AX.25) Frame received [PN], signal level 16% (17%/-17%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,020114,A,3409.7103,N,11804.0209,W,14.6,89.2,231105,13.5,E,A*30
+
+598(AX.25) Frame received [P_], signal level 26% (24%/-28%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4A}
+599(AX.25) Frame received [PN], signal level 10% (11%/-10%): N6EX-4>APNU18,WIDE2-1:!3336.35N111748.63W#PHG5660/W1 for Orange County
+600(AX.25) Frame received [PN], signal level 17% (18%/-17%): N6EX-4>APNU18,N6EX-1*:!3336.35N111748.63W#PHG5660/W1 for Orange County
+601(AX.25) Frame received [PN], signal level 9% (9%/-9%): N6EX-4>APNU18,W6SCE-10*:!3336.35N111748.63W#PHG5660/W1 for Orange County
+602(AX.25) Frame received [P_], signal level 29% (22%/-36%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,WIDE2-2:'-+(l!X>/]"5'}
+603(AX.25) Frame received [PN], signal level 15% (16%/-15%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,N6EX-1*:'-+(l!X>/]"5'}
+604(AX.25) Frame received [PN], signal level 10% (10%/-10%): W6CSP-2>GPSLK,N6EX-4*:$GPGGA,020138,3350.5766,N,11755.8471,W,1,10,0.9,50.0,M,-31.9,M,,*49
+
+605(AX.25) Frame received [P_], signal level 28% (24%/-34%): N3DAB-3>APT311,WA6YLB-4*,N6EX-2*,WB6JAR-10*,WIDE3*:/230201z3507.05N/11813.51Wk250/061/A=003461
+606(AX.25) Frame received [P_], signal level 38% (36%/-41%): AD6NH>APRS,N6EX-4:;LA LOAD  *221001z3352.18N\11749.77W? 121 In 10 Minutes
+607(AX.25) Frame received [PN], signal level 10% (10%/-10%): AD6NH>APRS,N6EX-4*:;LA LOAD  *221001z3352.18N\11749.77W? 121 In 10 Minutes
+608(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6WJS-14>S4PXWP,N6EX-5*:`.(nr,_k/"6c}
+
+Input level too low! Please increase so most stations are around 30-50%.
+609(AX.25) Frame received [PN], signal level 4% (4%/-4%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230200z3350.28N/11818.85W_277/003g010t065r000P000p000h57b10156v6
+610(AX.25) Frame received [PN], signal level 16% (17%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,020201,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*79
+
+611(AX.25) Frame received [P_], signal level 49% (46%/-53%): AE6MP>SS5UUY-2,WIDE2-2:`.^1lH+>/"4z}
+612(AX.25) Frame received [PN], signal level 10% (10%/-10%): AE6MP>SS5UUY-2,N6EX-4*:`.^1lH+>/"4z}
+613(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6MP>SS5UUY-2,N6EX-1*:`.^1lH+>/"4z}
+614(AX.25) Frame received [PN], signal level 11% (11%/-11%): AE6MP>SS5UUY-1,N6EX-5*:`.^1lH+>/"4z}
+615(AX.25) Frame received [PN], signal level 36% (38%/-36%): W6KL>APS210,WIDE2-2:$ULTW0000000002DC000027AE00048F90000101870145043D00000000
+616(AX.25) Frame received [PN], signal level 8% (7%/-10%): W6KL>APS210,W6SCE-10*:$ULTW0000000002DC000027AE00048F90000101870145043D00000000
+617(AX.25) Frame received [P_], signal level 30% (25%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+
+Input level too low! Please increase so most stations are around 30-50%.
+618(AX.25) Frame received [PN], signal level 3% (4%/-4%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+619(AX.25) Frame received [P_], signal level 27% (22%/-32%): KE6ITF-7>S6QSVP,WA6LDQ-3*,N6EX-2*,WB6JAR-10*,WIDE3*:'//nl!Jk/]"4m}
+620(AX.25) Frame received [P_], signal level 27% (23%/-31%): KF6URU>APS215,WB6WLV-11*,WB6JAR-10*,WIDE2*:=3246.64N/11534.62W-Imperial County, California  Grid DM22
+621(AX.25) Frame received [P_], signal level 31% (26%/-38%): K7ELH>S3PYTW,WB6WLV-11*,WB6JAR-10*,WIDE2*:'-'Tl #/]Palomar REACT Digi
+622(AX.25) Frame received [PN], signal level 21% (22%/-21%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,020244,A,3409.7129,N,11803.6327,W,18.6,89.4,231105,13.5,E,A*38
+
+623(AX.25) Frame received [PN], signal level 9% (10%/-9%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,020239,A,3346.1402,N,11755.4086,W,00.0,0,231105,,*27
+624(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,020244,A,3409.7129,N,11803.6327,W,18.6,89.4,231105,13.5,E,A*38
+
+625(AX.25) Frame received [P_], signal level 31% (25%/-38%): N3DAB-3>APT311,WA6YLB-4*,N6EX-2*,WB6JAR-10*,WIDE3*:/230202z3506.59N/11814.55Wk240/059/A=003562/In Service - TT3
+626(AX.25) Frame received [PN], signal level 9% (10%/-9%): N7WLC>APJI22,W6SCE-10*:!3412.13NI11853.48W&Thousand Oaks - n7wlc@arrl.net
+627(AX.25) Frame received [P_], signal level 29% (24%/-34%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230202z3339.52N/11710.26Wk002/051/A=001423
+628(AX.25) Frame received [PN], signal level 15% (16%/-16%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230202z3339.52N/11710.26Wk002/051/A=001423
+629(AX.25) Frame received [P_], signal level 28% (26%/-31%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":c}
+630(AX.25) Frame received [PN], signal level 16% (17%/-16%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":c}
+631(AX.25) Frame received [PN], signal level 8% (9%/-9%): KD6UZM-15>S3UWTS,WB6JAR-10*,W6SCE-10*:`-)l v\":c}
+
+Input level too low! Please increase so most stations are around 30-50%.
+632(AX.25) Frame received [PN], signal level 4% (4%/-5%): W6OFR>SSTWUP,WIDE2-2:`./ql!zv>
+633(AX.25) Frame received [P_], signal level 27% (18%/-37%): N6PHX-12>APT311,WB6JAR-10*,WIDE3-2:> Steve's Rig
+634(AX.25) Frame received [PN], signal level 10% (10%/-10%): KF6DQ-5>S4QPVZ,W6SCE-10*:'.P;m^fv/]"6L}TM-D700
+635(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6DQ-5>S4QPVZ,W6SCE-10*:'.P;m^fv/]"6L}TM-D700
+636(AX.25) Frame received [P_], signal level 43% (46%/-41%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+637(AX.25) Frame received [P_], signal level 28% (30%/-28%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4>}
+638(AX.25) Frame received [P_], signal level 29% (22%/-36%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Jl!h>/]"4>}
+639(AX.25) Frame received [P_], signal level 39% (41%/-39%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4>}
+640(AX.25) Frame received [PN], signal level 11% (11%/-11%): WA6YLB-4>APRS,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+641(AX.25) Frame received [PN], signal level 10% (10%/-10%): WA6YLB-4>APRS,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+642(AX.25) Frame received [P_], signal level 8% (8%/-9%): WA6YLB-4>APRS,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+643(AX.25) Frame received [PN], signal level 17% (16%/-19%): AE6MP>SS5UWW-2,N6EX-1*:`.^*lf1>/"5)}
+644(AX.25) Frame received [PN], signal level 15% (16%/-15%): KN6DB-14>GPSLK,N6EX-1*:$GPRMC,020351,A,3348.8474,N,11800.1691,W,000.0,274.0,231105,013.4,E*66
+
+645(AX.25) Frame received [PN], signal level 11% (12%/-10%): N6EX-5>APNU19:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+646(AX.25) Frame received [P_], signal level 32% (28%/-37%): KD6VLP-2>STPSRS,WB6JAR-10*,WIDE3-2:'-ag _1j/]"8v}
+647(AX.25) Frame received [PN], signal level 8% (9%/-9%): N6EX-4>APNU18:!3336.35N111748.63W#PHG5660/W1 for Orange County
+648(AX.25) Frame received [PN], signal level 8% (9%/-9%): W6CSP-2>BEACON,N6EX-4*:W6CSP-BEACON #42-DB9-RALPHS EXPLORER
+649(AX.25) Frame received [PN], signal level 9% (10%/-10%): KF6MDF-2>GPS,N6EX-4*:$GPRMC,020401,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7F
+
+650(AX.25) Frame received [PN], signal level 21% (21%/-21%): AC6VV-9>S4PXYX,WIDE1-1:`._l [>/]"6o}
+651(AX.25) Frame received [PN], signal level 10% (11%/-10%): AC6VV-9>S4PXYX,N6EX-4*:`._l [>/]"6o}
+652(AX.25) Frame received [PN], signal level 16% (17%/-16%): AC6VV-9>S4PXYX,N6EX-1*:`._l [>/]"6o}
+653(AX.25) Frame received [PN], signal level 9% (9%/-10%): KD6LAY>APW277,WA6YLB-4*,W6SCE-10*:_11230206c161s000g000t056r000p000P000h47b10204wU2K
+654(AX.25) Frame received [PN], signal level 10% (10%/-10%): KF6DQ-5>S4QPVZ,N6EX-5*:'.Pho|sv/]"6=}TM-D700
+655(AX.25) Frame received [P_], signal level 28% (21%/-35%): WA6MHZ-9>APRS,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:$GPRMC,020410,A,3255.6416,N,11652.4473,W,48.979,36.6,231105,13.3,E*5F
+
+656(AX.25) Frame received [P_], signal level 32% (27%/-38%): WA6UVQ>APS215,WB6JAR-10*,WIDE2-1::WA6LDQ   :Okay will do soon, uboth hav a happy Thanksgiving{Re}1j
+657(AX.25) Frame received [PN], signal level 16% (17%/-17%): WA6UVQ>APS215,WB6JAR-10*,N6EX-1*::WA6LDQ   :Okay will do soon, uboth hav a happy Thanksgiving{Re}1j
+658(AX.25) Frame received [P_], signal level 30% (24%/-37%): W6MAF>APTW01,N6EX-2*,WB6JAR-10*,WIDE3-1:_11221904c046s000g000t053r000p000P000h34b10186tU2k
+659(AX.25) Frame received [PN], signal level 10% (11%/-10%): W6MAF>APTW01,N6EX-4*:!3422.10N/11724.50W_PHG6350/A=003980/Oak Hills WXTrak
+660(AX.25) Frame received [PN], signal level 10% (11%/-10%): WA6LDQ>APS227,WA6YLB-4*,N6EX-4*::WA6UVQ   :ackRe}1j
+661(AX.25) Frame received [PN], signal level 9% (8%/-11%): WA6LDQ>APS227,WA6YLB-4*,W6SCE-10*::WA6UVQ   :ackRe}1j
+662(AX.25) Frame received [P_], signal level 28% (24%/-34%): KD6RSQ>APRS,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:$ULTW000000000271074327AB000F9A3E000101910145043D00000000
+
+663(AX.25) Frame received [P_], signal level 26% (22%/-31%): N3DAB-3>APT311,W6PVG-3*,N6EX-2*,WB6JAR-10*,WIDE3*:/230204z3506.21N/11816.54Wk253/060/A=003785
+664(AX.25) Frame received [PN], signal level 8% (9%/-8%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,020441.25,A,3346.1412,N,11755.4090,W,00.0,000.0,231105,13.,E*76
+665(AX.25) Frame received [PN], signal level 29% (28%/-31%): KA6IHT-3>APS221,WIDE2-2:=3411.05N/11820.25W.APRS+SA
+666(AX.25) Frame received [PN], signal level 8% (9%/-9%): KA6IHT-3>APS221,N6EX-4*:=3411.05N/11820.25W.APRS+SA
+667(AX.25) Frame received [PN], signal level 8% (8%/-9%): KA6IHT-3>APS221,W6SCE-10*:=3411.05N/11820.25W.APRS+SA
+668(AX.25) Frame received [PN], signal level 9% (9%/-10%): K6TZ>APTW01,W6SCE-10*:!3401.75N/11947.06W_SBARC Diablo Peak, Santa Cruz Island
+669(AX.25) Frame received [PN], signal level 8% (10%/-8%): WA6TK>APS227,N6EX-4*:@230204z3451.81N/11810.37W_151/001g002t059r000p000P000b10198h29
+670(AX.25) Frame received [P_], signal level 29% (22%/-37%): WA6TK>APS227,N6EX-2*,WB6JAR-10*,WIDE2*:@230204z3451.81N/11810.37W_151/001g002t059r000p000P000b10198h29
+671(AX.25) Frame received [PN], signal level 10% (10%/-11%): WA6TK>APS227,W6SCE-10*:@230204z3451.81N/11810.37W_151/001g002t059r000p000P000b10198h29
+672(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6TK>APS227,W6SCE-10*:@230204z3451.81N/11810.37W_151/001g002t059r000p000P000b10198h29
+673(AX.25) Frame received [P_], signal level 28% (21%/-35%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":c}TinyTrak3
+674(AX.25) Frame received [PN], signal level 16% (16%/-16%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":c}TinyTrak3
+675(AX.25) Frame received [PN], signal level 8% (8%/-9%): KD6UZM-15>S3UWTS,WB6JAR-10*,W6SCE-10*:`-)l v\":c}TinyTrak3
+676(AX.25) Frame received [PN], signal level 9% (9%/-10%): N6EX-4>APNU18:!3336.35N111748.63W#PHG5660/W1 for Orange County
+677(AX.25) Frame received [PN], signal level 10% (11%/-10%): K6KMA-1>GPSLK,N6EX-4*:$GPRMC,020513,A,3349.512,N,11806.930,W,000.0,001.4,231105,013.5,E*68
+
+678(AX.25) Frame received [P_], signal level 29% (22%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+679(AX.25) Frame received [P_], signal level 41% (41%/-42%): AE6MP>SS5VPY-2,WIDE2-2:`.]}n*3>/"5/}
+680(AX.25) Frame received [PN], signal level 8% (9%/-8%): AE6MP>SS5VPY-2,N6EX-4*:`.]}n*3>/"5/}
+681(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QPYZ,W6SCE-10*:'.QDo- v/]"6+}TM-D700
+682(AX.25) Frame received [PN], signal level 9% (9%/-9%): AE6MP>SS5VPY-2,W6SCE-10*:`.]}n*3>/"5/}
+683(AX.25) Frame received [P_], signal level 38% (41%/-35%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+684(AX.25) Frame received [P_], signal level 28% (26%/-31%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"47}
+685(AX.25) Frame received [P_], signal level 32% (27%/-37%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Jl!h>/]"47}
+686(AX.25) Frame received [P_], signal level 37% (41%/-33%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"47}
+687(AX.25) Frame received [PN], signal level 17% (16%/-18%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,020544,A,3409.6470,N,11803.1709,W,0.0,191.5,231105,13.5,E,D*3B
+
+688(AX.25) Frame received [P_], signal level 31% (26%/-37%): N6EDL-2>S3SUSU,WB6JAR-10*,WIDE:`-(l f>/>"8S}ERNIE IN GMC ENVOY
+689(AX.25) Frame received [PN], signal level 32% (31%/-34%): KD6FVP-2>APS224,N6EX-1,WIDE1:=3408.19N/11807.72W-USGS Pasadena,CA Field office
+690(AX.25) Frame received [PN], signal level 16% (16%/-16%): KD6FVP-2>APS224,N6EX-1*,WIDE1:=3408.19N/11807.72W-USGS Pasadena,CA Field office
+691(AX.25) Frame received [PN], signal level 8% (8%/-9%): WB6ZSU-9>SSSYWU,N6EX-4*:'-D5l >/]"5k}Greg's D700
+692(AX.25) Frame received [PN], signal level 10% (10%/-10%): W6OFR>SSTWVQ,N6EX-4*:`.0,m^"v>
+693(AX.25) Frame received [PN], signal level 21% (20%/-22%): W2NKM-2>STQRTP,RELAY,WIDE:`.'/l"tR/]"88}
+694(AX.25) Frame received [P_], signal level 25% (21%/-29%): W2NKM-2>STQRTP,WB6JAR-10*,WIDE:`.'/l"tR/]"88}
+695(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6WJS-14>S4PYSY,W6SCE-10*:`.+ml"Zk/"5f}
+696(AX.25) Frame received [PN], signal level 10% (10%/-10%): KF6MDF-2>GPS,N6EX-4*:$GPRMC,020601,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7D
+
+697(AX.25) Frame received [PN], signal level 16% (17%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,020601,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7D
+
+698(AX.25) Frame received [PN], signal level 9% (10%/-9%): W1ERG>BEACON,W6SCE-10*,WIDE2-2:!3425.09N/11828.25W-APRS Canyon Country, CA w1erg@arrl.net
+699(AX.25) Frame received [PN], signal level 5% (4%/-6%): W6OFR>SSTWUW,WIDE2-2:`.0/m"uv>
+700(AX.25) Frame received [PN], signal level 8% (9%/-9%): W6OFR>SSTWUW,N6EX-4*:`.0/m"uv>
+701(AX.25) Frame received [PN], signal level 8% (10%/-8%): N6PHX-12>APT311,N6EX-4*:> Steve's Rig
+702(AX.25) Frame received [PN], signal level 10% (10%/-10%): KA6IHT-3>ID,W6SCE-10*:KA6IHT-3/R RELAY/D ADE2-1/B
+703(AX.25) Frame received [P_], signal level 27% (22%/-34%): KF6URU>APS215,WB6WLV-11*,WB6JAR-10*,WIDE2*:>280450z[215]Up and running in El Centro , California 92243
+704(AX.25) Frame received [PN], signal level 9% (9%/-10%): KC6YRU>APU25N,W6PVG-3*,N6EX-5*:}KC6YRU-4>APU25N,TCPIP,KC6YRU*:;Pelato   *202037z3455.11N/11924.16WmRepeater site
+
+Input level too low! Please increase so most stations are around 30-50%.
+705(AX.25) Frame received [PN], signal level 4% (4%/-5%): W6OFR>SSTWUY,WIDE2-2:`.00m>4v>
+706(AX.25) Frame received [PN], signal level 16% (17%/-17%): W6OFR>SSTWUY,N6EX-1*:`.00m>4v>
+707(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6DQ-5>S4QQPZ,W6SCE-10*:'.QJl#.v/]"6/}TM-D700
+708(AX.25) Frame received [P_], signal level 37% (36%/-38%): KB6CYS>APRS,WIDE3-3:!3349.73N/11802.82W_225/000t068p000h68b10162/C KB6CYS FOR WX
+709(AX.25) Frame received [PN], signal level 17% (17%/-18%): KB6CYS>APRS,N6EX-1*:!3349.73N/11802.82W_225/000t068p000h68b10162/C KB6CYS FOR WX
+710(AX.25) Frame received [PN], signal level 10% (11%/-10%): KB6CYS>APRS,N6EX-4*:!3349.73N/11802.82W_225/000t068p000h68b10162/C KB6CYS FOR WX
+711(AX.25) Frame received [PN], signal level 8% (9%/-9%): KB6CYS>APRS,W6SCE-10*:!3349.73N/11802.82W_225/000t068p000h68b10162/C KB6CYS FOR WX
+712(AX.25) Frame received [PN], signal level 38% (39%/-37%): KB6CYS>APRS,WIDE3-3:!3349.73N/11802.82W_225/000t068p000h68b10162/C KB6CYS FOR WX
+713(AX.25) Frame received [PN], signal level 16% (16%/-18%): KB6CYS>APRS,N6EX-1*:!3349.73N/11802.82W_225/000t068p000h68b10162/C KB6CYS FOR WX
+714(AX.25) Frame received [P_], signal level 28% (23%/-34%): KD6RSQ>APRS,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:$ULTW00000000026E074327AB00119A3E000101930145044200000000
+
+715(AX.25) Frame received [P_], signal level 50% (54%/-46%): KF6MDF-2>ID,RELAY*,WIDE:KF6MDF-2/R RELAY/D KF6MDF-1/B
+716(AX.25) Frame received [PN], signal level 35% (31%/-39%): KD6FVP-2>APS224,N6EX-1,WIDE1:>152343z[224]*We know most of your faults!!!
+717(AX.25) Frame received [PN], signal level 15% (14%/-17%): KD6FVP-2>APS224,N6EX-1*,WIDE1:>152343z[224]*We know most of your faults!!!
+718(AX.25) Frame received [PN], signal level 8% (9%/-7%): W6MTR>APU25N,W6PVG-3*,W6SCE-10*:=3620.40N/11916.65W-w6mtr@arrl.net {UIV32N}
+719(AX.25) Frame received [P_], signal level 30% (32%/-30%): KN6DB-14>GPSLK,WIDE2-2:$GPRMC,020651,A,3348.8474,N,11800.1689,W,000.0,274.0,231105,013.4,E*6A
+
+720(AX.25) Frame received [P_], signal level 35% (31%/-39%): AE6MP>SS5VVP-2,WIDE2-2:`.]bn*3>/"59}
+721(AX.25) Frame received [P_], signal level 26% (20%/-33%): AE6MP>SS5VVP-2,WB6JAR-10*,WIDE2-1:`.]bn*3>/"59}
+722(AX.25) Frame received [PN], signal level 9% (10%/-9%): AE6MP>SS5VVP-2,N6EX-4*:`.]bn*3>/"59}
+723(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6MP>SS5VVP-2,N6EX-1*:`.]bn*3>/"59}
+724(AX.25) Frame received [PN], signal level 17% (18%/-17%): AE6MP>SS5VVP-2,WB6JAR-10*,N6EX-1*:`.]bn*3>/"59}
+725(AX.25) Frame received [PN], signal level 11% (12%/-11%): AE6MP>SS5VVP-1,N6EX-5*:`.]bn*3>/"59}
+726(AX.25) Frame received [P_], signal level 30% (24%/-36%): WA6YLB>APRX46,WA6YLB-5*,W6PVG-3*,WB6JAR-10*,WIDE2*:>081839z wa6ylb@theworks.com
+727(AX.25) Frame received [PN], signal level 10% (11%/-11%): WA6YLB>APRX46,WA6YLB-5*,W6PVG-3*,N6EX-5*:>081839z wa6ylb@theworks.com
+728(AX.25) Frame received [PN], signal level 9% (9%/-10%): AE6MP>SS5VVP-2,WB6JAR-10*,W6SCE-10*:`.]bn*3>/"59}
+729(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6YLB>APRX46,WA6YLB-7*,W6SCE-10*:>081839z wa6ylb@theworks.com
+730(AX.25) Frame received [PN], signal level 9% (10%/-10%): WA6YLB>APRX46,WA6YLB-5*,W6PVG-3*,W6SCE-10*:>081839z wa6ylb@theworks.com
+
+Input level too low! Please increase so most stations are around 30-50%.
+731(AX.25) Frame received [PN], signal level 4% (5%/-4%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230205z3350.28N/11818.85W_307/000g006t065r000P000p000h55b10156v6
+732(AX.25) Frame received [PN], signal level 26% (26%/-27%): K6LAR-1>APRS,WIDE2-2:$GPGGA,040332,3405.438,N,11801.836,W,1,06,1.1,114.2,M,-31.5,M,,*75
+
+733(AX.25) Frame received [PN], signal level 8% (9%/-8%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230205z3350.28N/11818.85W_307/000g006t065r000P000p000h55b10156v6
+734(AX.25) Frame received [PN], signal level 17% (16%/-18%): N6EX-3>APJI23,N6EX-1*,SOCAL1:}W6AHM>APRS,TCPIP,N6EX-3*:@230205z3350.28N/11818.85W_307/000g006t065r000P000p000h55b10156v6
+735(AX.25) Frame received [PN], signal level 21% (20%/-22%): AC6VV-9>S4PXYX,WIDE1-1:`ľ_l#5>/]"6n}
+736(AX.25) Frame received [PN], signal level 8% (8%/-9%): AC6VV-9>S4PXYX,N6EX-4*:`ľ_l#5>/]"6n}
+737(AX.25) Frame received [PN], signal level 15% (16%/-16%): AC6VV-9>S4PXYX,N6EX-1*:`ľ_l#5>/]"6n}
+738(AX.25) Frame received [P_], signal level 30% (26%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+739(AX.25) Frame received [PN], signal level 15% (14%/-17%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,020714,A,3409.6525,N,11803.1717,W,0.0,191.5,231105,13.5,E,D*32
+
+740(AX.25) Frame received [P_], signal level 30% (26%/-34%): N3DAB-3>APT311,WA6LDQ-3*,N6EX-2*,WB6JAR-10*,WIDE3*:/230207z3506.61N/11819.38Wk284/060/A=003930
+741(AX.25) Frame received [P_], signal level 16% (16%/-17%): KD6EDM>APW275,RELAY,WIDE2-2:=3340.25N/11754.88WKPHG2100/WinAPRS 2.7.5 -CAORACOSTA ME-275-<530>
+742(AX.25) Frame received [PN], signal level 10% (11%/-10%): KD6EDM>APW275,N6EX-4*:=3340.25N/11754.88WKPHG2100/WinAPRS 2.7.5 -CAORACOSTA ME-275-<530>
+743(AX.25) Frame received [PN], signal level 8% (9%/-8%): W6SCE-10>BEACON:>WIDE2-2 is best path in SoCal
+744(AX.25) Frame received [P_], signal level 27% (24%/-31%): WB6JAR-10>APN383:!3345.71NK11644.26W#PHG5760/PineCove R,Wn,10LNKn/A=006300/www.rivcoraces.org
+745(AX.25) Frame received [P_], signal level 28% (28%/-28%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4<}
+746(AX.25) Frame received [P_], signal level 35% (38%/-34%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4<}
+747(AX.25) Frame received [P_], signal level 29% (26%/-33%): WA6YLB-4>APRS,W6PVG-3*,WB6JAR-10*,WIDE1*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+748(AX.25) Frame received [PN], signal level 9% (9%/-9%): WA8LMF>APU25N,WIDE1-1:>202337zhttp://wa8lmf.com
+749(AX.25) Frame received [PN], signal level 17% (16%/-19%): WA8LMF>APU25N,N6EX-1*:>202337zhttp://wa8lmf.com
+750(AX.25) Frame received [PN], signal level 10% (10%/-11%): WA6YLB-4>APRS,W6PVG-3*,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+751(AX.25) Frame received [PN], signal level 11% (11%/-11%): WA6YLB-4>APRS,W6PVG-3*,N6EX-5*:!3521.07NN11740.38W_PHG5730 /A=004738/ aprs@ember2ash.com
+752(AX.25) Frame received [P_], signal level 28% (22%/-34%): KF6HDJ-3>S2TRXU,RELAY*,WB6JAR-10*,WIDE2*:'-*Wl k/]"4v}
+753(AX.25) Frame received [PN], signal level 10% (12%/-10%): K7GIL-1>BEACON,N6EX-4*,N7ZEV-1:!3436.62NN11717.30W#PHG5760/A=004530/W-R-T-CA Victorville, CA
+754(AX.25) Frame received [PN], signal level 17% (17%/-18%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,020801,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*73
+
+755(AX.25) Frame received [PN], signal level 10% (10%/-10%): W6AMH-3>APS224,WA6YLB-4*,W6SCE-10*:>130003z[224]EKRACES
+756(AX.25) Frame received [P_], signal level 37% (36%/-39%): KB6CYS>BEACON,WIDE3-3:WEATHER STATION ON-LINE
+757(AX.25) Frame received [PN], signal level 10% (10%/-10%): KB6CYS>BEACON,N6EX-4*:WEATHER STATION ON-LINE
+758(AX.25) Frame received [PN], signal level 16% (16%/-17%): KB6CYS>BEACON,N6EX-1*:WEATHER STATION ON-LINE
+759(AX.25) Frame received [PN], signal level 9% (10%/-10%): KD6LAY>APW277,W6PVG-3*,N6EX-5*:=3438.88N/11815.40WyPHG5660/WinAPRS 2.7.7 -277-<630>
+760(AX.25) Frame received [PN], signal level 9% (9%/-9%): KD6LAY>APW277,W6PVG-3*,W6SCE-10*:=3438.88N/11815.40WyPHG5660/WinAPRS 2.7.7 -277-<630>
+761(AX.25) Frame received [P_], signal level 29% (24%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+762(AX.25) Frame received [P_], signal level 33% (40%/-27%): KF6KOI>GPSMV,WIDE2-2:$GPRMC,020818,A,3347.6429,N,11805.4969,W,000.0,111.4,231105,013.4,E*65
+
+763(AX.25) Frame received [PN], signal level 9% (9%/-10%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,020818,A,3347.6429,N,11805.4969,W,000.0,111.4,231105,013.4,E*65
+
+764(AX.25) Frame received [P_], signal level 33% (27%/-40%): AE6MP>SS5VYX-2,WIDE2-2:`.]Ll\7>/"5B}
+765(AX.25) Frame received [PN], signal level 10% (11%/-10%): AE6MP>SS5VYX-2,N6EX-4*:`.]Ll\7>/"5B}
+766(AX.25) Frame received [PN], signal level 15% (16%/-16%): AE6MP>SS5VYX-2,N6EX-1*:`.]Ll\7>/"5B}
+767(AX.25) Frame received [PN], signal level 11% (11%/-11%): AE6MP>SS5VYX-1,N6EX-5*:`.]Ll\7>/"5B}
+768(AX.25) Frame received [P_], signal level 31% (25%/-37%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+769(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6EX-1>APN382,WIDE2-1:!3411.21N111802.13W#PHG5664/W1 for LA area/A=003000/sceara@ham-radio.com
+770(AX.25) Frame received [P_], signal level 30% (25%/-36%): KE6ITF-7>S5SSXW,W6PVG-3*,WB6JAR-10*,WIDE3*:'-@xl!*k/]"4l}
+771(AX.25) Frame received [PN], signal level 17% (17%/-17%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,020844,A,3409.4420,N,11803.1790,W,13.2,178.3,231105,13.5,E,A*05
+
+772(AX.25) Frame received [P_], signal level 28% (22%/-35%): N6EDL-2>S3SUSU,WB6JAR-10*,WIDE:`-(l f>/>"8X}ERNIE IN GMC ENVOY
+
+Input level too low! Please increase so most stations are around 30-50%.
+773(AX.25) Frame received [PN], signal level 3% (4%/-4%): KF6ICC>ID,RELAY*,WIDE:KF6ICC/R RELAY/D KF6ICC-1/B
+774(AX.25) Frame received [PN], signal level 7% (7%/-8%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230208z3344.81N/11711.35Wk359/054/A=001358
+775(AX.25) Frame received [P_], signal level 28% (23%/-33%): KD6UZM-15>S3UWTS,WB6JAR-10*,WIDE2-1:`-)l v\":a}
+776(AX.25) Frame received [PN], signal level 15% (16%/-16%): KD6UZM-15>S3UWTS,WB6JAR-10*,N6EX-1*:`-)l v\":a}
+777(AX.25) Frame received [PN], signal level 9% (10%/-10%): KD6UZM-15>S3UWTS,WB6JAR-10*,W6SCE-10*:`-)l v\":a}
+778(AX.25) Frame received [PN], signal level 9% (10%/-10%): KD6LAY>APW277,W6PVG-3*,W6SCE-10*:>021100 David, dallday@qnet.com
+779(AX.25) Frame received [P_], signal level 28% (25%/-33%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000/kf6yvs, Mike
+780(AX.25) Frame received [P_], signal level 29% (23%/-36%): W6MAF>APTW01,WB6JAR-10*,WIDE3-2:_11221909c046s000g000t052r000p000P000h34b10185tU2k
+781(AX.25) Frame received [P_], signal level 41% (40%/-42%): AD6NH>APU25N,WIDE2-2:@230209z3352.18N/11749.77W_240/000g000t066r000p000P000b10163h44/PHG52605/Placentia WX {UIV32}
+782(AX.25) Frame received [PN], signal level 10% (11%/-10%): AD6NH>APU25N,N6EX-4*:@230209z3352.18N/11749.77W_240/000g000t066r000p000P000b10163h44/PHG52605/Placentia WX {UIV32}
+783(AX.25) Frame received [P_], signal level 30% (25%/-35%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+784(AX.25) Frame received [P_], signal level 37% (42%/-34%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+785(AX.25) Frame received [P_], signal level 25% (26%/-25%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4>}
+786(AX.25) Frame received [PN], signal level 11% (11%/-11%): WA6YLB>APRX46,WA6YLB-7*,N6EX-5*:=3617.37N/11908.94W_009/000g000t063r000p000....h00b10176dU2ks.c
+787(AX.25) Frame received [PN], signal level 8% (8%/-9%): WA6YLB>APRX46,WA6YLB-7*,W6SCE-10*:=3617.37N/11908.94W_009/000g000t063r000p000....h00b10176dU2ks.c
+788(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6YLB>APRX46,WA6YLB-5*,W6PVG-3*,W6SCE-10*:=3617.37N/11908.94W_009/000g000t063r000p000....h00b10176dU2ks.c
+789(AX.25) Frame received [PN], signal level 9% (9%/-9%): K6TZ>APTW01,W6SCE-10*:_11230210c304s010g009t066r000p000P000h24b10162tU2k
+790(AX.25) Frame received [P_], signal level 28% (23%/-35%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230209z3345.92N/11711.37Wk343/073/A=001266
+791(AX.25) Frame received [PN], signal level 16% (17%/-15%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230209z3345.92N/11711.37Wk343/073/A=001266
+792(AX.25) Frame received [PN], signal level 7% (8%/-8%): W6SCE-10>APN382,WIDE2-1:!3419.82N111836.06W#PHG6860/W1 on Oat Mtn./A=003747/k6ccc@amsat.org for info
+793(AX.25) Frame received [P_], signal level 9% (11%/-9%): W6SCE-10>APN382,N6EX-5*:!3419.82N111836.06W#PHG6860/W1 on Oat Mtn./A=003747/k6ccc@amsat.org for info
+794(AX.25) Frame received [P_], signal level 27% (21%/-35%): KD6VLP-2>STPTPP,WB6JAR-10*,WIDE3-2:'-):lJaj/]"7p}
+795(AX.25) Frame received [PN], signal level 16% (17%/-17%): AE6MP>SS5WSQ-2,N6EX-1*:`.]9nf6>/"5:}
+796(AX.25) Frame received [PN], signal level 17% (16%/-18%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,021001,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*7A
+
+797(AX.25) Frame received [PN], signal level 7% (7%/-8%): WA6TK>APS227,W6SCE-10*:@230209z3451.81N/11810.37W_151/002g002t058r000p000P000b10198h30
+798(AX.25) Frame received [PN], signal level 8% (8%/-10%): WA6TK>APS227,W6PVG-3*,W6SCE-10*:@230209z3451.81N/11810.37W_151/002g002t058r000p000P000b10198h30
+799(AX.25) Frame received [P_], signal level 11% (11%/-11%): WA6TK>APS227,N6EX-5*:@230209z3451.81N/11810.37W_151/002g002t058r000p000P000b10198h30
+800(AX.25) Frame received [PN], signal level 11% (13%/-11%): AE6MP>SS5WSQ-1,N6EX-5*:`.]9nf6>/"5:}
+801(AX.25) Frame received [P_], signal level 29% (24%/-36%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+802(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,021014,A,3409.4356,N,11802.4990,W,27.5,88.5,231105,13.5,E,A*3D
+
+803(AX.25) Frame received [P_], signal level 10% (10%/-10%): WD6BYM-1>ID,N6EX-5*:WD6BYM-1/R WIDE/D
+804(AX.25) Frame received [P_], signal level 26% (21%/-33%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,WIDE2-2:'-+(l!X>/]"5-}
+805(AX.25) Frame received [PN], signal level 9% (9%/-10%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,021040.69,A,3346.1434,N,11755.4090,W,00.0,000.0,231105,13.,E*7E
+806(AX.25) Frame received [PN], signal level 8% (9%/-9%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,W6SCE-10*:'-+(l!X>/]"5-}
+807(AX.25) Frame received [PN], signal level 8% (8%/-9%): K7ELH-7>S3QRTX,WB6JAR-10*,WIDE1*,W6PVG-3*,W6SCE-10*:'-+(l!X>/]"5-}
+808(AX.25) Frame received [PN], signal level 20% (22%/-19%): W2NKM-2>STQRTP,RELAY,WIDE:`.'/l"tR/]"88}
+809(AX.25) Frame received [P_], signal level 30% (23%/-38%): W2NKM-2>STQRTP,WB6JAR-10*,WIDE:`.'/l"tR/]"88}
+810(AX.25) Frame received [P_], signal level 29% (27%/-32%): AE4TM>BEACON,WB6JAR-10*,WIDE3-2,W6PVG-3:!3403.02N/11715.00W[http://ecjones.org/
+811(AX.25) Frame received [PN], signal level 8% (9%/-9%): KG6SKQ-1>APT311,N6EX-4*:/230211z3343.89N/11801.89Wk315/000/A=000085/TT3
+812(AX.25) Frame received [PN], signal level 8% (9%/-9%): K6NE-12>GPSLJ,RELAY*,W6SCE-10*:$GPRMC,021108,V,3408.7063,N,11844.9707,W,0.000,0.0,231105,13.9,E*4A
+
+813(AX.25) Frame received [P_], signal level 30% (26%/-35%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+814(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,021118,A,3347.6429,N,11805.5007,W,000.0,111.4,231105,013.4,E*6D
+
+815(AX.25) Frame received [PN], signal level 9% (9%/-9%): K6NE-12>GPSLJ,RELAY*,W6SCE-10*:$GPRMC,021115,V,3408.7063,N,11844.9707,W,0.000,0.0,231105,13.9,E*46
+
+816(AX.25) Frame received [P_], signal level 27% (23%/-32%): KB7ZVA-1>APU25N,WB6WLV-11*,WB6JAR-10*,WIDE2*:=3240.39NI11425.32W&PHG5560/W2,SCAn KB7ZVA Igate/Digi
+817(AX.25) Frame received [P_], signal level 31% (31%/-32%): AE6MP>SS5WXS-2,WIDE2-2:`.]"l*4>/"5D}
+818(AX.25) Frame received [PN], signal level 10% (11%/-9%): AE6MP>SS5WXS-2,N6EX-5*:`.]"l*4>/"5D}
+819(AX.25) Frame received [PN], signal level 16% (16%/-18%): AE6MP>SS5WXS-2,N6EX-1*:`.]"l*4>/"5D}
+820(AX.25) Frame received [P_], signal level 32% (25%/-39%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+821(AX.25) Frame received [P_], signal level 25% (27%/-24%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4A}
+822(AX.25) Frame received [P_], signal level 28% (22%/-35%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Jl!h>/]"4A}
+823(AX.25) Frame received [PN], signal level 16% (17%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,021144,A,3409.3693,N,11801.9079,W,9.8,172.7,231105,13.5,E,D*30
+
+824(AX.25) Frame received [P_], signal level 30% (22%/-38%): N6EDL-2>S3SUSU,WB6JAR-10*,WIDE:`-(l f>/>"8N}ERNIE IN GMC ENVOY
+825(AX.25) Frame received [P_], signal level 43% (47%/-39%): AD6NH>APRS,N6EX-4:;LA LOAD  *221011z3352.18N\11749.77W? 97 In 10 Minutes
+826(AX.25) Frame received [PN], signal level 10% (10%/-10%): AD6NH>APRS,N6EX-4*:;LA LOAD  *221011z3352.18N\11749.77W? 97 In 10 Minutes
+827(AX.25) Frame received [PN], signal level 15% (14%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,021201,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*78
+
+
+Input level too low! Please increase so most stations are around 30-50%.
+828(AX.25) Frame received [PN], signal level 4% (5%/-4%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230210z3350.28N/11818.85W_274/000g006t066r000P000p000h54b10156v6
+829(AX.25) Frame received [PN], signal level 8% (9%/-8%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230210z3350.28N/11818.85W_274/000g006t066r000P000p000h54b10156v6
+830(AX.25) Frame received [PN], signal level 16% (15%/-18%): N6EX-3>APJI23,N6EX-1*,SOCAL1:}W6AHM>APRS,TCPIP,N6EX-3*:@230210z3350.28N/11818.85W_274/000g006t066r000P000p000h54b10156v6
+831(AX.25) Frame received [P_], signal level 35% (38%/-32%): KG6SKQ-1>APT311,RELAY,WIDE2-2:/230212z3343.94N/11801.95Wk237/009/A=000019/TT3
+832(AX.25) Frame received [PN], signal level 8% (9%/-8%): N6PHX-12>APT311,N6EX-4*:> Steve's Rig
+833(AX.25) Frame received [P_], signal level 28% (24%/-34%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000/kf6yvs, Mike
+834(AX.25) Frame received [PN], signal level 10% (11%/-10%): KG6SKQ-1>APT311,N6EX-4*:/230212z3343.92N/11801.96Wk182/015/A=000019/TT3
+835(AX.25) Frame received [P_], signal level 36% (38%/-35%): W6KL>APS210,WIDE2-2:$ULTW0000000002D7000027AE00078F90000101930145044700000000
+836(AX.25) Frame received [PN], signal level 8% (9%/-8%): KD7FNO-5>S5RTQP,W6PVG-3*,N6EX-4*:'/3hl"Ku/]"4j}
+837(AX.25) Frame received [PN], signal level 8% (8%/-8%): KD7FNO-5>S5RTQP,W6PVG-3*,W6SCE-10*:'/3hl"Ku/]"4j}
+838(AX.25) Frame received [PN], signal level 10% (11%/-11%): WA6YLB-7>APRS,N6EX-5*:!3630.92NR11912.68W#PHG5636/A=001866/ TRACEn-n - Relay only
+839(AX.25) Frame received [PN], signal level 11% (11%/-11%): WA6YLB-7>APRS,N6EX-5*:>Stokes Mtn - Wide,Relay, Tracen-n wa6ylb@thewworks.com
+840(AX.25) Frame received [PN], signal level 9% (10%/-9%): WA6YLB-7>APRS,W6SCE-10*:!3630.92NR11912.68W#PHG5636/A=001866/ TRACEn-n - Relay only
+841(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6YLB-7>APRS,W6SCE-10*:>Stokes Mtn - Wide,Relay, Tracen-n wa6ylb@thewworks.com
+842(AX.25) Frame received [PN], signal level 11% (12%/-11%): WA6YLB-4>APRS,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+843(AX.25) Frame received [PN], signal level 7% (8%/-8%): WA6YLB-4>APRS,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+844(AX.25) Frame received [PN], signal level 8% (9%/-8%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,021241.94,A,3346.1438,N,11755.4091,W,00.0,000.0,231105,13.,E*72
+845(AX.25) Frame received [PN], signal level 9% (9%/-9%): K6JLW>APT310,W6SCE-10*:!0000.000/00000.000-000/000/!3410.30N/11911.33W->k6jlw@arrl.net 146.970
+846(AX.25) Frame received [PN], signal level 17% (19%/-17%): KN6DB-14>GPSLK,N6EX-1*:$GPRMC,021251,A,3348.8471,N,11800.1688,W,000.0,274.0,231105,013.4,E*6B
+
+847(AX.25) Frame received [PN], signal level 10% (11%/-10%): K6NR>APT311,N6EX-4*:>k6nr@arrl.net
+848(AX.25) Frame received [PN], signal level 9% (10%/-10%): KF6KED>GPSMV,N6EX-4*:$GPRMC,021302,A,3347.7806,N,11806.5033,W,000.0,273.9,231105,013.4,E*6A
+
+849(AX.25) Frame received [PN], signal level 8% (8%/-9%): KF6KED>GPSMV,N6EX-4*:$GPGGA,021302,3347.7806,N,11806.5033,W,1,08,1.6,18.5,M,-32.1,M,,*4D
+
+850(AX.25) Frame received [PN], signal level 16% (16%/-18%): KF6KED>GPSMV,N6EX-1*:$GPRMC,021302,A,3347.7806,N,11806.5033,W,000.0,273.9,231105,013.4,E*6A
+
+851(AX.25) Frame received [PN], signal level 16% (16%/-17%): KF6KED>GPSMV,N6EX-1*:$GPGGA,021302,3347.7806,N,11806.5033,W,1,08,1.6,18.5,M,-32.1,M,,*4D
+
+852(AX.25) Frame received [P_], signal level 32% (28%/-36%): N3DAB-3>APT311,W6PVG-3*,WB6JAR-10*,WIDE3-1:/230213z3508.32N/11825.90Wk297/056/A=003956
+853(AX.25) Frame received [PN], signal level 8% (8%/-9%): K6NE-12>GPSLJ,RELAY*,W6SCE-10*:$GPRMC,021308,V,3408.7063,N,11844.9707,W,0.000,0.0,231105,13.9,E*48
+
+854(AX.25) Frame received [PN], signal level 16% (16%/-17%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,021314,A,3409.1774,N,11801.7261,W,4.5,178.9,231105,13.5,E,A*39
+
+855(AX.25) Frame received [P_], signal level 29% (25%/-35%): KC6BLF-14>S4PXPX,WB6JAR-10*,WIDE3-2:'-AxoRvu/]"9@}
+856(AX.25) Frame received [PN], signal level 8% (9%/-8%): KC6BLF-14>S4PXPX,N6EX-4*:'-AxoRvu/]"9@}
+857(AX.25) Frame received [P_], signal level 27% (22%/-32%): N6GOF-1>S3TSRX,WB6JAR-10*,WIDE3-2:>Temporary Indio Digi
+858(AX.25) Frame received [P_], signal level 28% (22%/-35%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230213z3348.71N/11714.24Wk336/065/A=001420
+859(AX.25) Frame received [PN], signal level 18% (18%/-20%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230213z3348.71N/11714.24Wk336/065/A=001420
+860(AX.25) Frame received [PN], signal level 7% (7%/-9%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230213z3348.71N/11714.24Wk336/065/A=001420
+861(AX.25) Frame received [P_], signal level 27% (25%/-31%): K6XTY>SV4TVR,W6PVG-3*,WB6JAR-10*,WIDE2*:'/KAl!qj/]"4p}
+862(AX.25) Frame received [PN], signal level 11% (12%/-11%): K6XTY>SV4TVR,W6PVG-3*,N6EX-5*:'/KAl!qj/]"4p}
+863(AX.25) Frame received [PN], signal level 9% (10%/-10%): K6XTY>SV4TVR,W6PVG-3*,W6SCE-10*:'/KAl!qj/]"4p}
+864(AX.25) Frame received [PN], signal level 10% (11%/-9%): K6NE>APW251,KF6RAL*,N6EX-5*:=3415.70N/11911.81W_PHG1100/WinAPRS  2.5.1 -CAVENVENTURA -251-<530>
+
+865(AX.25) Frame received [P_], signal level 26% (25%/-28%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4A}
+866(AX.25) Frame received [P_], signal level 40% (45%/-36%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4A}
+867(AX.25) Frame received [P_], signal level 28% (22%/-34%): KG6VGG-2>APS227,WB6JAR-10*,WIDE:=3411.22N/11820.70WoAPRS+SA
+868(AX.25) Frame received [P_], signal level 26% (22%/-31%): KF6HDJ-3>S2TRXU,RELAY*,WB6JAR-10*,WIDE2*:'-*Wl k/]"4w}
+869(AX.25) Frame received [PN], signal level 9% (9%/-9%): WA8LMF-14>APU25N,WIDE2-2:;146.70   *020658z3412.83N/11741.68WmPL 146.2 APRN & Mic-E Rpt on Sunset
+870(AX.25) Frame received [P_], signal level 29% (25%/-34%): WA8LMF-14>APU25N,WB6JAR-10*,WIDE2-1:;146.70   *020658z3412.83N/11741.68WmPL 146.2 APRN & Mic-E Rpt on Sunset
+871(AX.25) Frame received [PN], signal level 15% (17%/-14%): WA8LMF-14>APU25N,WB6JAR-10*,N6EX-1*:;146.70   *020658z3412.83N/11741.68WmPL 146.2 APRN & Mic-E Rpt on Sunset
+872(AX.25) Frame received [PN], signal level 8% (9%/-8%): WA8LMF-14>APU25N,WB6JAR-10*,W6SCE-10*:;146.70   *020658z3412.83N/11741.68WmPL 146.2 APRN & Mic-E Rpt on Sunset
+873(AX.25) Frame received [P_], signal level 30% (26%/-35%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000
+874(AX.25) Frame received [P_], signal level 50% (53%/-49%): KF6KOI>GPSMV,WIDE2-2:$GPRMC,021418,A,3347.6433,N,11805.5002,W,000.0,111.4,231105,013.4,E*66
+
+875(AX.25) Frame received [P_], signal level 39% (40%/-38%): KF6KOI>GPSMV,WIDE2-2:$GPGGA,021418,3347.6433,N,11805.5002,W,2,09,1.2,8.7,M,-32.1,M,,*7E
+
+876(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,021418,A,3347.6433,N,11805.5002,W,000.0,111.4,231105,013.4,E*66
+
+877(AX.25) Frame received [PN], signal level 10% (11%/-10%): KF6KOI>GPSMV,N6EX-4*:$GPGGA,021418,3347.6433,N,11805.5002,W,2,09,1.2,8.7,M,-32.1,M,,*7E
+
+878(AX.25) Frame received [PN], signal level 9% (9%/-9%): W6MAF>APTW01,N6EX-4*:_11221914c046s000g000t052r000p000P000h33b10186tU2k
+879(AX.25) Frame received [P_], signal level 31% (26%/-36%): W6MAF>APTW01,WB6JAR-10*,WIDE3-2:_11221914c046s000g000t052r000p000P000h33b10186tU2k
+880(AX.25) Frame received [P_], signal level 29% (25%/-35%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230214z3349.75N/11714.69Wk336/066/A=001315
+881(AX.25) Frame received [PN], signal level 15% (16%/-16%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230214z3349.75N/11714.69Wk336/066/A=001315
+882(AX.25) Frame received [PN], signal level 7% (8%/-7%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230214z3349.75N/11714.69Wk336/066/A=001315
+883(AX.25) Frame received [P_], signal level 29% (25%/-34%): WD6V-5>WB6JAR-10,WB6JAR-10*,WIDE2-1:=3330.60N/11711.80W-DIGI on WD6V-5 {Uź€32N}
+884(AX.25) Frame received [PN], signal level 9% (9%/-10%): KG6SKQ-1>APT311,N6EX-4*:/230214z3343.35N/11801.94Wk093/018/A=000019/TT3
+885(AX.25) Frame received [PN], signal level 16% (16%/-17%): WD6V-5>WB6JAR-10,WB6JAR-10*,N6EX-1*:=3330.60N/11711.80W-DIGI on WD6V-5 {Uź€32N}
+886(AX.25) Frame received [P_], signal level 29% (23%/-35%): N0RHZ-1>SR4PSU,KB7ZVA-11*,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:`*?Il#Gj/]"4P}FMCA 4wheeler-JEEP
+887(AX.25) Frame received [P_], signal level 29% (24%/-34%): KB7ZVA-1>APU25N,WB6WLV-11*,WB6JAR-10*,WIDE2*:>171958z>WIDE2-2 is the best path for the Southwest
+888(AX.25) Frame received [PN], signal level 11% (12%/-11%): K6NE>APW251,KF6RAL*,N6EX-5*:_11230221c298s000g000t-103r000p000P000h10b10163wRSW
+
+889(AX.25) Frame received [PN], signal level 9% (10%/-10%): N6EX-5>APNU19,WIDE2-1:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+890(AX.25) Frame received [PN], signal level 15% (17%/-14%): N6EX-5>APNU19,N6EX-1*:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+891(AX.25) Frame received [PN], signal level 8% (8%/-8%): N6EX-5>APNU19,W6SCE-10*:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+892(AX.25) Frame received [P_], signal level 20% (23%/-17%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,021444,A,3409.0449,N,11801.6905,W,0.0,179.9,231105,13.5,E,A*3F
+
+893(AX.25) Frame received [PN], signal level 16% (18%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,021444,A,3409.0449,N,11801.6905,W,0.0,179.9,231105,13.5,E,A*3F
+
+894(AX.25) Frame received [PN], signal level 37% (38%/-37%): KB6CYS>APRS,WIDE3-3:
+895(AX.25) Frame received [PN], signal level 10% (10%/-10%): KB6CYS>APRS,N6EX-4*:
+896(AX.25) Frame received [P_], signal level 38% (40%/-38%): KB6CYS>APRS,WIDE3-3: TUE NOV 22  6:00:27 PM  TMP 67 DP 56 R/H 68%  PRESS: 30.01 RISING   +.01/HR    WIND: CALM      THI= 65 DEGREES
+897(AX.25) Frame received [P_], signal level 37% (37%/-37%): KB6CYS>APRS,WIDE3-3:
+898(AX.25) Frame received [PN], signal level 10% (10%/-10%): KB6CYS>APRS,N6EX-4*: TUE NOV 22  6:00:27 PM  TMP 67 DP 56 R/H 68%  PRESS: 30.01 RISING   +.01/HR    WIND: CALM      THI= 65 DEGREES
+899(AX.25) Frame received [PN], signal level 16% (16%/-18%): KB6CYS>APRS,N6EX-1*:
+900(AX.25) Frame received [PN], signal level 16% (17%/-17%): KB6CYS>APRS,N6EX-1*: TUE NOV 22  6:00:27 PM  TMP 67 DP 56 R/H 68%  PRESS: 30.01 RISING   +.01/HR    WIND: CALM      THI= 65 DEGREES
+901(AX.25) Frame received [PN], signal level 16% (15%/-18%): KB6CYS>APRS,N6EX-1*:
+902(AX.25) Frame received [PN], signal level 8% (9%/-9%): WA6TK>APS227,N6EX-4*:@230214z3451.81N/11810.37W_151/001g002t058r000p000P000b10198h33
+903(AX.25) Frame received [P_], signal level 28% (21%/-36%): WA6TK>APS227,N6EX-2*,WB6JAR-10*,WIDE2*:@230214z3451.81N/11810.37W_151/001g002t058r000p000P000b10198h33
+904(AX.25) Frame received [PN], signal level 9% (9%/-10%): WA6TK>APS227,W6SCE-10*:@230214z3451.81N/11810.37W_151/001g002t058r000p000P000b10198h33
+905(AX.25) Frame received [PN], signal level 9% (10%/-9%): KF6HJO>APS221,W6PVG-3*,N6EX-5*:@230211z3630.69N/11940.91W_083/000g000t056r000p000P000b10184h79
+906(AX.25) Frame received [PN], signal level 22% (22%/-23%): WA8LMF>STPYXT,WIDE2-2:'._l"q>/]"72}
+907(AX.25) Frame received [PN], signal level 16% (17%/-17%): WA8LMF>STPYXT,N6EX-1*:'._l"q>/]"72}
+908(AX.25) Frame received [P_], signal level 11% (11%/-11%): WA8LMF>STPYXT,N6EX-5*:'._l"q>/]"72}
+909(AX.25) Frame received [PN], signal level 8% (9%/-8%): KD7FNO-5>S5RTQQ,W6PVG-3*,W6SCE-10*:'/3hl"Ku/]"4j}
+910(AX.25) Frame received [PN], signal level 10% (12%/-10%): K6NE-12>GPSLJ,KF6RAL*,N6EX-5*:$GPRMC,021529,A,3409.3457,N,11849.3311,W,61.944,308.7,231105,13.9,E*6A
+
+911(AX.25) Frame received [PN], signal level 8% (9%/-8%): K6NE-12>GPSLJ,KF6DQ-5*,W6SCE-10*:$GPRMC,021529,A,3409.3457,N,11849.3311,W,61.944,308.7,231105,13.9,E*6A
+
+912(AX.25) Frame received [P_], signal level 26% (28%/-25%): KE6RYZ>S3UUXT,RELAY,WIDE:`.[Jl!h>/]"4K}
+913(AX.25) Frame received [P_], signal level 29% (22%/-36%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Jl!h>/]"4K}
+914(AX.25) Frame received [P_], signal level 36% (41%/-32%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Jl!h>/]"4K}
+915(AX.25) Frame received [P_], signal level 30% (25%/-36%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+916(AX.25) Frame received [P_], signal level 42% (45%/-40%): N6VNI-14>APRS,RELAY*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+917(AX.25) Frame received [P_], signal level 29% (24%/-36%): N6CP-1>APN383,W6PVG-3*,WB6JAR-10*,WIDE2*:!3557.11NS12100.09W#PHG4730/Wn,NCAn/Williams Hill,KC/A=002780
+918(AX.25) Frame received [PN], signal level 7% (9%/-7%): N6CP-1>APN383,W6PVG-3*,W6SCE-10*:!3557.11NS12100.09W#PHG4730/Wn,NCAn/Williams Hill,KC/A=002780
+919(AX.25) Frame received [PN], signal level 20% (20%/-22%): W2NKM-2>STQRTP,RELAY,WIDE:`.'/l"tR/]"8=}
+920(AX.25) Frame received [P_], signal level 27% (21%/-34%): W2NKM-2>STQRTP,WB6JAR-10*,WIDE:`.'/l"tR/]"8=}
+921(AX.25) Frame received [PN], signal level 9% (10%/-10%): KF6KED>GPSMV,N6EX-4*:$GPRMC,021602,A,3347.7811,N,11806.5034,W,000.0,273.9,231105,013.4,E*6E
+
+922(AX.25) Frame received [PN], signal level 30% (29%/-32%): KA6IHT-3>ID,WIDE2-2:KA6IHT-3/R RELAY/D ADE2-1/B
+923(AX.25) Frame received [P_], signal level 10% (10%/-11%): KA6IHT-3>ID,N6EX-5*:KA6IHT-3/R RELAY/D ADE2-1/B
+924(AX.25) Frame received [PN], signal level 8% (8%/-10%): KA6IHT-3>ID,W6SCE-10*:KA6IHT-3/R RELAY/D ADE2-1/B
+925(AX.25) Frame received [PN], signal level 7% (8%/-8%): KA6IHT-3>ID,W6SCE-10*:KA6IHT-3/R RELAY/D ADE2-1/B
+
+Input level too low! Please increase so most stations are around 30-50%.
+926(AX.25) Frame received [PN], signal level 4% (3%/-5%): W6OFR>SSTWVR,WIDE2-2:`.01l#(v>
+927(AX.25) Frame received [PN], signal level 16% (16%/-16%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,021614,A,3409.0424,N,11801.6907,W,0.0,179.9,231105,13.5,E,A*31
+
+928(AX.25) Frame received [PN], signal level 8% (9%/-9%): W6OFR>SSTWVR,W6SCE-10*:`.01l#(v>
+929(AX.25) Frame received [P_], signal level 38% (34%/-44%): AE6MP>SS5YSV-2,WIDE2-2:`.\/n *>/"55}
+930(AX.25) Frame received [P_], signal level 11% (12%/-11%): AE6MP>SS5YSV-2,N6EX-5*:`.\/n *>/"55}
+931(AX.25) Frame received [PN], signal level 16% (15%/-17%): AE6MP>SS5YSV-2,N6EX-1*:`.\/n *>/"55}
+932(AX.25) Frame received [P_], signal level 27% (24%/-32%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230216z3351.84N/11715.60Wk340/067/A=001430
+933(AX.25) Frame received [PN], signal level 17% (16%/-18%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230216z3351.84N/11715.60Wk340/067/A=001430
+934(AX.25) Frame received [PN], signal level 9% (9%/-10%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230216z3351.84N/11715.60Wk340/067/A=001430
+935(AX.25) Frame received [P_], signal level 28% (25%/-32%): KD6RSQ>APRS,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:!3301.22n/11653.34w_wx
+936(AX.25) Frame received [PN], signal level 8% (8%/-9%): N6HGA-1>APS199,W6PVG-3*,W6SCE-10*,W6SCE-10,WIDE2-2:@230211z3433.90N/11806.46W_204/003g000t058r000p000P000h44b09260+Davis
+937(AX.25) Frame received [PN], signal level 9% (10%/-10%): N6HGA-1>APS199,WA6YLB-4*,WIDE2*,W6SCE-10*,WIDE2-2:@230211z3433.90N/11806.46W_204/003g000t058r000p000P000h44b09260+Davis
+938(AX.25) Frame received [PN], signal level 34% (33%/-35%): KD6FVP-2>APS224,N6EX-1,WIDE1:>152343z[224]*We know most of your faults!!!
+939(AX.25) Frame received [PN], signal level 16% (16%/-17%): KD6FVP-2>APS224,N6EX-1*,WIDE1:>152343z[224]*We know most of your faults!!!
+940(AX.25) Frame received [P_], signal level 30% (23%/-37%): K7ELH-7>S3QRTW,WB6JAR-10*,WIDE1*,WIDE2-2:'-+(l!X>/]"50}
+941(AX.25) Frame received [PN], signal level 15% (16%/-15%): K7ELH-7>S3QRTW,WB6JAR-10*,WIDE1*,N6EX-1*:'-+(l!X>/]"50}
+942(AX.25) Frame received [PN], signal level 8% (9%/-8%): KG6SKQ-1>APT311,N6EX-4*:/230216z3343.34N/11800.95Wk155/012/A=000000/TT3
+943(AX.25) Frame received [P_], signal level 31% (27%/-37%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+944(AX.25) Frame received [P_], signal level 30% (23%/-37%): N3DAB-3>APT311,W6PVG-3*,WB6JAR-10*,WIDE3-1:/230216z3510.16N/11828.47Wk321/054/A=003628
+945(AX.25) Frame received [PN], signal level 9% (9%/-9%): K7ELH-7>S3QRTW,WB6JAR-10*,WIDE1*,W6SCE-10*:'-+(l!X>/]"50}
+946(AX.25) Frame received [PN], signal level 8% (9%/-8%): K7ELH-7>S3QRTW,WB6JAR-10*,WIDE1*,W6PVG-3*,W6SCE-10*:'-+(l!X>/]"50}
+947(AX.25) Frame received [P_], signal level 32% (29%/-36%): KF6HDJ-3>S2TRXU,RELAY*,WB6JAR-10*,WIDE2*:'-*Wl k/]"4s}
+
+Input level too low! Please increase so most stations are around 30-50%.
+948(AX.25) Frame received [PN], signal level 4% (5%/-5%): N6EX-3>APJI23,N6EX-4,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230215z3350.28N/11818.85W_283/003g006t066r000P000p000h53b10157v6
+949(AX.25) Frame received [PN], signal level 8% (8%/-9%): N6EX-3>APJI23,N6EX-4*,SOCAL1-1:}W6AHM>APRS,TCPIP,N6EX-3*:@230215z3350.28N/11818.85W_283/003g006t066r000P000p000h53b10157v6
+950(AX.25) Frame received [PN], signal level 15% (16%/-15%): N6EX-3>APJI23,N6EX-1*,SOCAL1:}W6AHM>APRS,TCPIP,N6EX-3*:@230215z3350.28N/11818.85W_283/003g006t066r000P000p000h53b10157v6
+951(AX.25) Frame received [PN], signal level 11% (12%/-11%): WA6YLB-4>APRS,N6EX-5*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+952(AX.25) Frame received [PN], signal level 7% (8%/-8%): WA6YLB-4>APRS,W6SCE-10*:$ULTW00000000----0000----000086A00001----0000000000000000
+
+953(AX.25) Frame received [P_], signal level 39% (42%/-36%): KF6KOI>GPSMV,WIDE2-2:$GPRMC,021718,A,3347.6433,N,11805.4993,W,000.0,111.4,231105,013.4,E*65
+
+954(AX.25) Frame received [PN], signal level 8% (9%/-8%): KF6KOI>GPSMV,N6EX-4*:$GPRMC,021718,A,3347.6433,N,11805.4993,W,000.0,111.4,231105,013.4,E*65
+
+955(AX.25) Frame received [P_], signal level 28% (24%/-34%): WA6MHZ-10>ID,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:WA6MHZ-10/R RELAY/D WA6MHZ-1/B
+956(AX.25) Frame received [P_], signal level 31% (26%/-37%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230217z3352.83N/11716.04Wk339/064/A=001430
+957(AX.25) Frame received [PN], signal level 15% (14%/-17%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230217z3352.83N/11716.04Wk339/064/A=001430
+958(AX.25) Frame received [PN], signal level 9% (9%/-10%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230217z3352.83N/11716.04Wk339/064/A=001430
+959(AX.25) Frame received [P_], signal level 28% (21%/-36%): WB6JAR-10>APN383,WIDE1-1:!3345.71NK11644.26W#PHG5760/PineCove R,Wn,10LNKn/A=006300/www.rivcoraces.org
+960(AX.25) Frame received [PN], signal level 15% (17%/-15%): WB6JAR-10>APN383,N6EX-1*:!3345.71NK11644.26W#PHG5760/PineCove R,Wn,10LNKn/A=006300/www.rivcoraces.org
+961(AX.25) Frame received [PN], signal level 10% (10%/-10%): K6NE-12>GPSLJ,KF6RAL*,N6EX-5*:$GPRMC,021736,A,3409.9766,N,11850.2813,W,7.082,307.5,231105,13.9,E*53
+
+962(AX.25) Frame received [PN], signal level 9% (9%/-9%): K6NE-12>GPSLJ,KF6RAL*,W6SCE-10*:$GPRMC,021736,A,3409.9766,N,11850.2813,W,7.082,307.5,231105,13.9,E*53
+
+963(AX.25) Frame received [P_], signal level 17% (18%/-16%): N6QFD-9>GPSLJ,WIDE2-2:$GPRMC,021744,A,3409.0429,N,11801.6906,W,0.0,179.9,231105,13.5,E,A*39
+
+964(AX.25) Frame received [PN], signal level 17% (18%/-18%): N6QFD-9>GPSLJ,N6EX-1*:$GPRMC,021744,A,3409.0429,N,11801.6906,W,0.0,179.9,231105,13.5,E,A*39
+
+965(AX.25) Frame received [P_], signal level 27% (24%/-32%): KE6RYZ>S3UUXT,WB6JAR-10*,WIDE:`.[Kl!h>/]"4A}
+966(AX.25) Frame received [P_], signal level 37% (41%/-34%): KE6RYZ>S3UUXT,RELAY*,WIDE:`.[Kl!h>/]"4A}
+967(AX.25) Frame received [PN], signal level 9% (10%/-9%): KF6WJS-14>S4PXTV,N6EX-5*:`.+Zl!ek/"5Z}
+968(AX.25) Frame received [P_], signal level 29% (26%/-34%): AE6MP>SS5YVY-2,WIDE2-2:`.\'m4(>/"5.}
+969(AX.25) Frame received [P_], signal level 32% (28%/-37%): N6VNI-14>APRS,WB6JAR-10*,WIDE,WIDE:!3356.05N/11758.01Wk Geo & Kris LaHabra,CA
+970(AX.25) Frame received [PN], signal level 16% (17%/-16%): AE6MP>SS5YVY-2,N6EX-1*:`.\'m4(>/"5.}
+971(AX.25) Frame received [P_], signal level 10% (10%/-11%): AE6MP>SS5YVY-1,N6EX-5*:`.\'m4(>/"5.}
+972(AX.25) Frame received [PN], signal level 17% (17%/-17%): KF6MDF-2>GPS,N6EX-1*:$GPRMC,021801,V,3354.0188,N,11805.8904,W,000.0,000.0,301105,013.7,E*72
+
+973(AX.25) Frame received [P_], signal level 30% (26%/-35%): KE6ITF-7>S5PUUP,W6PVG-3*,WB6JAR-10*,WIDE3*:',/Fl k/]"3r}
+974(AX.25) Frame received [P_], signal level 28% (22%/-35%): KF6YVS-6>APT202,WB6JAR-10*,WIDE3-2:!0000.000/00000.000>000/000/kf6yvs, Mike
+975(AX.25) Frame received [PN], signal level 9% (9%/-10%): W6MAF-3>GPSLK,K7GIL-1*,N6EX-4*:$GPRMC,021809,A,3422.2823,N,11724.7203,W,0.0000,299.5,231105,,E*70
+
+976(AX.25) Frame received [P_], signal level 29% (25%/-35%): W6MAF-3>GPSLK,K7GIL-1*,N6EX-2*,WB6JAR-10*,WIDE3-1:$GPRMC,021809,A,3422.2823,N,11724.7203,W,0.0000,299.5,231105,,E*70
+
+977(AX.25) Frame received [PN], signal level 9% (9%/-10%): K6TZ-10>APJI20,W6SCE-10*:>javAPRSIGate - K6TZ-10
+978(AX.25) Frame received [P_], signal level 29% (22%/-36%): N6BOX-10>APT310,WB6JAR-10*,WIDE2-1:/230218z3353.84N/11716.48Wk340/065/A=001430/Mobile, TT3
+979(AX.25) Frame received [PN], signal level 16% (14%/-18%): N6BOX-10>APT310,WB6JAR-10*,N6EX-1*:/230218z3353.84N/11716.48Wk340/065/A=001430/Mobile, TT3
+980(AX.25) Frame received [PN], signal level 9% (9%/-10%): N6BOX-10>APT310,WB6JAR-10*,W6SCE-10*:/230218z3353.84N/11716.48Wk340/065/A=001430/Mobile, TT3
+981(AX.25) Frame received [PN], signal level 11% (12%/-11%): N6EX-5>APNU19:!3348.40N111822.11W#PHG7567/W1 for South Bay/WLA
+982(AX.25) Frame received [PN], signal level 15% (16%/-16%): N6EX-1>APN382:!3411.21N111802.13W#PHG5664/W1 for LA area/A=003000/sceara@ham-radio.com
+983(AX.25) Frame received [P_], signal level 30% (27%/-34%): KD6RSQ>APRS,W5NVH-10*,WB6WLV-11*,WB6JAR-10*,WIDE3*:$ULTW000000000264074327AB000E9A3E0001019A0145044C00000000
+
+984(AX.25) Frame received [PN], signal level 10% (10%/-11%): K6SYV-10>ANP391,W6SCE-10*:!3444.00NS12000.40W#PHG7730/Wn,SCAn/FIGUEROA Mt./A=003248
+985(AX.25) Frame received [PN], signal level 8% (9%/-8%): N6XQY-12>GPSLJ,N6EX-4*:$GPRMC,021841.28,A,3346.1449,N,11755.4088,W,00.0,000.0,231105,13.,E*71
+986(AX.25) Frame received [PN], signal level 9% (9%/-9%): KN6DB-14>GPSLK,N6EX-4*:$GPRMC,021851,A,3348.8470,N,11800.1685,W,000.0,274.0,231105,013.4,E*6D
+
+
