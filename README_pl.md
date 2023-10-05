@@ -1,6 +1,6 @@
 # VP-Digi
 
-**VP-Digi** jest funkcjonalnym tanim, łatwym w budowie i konfiguracji kontrolerem digipeatera APRS opartym na procesorze STM32 z wbudowanym TNC KISS.
+**VP-Digi** jest funkcjonalnym, tanim, łatwym w budowie i konfiguracji kontrolerem digipeatera APRS opartym na procesorze STM32 z wbudowanym TNC KISS.
 
 * Wiele modemów:
   * 1200 Bd AFSK Bell 202 (standard VHF)
