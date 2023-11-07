@@ -131,11 +131,12 @@ Common commands are also available:
 
 - Beacon\
     Example for beacon number 0. Beacons are available from 0 to 7.
-    1. *beacon 0 data !5002.63N/02157.91E#Digi Rzeszow* – setting APRS standard beacon data
-    2. *beacon 0 path WIDE2-2,SP2-2* – setting the path
+    1. *beacon 0 data !5002.63N/02157.91E#VP-Digi* – setting APRS standard beacon data
+    2. *beacon 0 path WIDE2-2* – setting the path
     3. *beacon 0 iv 15* – transmitting every 15 minutes
     4. *beacon 0 dl 5* – the beacon will be transmitted for the first time after 5 minutes from device startup
     5. *beacon 0 on* – enabling the beacon
+
 - Fill-in WIDE1-1 digipeater\
     Example for alias number 0. Alias numbers range from 0 to 3.
     1. *digi 0 alias WIDE* – repeating WIDEn-N type aliases. Numbers n and N are NOT set here.
