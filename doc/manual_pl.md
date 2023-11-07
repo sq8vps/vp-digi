@@ -133,11 +133,12 @@ Dostępne są także polecenia wspólne:
 
 - Beacon\
     Przykład dla beaconu o numerze 0. Dostępne są beacony od 0 do 7.
-    1. *beacon 0 data !5002.63N/02157.91E#Digi Rzeszow* – ustawienie danych beaconu w standardzie APRS
-    2. *beacon 0 path WIDE2-2,SP2-2* – ustawienie ścieżki
-    3. *beacon 0 iv 15* – nadawanie co 15 minut
-    4. *beacon 0 dl 5* – beacon będzie nadany po raz pierwszy po 5 minutach od uruchomienia urządzenia
-    5. *beacon 0 on* – uruchomienie beaconu
+    1. *beacon 0 data !5002.63N/02157.91E#VP-Digi* – ustawienie danych beaconu w standardzie APRS
+    2. *beacon 0 path WIDE2-2* – ustawienie ścieżki
+    4. *beacon 0 iv 15* – nadawanie co 15 minut
+    5. *beacon 0 dl 5* – beacon będzie nadany po raz pierwszy po 5 minutach od uruchomienia urządzenia
+    6. *beacon 0 on* – uruchomienie beaconu
+       
 - Digipeater WIDE1-1 (pomocniczy)\
     Przykład dla aliasu o numerze 0. Dostępne są aliasy 0-3.
     1. *digi 0 alias WIDE* – powtarzanie aliasów typu WIDEn-N. Liczby n i N NIE są ustawiane tutaj.
