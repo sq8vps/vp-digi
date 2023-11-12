@@ -268,6 +268,8 @@ VP-Digi natively operates on the STM32F103C8T6 microcontroller with a core frequ
 The construction of VP-Digi based on the *STM32 Blue Pill* board is presented in the schematic:
 ![VP-Digi schematic](schematic.png)
 
+> **Note!** In case of issues with the transmitter self-activating, the *C1* capacitor should be changed from 1uF to 100nF.
+
 #### 3.1.1. Reception
 The received signal is provided to pin *PA0* using decoupling capacitors (*C4*, *C6*), polarizing resistors (*R6*, *R9*), and limiting resistors (*R7*, *R11*). To ensure proper reception of FSK modulation, capacitors with relatively large capacitance values must be used. To achieve correct reception, the DC voltage at pin *PA0* should be around half of the supply voltage, i.e., 1.65 V. Incorrect polarization manifests as asymmetry in the signal level (see [section 2.2.2](#222-received-packet-view)) or loss of reception.
 In the receiving path, a serial resistor *R7* is used to limit the maximum pin current. This is done to protect the converter from damage caused by excessive signal levels using the microcontroller's built-in diodes as a voltage limiter.
@@ -338,5 +340,9 @@ If *viscous delay* functionality is enabled for the matched alias, the completed
 In addition, the *viscous delay* buffer is regularly refreshed. If the specified time has passed, and the packet has not been removed from the buffer (see *the beginning of this section*), its hash is saved to the duplicate filter buffer, the packet is transmitted, and removed from the *viscous delay* buffer.
 
 ## 4. Documentation changelog
+### 2023/11/12
+- Note for output path capacitor - Piotr Wilkoń
+### 2023/11/07
+- Beacon example corrected to avoid confusion - Piotr Wilkoń
 ### 2023/09/06
 - First version - Piotr Wilkoń
