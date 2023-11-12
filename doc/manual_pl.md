@@ -260,6 +260,9 @@ VP-Digi natywnie pracuje na mikrokontrolerze STM32F103C8T6 z częstotliwością 
 
 Budowę VP-Digi w oparciu o płytkę *STM32 Blue Pill* przedstawiono na schemacie:
 ![VP-Digi schematic](schematic.png)
+
+> **Uwaga!** W przypadku problemów z samoistnie włączającym się nadawaniem kondensator *C1* należy zmienić z 1 uF na 100 nF. 
+
 #### 3.1.1. Odbiór
 Sygnał odbierany podawany jest na pin *PA0* z użyciem układu kondensatorów odsprzęgających (*C4*, *C6*) oraz rezystorów polaryzujących (*R6*, *R9*) i ograniczających (*R7*, *R11*). W celu zapewnienia poprawnego odbioru modulacji FSK muszą być zastosowane kondensatory o stosunkowo dużych pojemnościach. Dla zapewnienia poprawnego odbioru napięcie stałe na pinie *PA0* musi być w okolicach połowy napięcia zasilania, tj. 1.65 V. Nieprawidłowa polaryzacja objawia się w postaci asymetrii poziomu sygnału (patrz [sekcja 2.2.2](#222-widok-pakietów-odbieranych)) lub zanikiem odbioru.
 W torze odbiorczym zastosowano szeregowy rezystor *R7* mający na celu ograniczenie maksymalnego prądu pinu, aby wykorzystując wbudowane w mikrokontroler diody wykonać ogranicznik napięcia chroniący przetwornik przed uszkodzeniem spowodowanym zbyt dużym poziomem sygnału.\
@@ -322,5 +325,9 @@ Jeśli dla dopasowanego aliasu włączona jest funkcja *viscous delay*, to gotow
 Ponadto regularnie odświeżany jest bufor funkcji *viscous delay*. Jeśli minął odpowiedni czas i pakiet nie został usunięty z bufora (patrz *początek tej sekcji*), to jego hasz jest zapisywany do bufora filtra duplikatów, pakiet jest wysyłany i usuwany z bufora *viscous delay*.
 
 ## 4. Rejestr zmian dokumentacji
+### 2023/11/12
+- Dodanie uwagi do kondensatora w torze nadawczym
+### 2023/11/07
+- Modyfikacja przykładu beaconu - Piotr Wilkoń
 ### 2023/09/06
 - Pierwsza wersja - Piotr Wilkoń
