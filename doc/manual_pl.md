@@ -1,5 +1,5 @@
 # VP-Digi - dokumentacja
-Copyright 2023 Piotr Wilkoń\
+Copyright 2023-2024 Piotr Wilkoń\
 Zezwala się na kopiowanie, rozpowszechnianie i/lub modyfikowanie tego dokumentu na warunkach Licencji GNU Wolnej Dokumentacji (GNU Free Documentation License) w wersji 1.3 lub dowolnej nowszej opublikowanej przez Free Software Foundation,
 bez żadnych Części nienaruszalnych, bez Tekstów przedniej
 lub tylnej strony okładki. Egzemplarz licencji zamieszczono w pliku [LICENSE_FDL](LICENSE_FDL).\
@@ -76,6 +76,14 @@ z których każdy pracuje niezależnie i może działać w trybie:
 ## 2. Podręcznik użytkownika
 ### 2.1. Tryb konfiguracji
 Konfiguracja urządzenia może być dokonana przez dowolny port (USB, UART1, UART2). Przejście do trybu konfiguracji następuje po wydaniu polecenia `config`.
+Porty UART pracują z następującymi parametrami:
+- Prędkość: 9600 Bd
+- Bity danych: 8
+- Bity stopu: 1
+- Kontrola parzystości: brak
+
+W przypadku portu USB ustawienia te nie mają znaczenia.
+_Backspace_ musi być kodowane jako _Control+H_ (standardowy backspace, kod ASCII 8).
 > Uwaga! Jeśli port pracuje w trybie KISS (domyślnym po uruchomieniu), to wpisywane znaki nie będą widoczne.
 
 > Uwaga! Po zakończeniu konfiguracji należy zapisać ją do pamięci poleceniem `save`
@@ -325,6 +333,8 @@ Jeśli dla dopasowanego aliasu włączona jest funkcja *viscous delay*, to gotow
 Ponadto regularnie odświeżany jest bufor funkcji *viscous delay*. Jeśli minął odpowiedni czas i pakiet nie został usunięty z bufora (patrz *początek tej sekcji*), to jego hasz jest zapisywany do bufora filtra duplikatów, pakiet jest wysyłany i usuwany z bufora *viscous delay*.
 
 ## 4. Rejestr zmian dokumentacji
+### 2024/05/16
+- Dodanie informacji o domyślnej konfiguracji UART oraz obsłudze backspace
 ### 2023/11/12
 - Dodanie uwagi do kondensatora w torze nadawczym
 ### 2023/11/07
