@@ -76,6 +76,7 @@ z których każdy pracuje niezależnie i może działać w trybie:
 ## 2. Podręcznik użytkownika
 ### 2.1. Tryb konfiguracji
 Konfiguracja urządzenia może być dokonana przez dowolny port (USB, UART1, UART2). Przejście do trybu konfiguracji następuje po wydaniu polecenia `config`.
+
 Porty UART pracują z następującymi parametrami:
 - Prędkość: 9600 Bd
 - Bity danych: 8
@@ -334,9 +335,9 @@ Ponadto regularnie odświeżany jest bufor funkcji *viscous delay*. Jeśli miną
 
 ## 4. Rejestr zmian dokumentacji
 ### 2024/05/16
-- Dodanie informacji o domyślnej konfiguracji UART oraz obsłudze backspace
+- Dodanie informacji o domyślnej konfiguracji UART oraz obsłudze backspace - Piotr Wilkoń
 ### 2023/11/12
-- Dodanie uwagi do kondensatora w torze nadawczym
+- Dodanie uwagi do kondensatora w torze nadawczym - Piotr Wilkoń
 ### 2023/11/07
 - Modyfikacja przykładu beaconu - Piotr Wilkoń
 ### 2023/09/06
