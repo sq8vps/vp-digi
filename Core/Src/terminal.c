@@ -1,11 +1,7 @@
 /*
 Copyright 2020-2023 Piotr Wilkon
-<<<<<<< HEAD:Core/Src/terminal.c
-This file is part of VP-DigiConfig.
-=======
 
 This file is part of VP-Digi.
->>>>>>> e9a5ebd2c6fc83adbfacb614029274ed01491d16:Src/terminal.c
 
 VP-Digi is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
