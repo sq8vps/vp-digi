@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2024 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -52,7 +52,9 @@ void KissParse(Uart *port, uint8_t data)
 
 	volatile uint8_t *buf = NULL;
 	volatile uint16_t *index = NULL;
-	if(!port->kissProcessingOngoing)
+	bool useTempBuffer = port->kissProcessingOngoing;
+
+	if(!useTempBuffer)
 	{
 		buf = port->kissBuffer;
 		index = &port->kissBufferHead;
@@ -65,7 +67,7 @@ void KissParse(Uart *port, uint8_t data)
 
 	if(data == 0xC0) //frame end marker
 	{
-		if(port->kissProcessingOngoing)
+		if(useTempBuffer) //temporary buffer is used = KISS processing is ongoing, must drop the incoming frame
 		{
 			*index = 0;
 			return;
@@ -118,8 +120,8 @@ void KissParse(Uart *port, uint8_t data)
 		__disable_irq();
 		port->kissProcessingOngoing = 1;
 		port->kissTempBufferHead = 0;
-		__enable_irq();
 		port->rxType = DATA_KISS;
+		__enable_irq();
 		return;
 	}
 	else if(*index > 0)
@@ -137,7 +139,7 @@ void KissParse(Uart *port, uint8_t data)
 	}
 	buf[(*index)++] = data;
 
-	if(!port->kissProcessingOngoing)
+	if(!useTempBuffer)
 		port->kissBufferHead %= sizeof(port->kissBuffer);
 	else
 		port->kissTempBufferHead %= sizeof(port->kissTempBuffer);
@@ -158,7 +160,7 @@ void KissProcess(Uart *port)
 			port->kissBufferHead = port->kissTempBufferHead;
 			port->kissTempBufferHead = 0;
 		}
-		__enable_irq();
 		port->rxType = DATA_NOTHING;
+		__enable_irq();
 	}
 }

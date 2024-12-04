@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2024 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -46,7 +46,7 @@ typedef struct
 {
 	volatile USART_TypeDef *port; //UART peripheral
 	uint32_t baudrate; //baudrate 1200-115200
-	enum UartDataType rxType; //rx status
+	volatile enum UartDataType rxType; //rx status
 	uint8_t enabled : 1;
 	uint8_t isUsb : 1;
 	volatile uint8_t rxBuffer[UART_BUFFER_SIZE];
