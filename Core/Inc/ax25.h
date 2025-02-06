@@ -75,7 +75,6 @@ void Ax25ClearReceivedFrameBitmap(void);
  * @brief Get next received frame (if available)
  * @param **dst Pointer to internal buffer
  * @param *size Actual frame size
-<<<<<<< HEAD
  * @param *peak Signak positive peak value in %
  * @param *valley Signal negative peak value in %
  * @param *level Signal level in %
