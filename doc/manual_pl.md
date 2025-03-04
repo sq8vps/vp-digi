@@ -1,5 +1,5 @@
 # VP-Digi - dokumentacja
-Copyright 2023-2024 Piotr Wilkoń\
+Copyright 2023-2025 Piotr Wilkoń\
 Zezwala się na kopiowanie, rozpowszechnianie i/lub modyfikowanie tego dokumentu na warunkach Licencji GNU Wolnej Dokumentacji (GNU Free Documentation License) w wersji 1.3 lub dowolnej nowszej opublikowanej przez Free Software Foundation,
 bez żadnych Części nienaruszalnych, bez Tekstów przedniej
 lub tylnej strony okładki. Egzemplarz licencji zamieszczono w pliku [LICENSE_FDL](LICENSE_FDL).\
@@ -35,7 +35,6 @@ Rejestr zmian dostępny jest na końcu tego dokumentu.
         - [3.2.2.2. Nadawanie](#3222-nadawanie)
       - [3.2.3. Digipeater](#323-digipeater)
   - [4. Rejestr zmian dokumentacji](#4-rejestr-zmian-dokumentacji)
-    - [2023/09/06](#20230906)
 
 ## 1. Opis funkcjonalny
 VP-Digi jest samodzielnym sterownikiem digipeatera AX.25 (np. APRS) oraz kontrolerem TNC w standardzie KISS.\
@@ -334,6 +333,8 @@ Jeśli dla dopasowanego aliasu włączona jest funkcja *viscous delay*, to gotow
 Ponadto regularnie odświeżany jest bufor funkcji *viscous delay*. Jeśli minął odpowiedni czas i pakiet nie został usunięty z bufora (patrz *początek tej sekcji*), to jego hasz jest zapisywany do bufora filtra duplikatów, pakiet jest wysyłany i usuwany z bufora *viscous delay*.
 
 ## 4. Rejestr zmian dokumentacji
+### 2025/03/04
+- Nowy schemat - Piotr Wilkoń
 ### 2024/05/16
 - Dodanie informacji o domyślnej konfiguracji UART oraz obsłudze backspace - Piotr Wilkoń
 ### 2023/11/12

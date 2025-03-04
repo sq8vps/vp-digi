@@ -218,7 +218,9 @@ void UartConfig(Uart *port, uint8_t state)
 
 void UartClearRx(Uart *port)
 {
+	__disable_irq();
 	port->rxBufferHead = 0;
 	port->rxType = DATA_NOTHING;
+	__enable_irq();
 }
 

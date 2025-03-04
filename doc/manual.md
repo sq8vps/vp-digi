@@ -1,5 +1,5 @@
 # VP-Digi - documentation
-Copyright 2023-2024 Piotr Wilkoń\
+Copyright 2023-2025 Piotr Wilkoń\
 Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A copy of the license is available under [LICENSE_FDL](LICENSE_FDL).\
 The changelog is placed at the bottom of this document.
 ## Table of contents
@@ -33,7 +33,6 @@ The changelog is placed at the bottom of this document.
         - [3.2.2.2. Transmission](#3222-transmission)
       - [3.2.3. Digipeater](#323-digipeater)
   - [4. Documentation changelog](#4-documentation-changelog)
-    - [2023/09/06](#20230906)
 
 ## 1. Functional description
 VP-Digi is a standalone AX.25 digipeater controller (e.g., APRS) and a KISS TNC controller. The software is equipped with the following modems:
@@ -350,6 +349,8 @@ If *viscous delay* functionality is enabled for the matched alias, the completed
 In addition, the *viscous delay* buffer is regularly refreshed. If the specified time has passed, and the packet has not been removed from the buffer (see *the beginning of this section*), its hash is saved to the duplicate filter buffer, the packet is transmitted, and removed from the *viscous delay* buffer.
 
 ## 4. Documentation changelog
+### 2025/03/04
+- New schematic - Piotr Wilkoń
 ### 2024/05/16
 - Default UART parameters and backspace handling - Piotr Wilkoń
 ### 2023/11/12

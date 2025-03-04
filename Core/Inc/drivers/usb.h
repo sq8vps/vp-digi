@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -27,7 +27,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "stm32f1xx.h"
 
-#define USB_FORCE_REENUMERATION() { \
+#define USB_FORCE_REENUMERATION() do { \
 	/* Pull D+ to ground for a moment to force reenumeration */ \
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN; \
 	GPIOA->CRH |= GPIO_CRH_MODE12_1; \
@@ -36,7 +36,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 	Delay(100); \
 	GPIOA->CRH &= ~GPIO_CRH_MODE12; \
 	GPIOA->CRH |= GPIO_CRH_CNF12_0; \
-} \
+} while(0); \
 
 #endif
 

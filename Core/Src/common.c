@@ -32,7 +32,7 @@ struct _GeneralConfig GeneralConfig =
 };
 
 
-const char versionString[] = "VP-Digi v. 2.0.1\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
+const char versionString[] = "VP-Digi v. 2.1.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
 #ifdef ENABLE_FX25
 		"With FX.25 support compiled-in\r\n"
 #endif
@@ -221,27 +221,27 @@ bool ParseCallsign(const char *in, uint16_t size, uint8_t *out)
 
 bool ParseCallsignWithSsid(const char *in, uint16_t size, uint8_t *out, uint8_t *ssid)
 {
-	uint16_t ssidPosition = size;
+	uint16_t hyphenPosition = size;
 	for(uint16_t i = 0; i < size; i++)
 	{
 		if(in[i] == '-')
 		{
-			ssidPosition = i;
+			hyphenPosition = i;
 			break;
 		}
 	}
-	ssidPosition++;
-	if(!ParseCallsign(in, ssidPosition - 1, out))
+	if(!ParseCallsign(in, hyphenPosition, out))
 		return false;
 
-	if(ssidPosition == size)
+	if(hyphenPosition == size)
 	{
 		*ssid = 0;
 		return true;
 	}
 
-	if(!ParseSsid(&in[ssidPosition], size - ssidPosition, ssid))
+	if(!ParseSsid(&in[hyphenPosition + 1], size - hyphenPosition - 1, ssid))
 		return false;
+
 	return true;
 }
 
