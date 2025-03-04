@@ -16,7 +16,7 @@
   ******************************************************************************
   */
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -230,6 +230,8 @@ int main(void)
 	Fx25Init();
 #endif
 
+	DigiInitialize();
+
 	UartInit(&Uart1, UART_LL_UART1_STRUCTURE, Uart1.baudrate);
 	UartInit(&Uart2, UART_LL_UART2_STRUCTURE, Uart2.baudrate);
 	UartInit(&UartUsb, NULL, 1);
@@ -253,7 +255,7 @@ int main(void)
 	  if(Ax25GetReceivedFrameBitmap())
 		  handleFrame();
 
-	  DigiViscousRefresh(); //refresh viscous-delay buffers
+	  DigiUpdateState(); //update digipeater state
 
 	  Ax25TransmitBuffer(); //transmit buffer (will return if nothing to be transmitted)
 
@@ -272,7 +274,18 @@ int main(void)
 			  TermParse(&UartUsb);
 		  	  UartClearRx(&UartUsb);
 		  }
-		  UartUsb.rxType = DATA_NOTHING;
+		  //previously there was just UartUsb.rxType = DATA_NOTHING, which could introduce deadlocks
+		  //assume that we were here, because rxType was DATA_USB, but in the meantime a new USB interrupt fired and rxType changed to DATA_KISS,
+		  //and the KISS parsing handler would set kissProcessingOngoing to 1. Then, we change rxType to DATA_NOTHING and are left in an incorrect scenario, when
+		  //rxType is DATA_NOTHING, and kissProcessingOngoing is 1, which is a clear deadlock, because then DATA_KISS can never be reached again.
+		  //That's why it is necessary to disable interrupts and check one more time for rxType before clearing it
+		  else
+		  {
+			  __disable_irq();
+			  if(UartUsb.rxType == DATA_USB)
+				  UartUsb.rxType = DATA_NOTHING;
+			  __enable_irq();
+		  }
 	  }
 	  if(Uart1.rxType != DATA_NOTHING)
 	  {

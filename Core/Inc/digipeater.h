@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -59,9 +59,14 @@ void DigiDigipeat(uint8_t *frame, uint16_t len);
 void DigiStoreDeDupe(uint8_t *buf, uint16_t size);
 
 /**
- * @brief Refresh viscous-delay buffers and push frames to TX buffer if necessary
+ * @brief Initialize digipeater
+ */
+void DigiInitialize(void);
+
+/**
+ * @brief Update internal digipeater state
  * @attention Should be called in main loop
  */
-void DigiViscousRefresh(void);
+void DigiUpdateState(void);
 
 #endif /* DIGIPEATER_H_ */

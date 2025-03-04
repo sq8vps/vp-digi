@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -25,6 +25,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <modem.h>
 #include <systick.h>
+#include "drivers/digipeater_ll.h"
 
 struct _DigiConfig DigiConfig;
 
@@ -77,7 +78,7 @@ static uint8_t viscousCheckAndRemove(uint32_t hash)
 
 
 
-void DigiViscousRefresh(void)
+static void DigiViscousRefresh(void)
 {
     if(DigiConfig.viscous == 0) //viscous digipeating disabled on every alias
     {
@@ -310,7 +311,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 
 void DigiDigipeat(uint8_t *frame, uint16_t len)
 {
-	if(!DigiConfig.enable)
+	if(!DigiConfig.enable || DIGIPEATER_LL_GET_DISABLE_STATE())
 		return;
 
     uint16_t t = 13; //start from first byte that can contain path end bit
@@ -467,4 +468,25 @@ void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
     deDupe[deDupeCount].timeLimit = SysTickGet() + (DigiConfig.dupeTime * 1000 / SYSTICK_INTERVAL);
 
     deDupeCount++;
+}
+
+void DigiInitialize(void)
+{
+	DIGIPEATER_LL_INITIALIZE_RCC();
+	DIGIPEATER_LL_INITIALIZE_INPUTS_OUTPUTS();
+}
+
+void DigiUpdateState(void)
+{
+	if(DigiConfig.enable)
+	{
+		if(DIGIPEATER_LL_GET_DISABLE_STATE())
+			DIGIPEATER_LL_LED_OFF();
+		else
+			DIGIPEATER_LL_LED_ON();
+	}
+	else
+		DIGIPEATER_LL_LED_OFF();
+
+	DigiViscousRefresh();
 }

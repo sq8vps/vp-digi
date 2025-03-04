@@ -1,3 +1,14 @@
+# 2.1.0 (2025-03-04)
+## New features
+* Digipeater disable input at PB0 (pull to GND to disable digipeater)
+* Digipeater active LED at PB1 (high state when active)
+## Bug fixes
+* Hopefully resolved KISS TX deadlock ultimately...
+* No more problems when entering callsigns without explicit SSID
+## Other
+* do...while(0) guards on multiline macros
+## Known bugs
+* none
 # 2.0.1 (2025-02-06)
 ## New features
 * none
@@ -6,7 +17,7 @@
 ## Other
 * none
 ## Known bugs
-* none
+* KISS TX deadlock still present anyway...
 # 2.0.0 (2023-09-09)
 ## New features
 * New modems: AFSK Bell 103 (300 Bd, 1600/1800 Hz), GFSK G3RUH (9600 Bd), AFSK V.23 (1200 Bd, 1300/2100 Hz)
