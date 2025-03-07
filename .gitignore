@@ -99,3 +99,16 @@ local.properties
 
 Debug/
 Release/
+
+.vscode/
+build/
+Drivers/
+Middlewares/
+USB_DEVICE/
+!USB_DEVICE/App/usbd_cdc_if.c
+
+.mxproject
+.stm32env
+openocd.conf
+*.yaml
+*.make
