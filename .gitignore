@@ -109,6 +109,9 @@ USB_DEVICE/
 
 .mxproject
 .stm32env
-openocd.conf
+openocd.cfg
 *.yaml
 *.make
+Makefile
+*.ld
+startup*.s
