@@ -106,6 +106,7 @@ Drivers/
 Middlewares/
 USB_DEVICE/
 !USB_DEVICE/App/usbd_cdc_if.c
+Core/Startup/
 
 .mxproject
 .stm32env
@@ -113,5 +114,13 @@ openocd.cfg
 *.yaml
 *.make
 Makefile
-*.ld
 startup*.s
+stm32f*_hal_msp.c
+syscalls.c
+sysmem.c
+system_stm32f*.c
+gpio.c
+gpio.h
+stm32f*_hal_conf.h
+stm32f*_it.h
+*.launch

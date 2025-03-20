@@ -21,11 +21,12 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DRIVERS_USB_H_
 #define DRIVERS_USB_H_
 
-#include "systick.h"
+#include "defines.h"
 
-#if defined(STM32F103xB) || defined(STM32F103x8)
+#if defined(BLUE_PILL)
 
 #include "stm32f1xx.h"
+#include "stm32f1xx_hal.h"
 
 #define USB_FORCE_REENUMERATION() do { \
 	/* Pull D+ to ground for a moment to force reenumeration */ \
@@ -33,9 +34,26 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 	GPIOA->CRH |= GPIO_CRH_MODE12_1; \
 	GPIOA->CRH &= ~GPIO_CRH_CNF12; \
 	GPIOA->BSRR = GPIO_BSRR_BR12; \
-	Delay(100); \
+	HAL_Delay(100); \
 	GPIOA->CRH &= ~GPIO_CRH_MODE12; \
 	GPIOA->CRH |= GPIO_CRH_CNF12_0; \
+} while(0); \
+
+#elif defined(AIOC)
+
+#include "stm32f3xx.h"
+#include "stm32f3xx_hal.h"
+
+#define USB_FORCE_REENUMERATION() do { \
+	/* Pull D+ to ground for a moment to force reenumeration */ \
+	RCC->AHBENR |= RCC_AHBENR_GPIOAEN; \
+	GPIOA->MODER |= GPIO_MODER_MODER12_0; \
+	GPIOA->MODER &= ~GPIO_MODER_MODER12_1; \
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT_12; \
+	GPIOA->BSRR = GPIO_BSRR_BR_12; \
+	HAL_Delay(20); \
+	GPIOA->MODER &= ~GPIO_MODER_MODER12_0; \
+	GPIOA->MODER |= GPIO_MODER_MODER12_1; \
 } while(0); \
 
 #endif

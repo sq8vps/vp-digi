@@ -23,7 +23,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 
-struct _DigiConfig
+struct DigiConfig
 {
 	uint8_t alias[8][6]; //digi alias list
 	uint8_t ssid[4]; //ssid list for simple aliases
@@ -40,7 +40,7 @@ struct _DigiConfig
 	uint8_t filterPolarity : 1; //filter polarity: 0 - blacklist, 1- whitelist
 };
 
-extern struct _DigiConfig DigiConfig; //digipeater state
+extern struct DigiConfig DigiConfig; //digipeater state
 
 
 /**

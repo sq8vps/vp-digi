@@ -1,20 +1,4 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
 /*
 Copyright 2020-2025 Piotr Wilkon
 
@@ -33,15 +17,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/**
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usb_device.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
-#include "systick.h"
 #include "modem.h"
 #include "ax25.h"
 #include "digipeater.h"
@@ -81,7 +82,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -93,7 +93,7 @@ static void MX_GPIO_Init(void);
  */
 static void handleFrame(void)
 {
-	uint8_t modemBitmap = Ax25GetReceivedFrameBitmap(); //store states
+	uint8_t modemBitmap = Ax25GetReceivedFrameBitmap(); // store states
 	Ax25ClearReceivedFrameBitmap();
 
 	uint8_t *buf;
@@ -103,68 +103,71 @@ static void handleFrame(void)
 	uint8_t signalLevel = 0;
 	uint8_t fixed = 0;
 
-	while(Ax25ReadNextRxFrame(&buf, &size, &peak, &valley, &signalLevel, &fixed))
+	while (Ax25ReadNextRxFrame(&buf, &size, &peak, &valley, &signalLevel, &fixed))
 	{
 		TermSendToAll(MODE_KISS, buf, size);
 
-		if(((UartUsb.mode == MODE_MONITOR) || (Uart1.mode == MODE_MONITOR) || (Uart2.mode == MODE_MONITOR)))
+		if ((UartUsb.mode == MODE_MONITOR)
+#ifdef BLUE_PILL
+		|| (Uart1.mode == MODE_MONITOR) 
+		|| (Uart2.mode == MODE_MONITOR)
+#endif
+		)
 		{
-			if(signalLevel > 70)
+			if (signalLevel > 70)
 			{
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 30-50%.\r\n", 0);
+				TermSendToAll(MODE_MONITOR, (uint8_t *)"\r\nInput level too high! Please reduce so most stations are around 30-50%.\r\n", 0);
 			}
-			else if(signalLevel < 5)
+			else if (signalLevel < 5)
 			{
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too low! Please increase so most stations are around 30-50%.\r\n", 0);
+				TermSendToAll(MODE_MONITOR, (uint8_t *)"\r\nInput level too low! Please increase so most stations are around 30-50%.\r\n", 0);
 			}
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0);
-			for(uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
+			TermSendToAll(MODE_MONITOR, (uint8_t *)"(AX.25) Frame received [", 0);
+			for (uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
 			{
-				if(modemBitmap & (1 << i))
+				if (modemBitmap & (1 << i))
 				{
 					enum ModemPrefilter m = ModemGetFilterType(i);
-					switch(m)
+					switch (m)
 					{
-						case PREFILTER_PREEMPHASIS:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"P", 1);
-							break;
-						case PREFILTER_DEEMPHASIS:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
-							break;
-						case PREFILTER_FLAT:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
-							break;
-						case PREFILTER_NONE:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"N", 1);
+					case PREFILTER_PREEMPHASIS:
+						TermSendToAll(MODE_MONITOR, (uint8_t *)"P", 1);
+						break;
+					case PREFILTER_DEEMPHASIS:
+						TermSendToAll(MODE_MONITOR, (uint8_t *)"D", 1);
+						break;
+					case PREFILTER_FLAT:
+						TermSendToAll(MODE_MONITOR, (uint8_t *)"F", 1);
+						break;
+					case PREFILTER_NONE:
+						TermSendToAll(MODE_MONITOR, (uint8_t *)"N", 1);
 					}
 				}
 				else
-					TermSendToAll(MODE_MONITOR, (uint8_t*)"_", 1);
+					TermSendToAll(MODE_MONITOR, (uint8_t *)"_", 1);
 			}
 
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"], ", 0);
-			if(fixed != AX25_NOT_FX25)
+			TermSendToAll(MODE_MONITOR, (uint8_t *)"], ", 0);
+			if (fixed != AX25_NOT_FX25)
 			{
 				TermSendNumberToAll(MODE_MONITOR, fixed);
-				TermSendToAll(MODE_MONITOR, (uint8_t*)" bytes fixed, ", 0);
+				TermSendToAll(MODE_MONITOR, (uint8_t *)" bytes fixed, ", 0);
 			}
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"signal level ", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t *)"signal level ", 0);
 			TermSendNumberToAll(MODE_MONITOR, signalLevel);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"% (", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t *)"% (", 0);
 			TermSendNumberToAll(MODE_MONITOR, peak);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"%/", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t *)"%/", 0);
 			TermSendNumberToAll(MODE_MONITOR, valley);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"%): ", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t *)"%): ", 0);
 
 			SendTNC2(buf, size);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
+			TermSendToAll(MODE_MONITOR, (uint8_t *)"\r\n", 0);
 		}
-
 
 		DigiDigipeat(buf, size);
 	}
 }
-
 /* USER CODE END 0 */
 
 /**
@@ -173,6 +176,7 @@ static void handleFrame(void)
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -190,32 +194,34 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+	HAL_SetTickFreq(VPDIGI_HAL_TICK_FREQUENCY);
 
-  SysTickInit();
-
-  USB_FORCE_REENUMERATION();
-
+	USB_FORCE_REENUMERATION();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-	WdogInit(); //initialize watchdog
+	WdogInit(); // initialize watchdog
 
-	memset(&beacon, 0, sizeof(beacon));
+	memset(BeaconConfig, 0, sizeof(BeaconConfig));
 	memset(&Ax25Config, 0, sizeof(Ax25Config));
 	memset(&ModemConfig, 0, sizeof(ModemConfig));
 	memset(&DigiConfig, 0, sizeof(DigiConfig));
 
-	//set some initial values in case there is no configuration saved in memory
-	Uart1.baudrate = 9600;
-	Uart1.defaultMode = MODE_KISS;
-	Uart2.baudrate = 9600;
-	Uart2.defaultMode = MODE_KISS;
-	UartUsb.defaultMode = MODE_KISS;
-	ModemConfig.usePWM = 1; //use PWM by default
-	ModemConfig.flatAudioIn = 0;
+	// set some initial values in case there is no configuration saved in memory
+#ifdef BLUE_PILL
+	Uart1.config.baudrate = 9600;
+	Uart1.config.defaultMode = MODE_KISS;
+	Uart2.config.baudrate = 9600;
+	Uart2.config.defaultMode = MODE_KISS;
+#endif
+	UartUsb.config.defaultMode = MODE_KISS;
+	ModemConfig.usePWM = 1; //use PWM in non-AIOC versions
+	ModemConfig.flatAudioIn = 0; //no flat audio
+	ModemConfig.pttOutput = 0; //primary PTT in AIOC versions
+	ModemConfig.txLevel = 100; //100% - only in AIOC versions
 	Ax25Config.quietTime = 300;
 	Ax25Config.txDelayLength = 300;
 	Ax25Config.txTailLength = 30;
@@ -232,12 +238,14 @@ int main(void)
 
 	DigiInitialize();
 
-	UartInit(&Uart1, UART_LL_UART1_STRUCTURE, Uart1.baudrate);
-	UartInit(&Uart2, UART_LL_UART2_STRUCTURE, Uart2.baudrate);
-	UartInit(&UartUsb, NULL, 1);
-
+#ifdef BLUE_PILL
+	UartInit(&Uart1, UART_LL_UART1_STRUCTURE, Uart1.config.baudrate);
 	UartConfig(&Uart1, 1);
+	UartInit(&Uart2, UART_LL_UART2_STRUCTURE, Uart2.config.baudrate);
 	UartConfig(&Uart2, 1);
+#endif
+
+	UartInit(&UartUsb, NULL, 1);
 	UartConfig(&UartUsb, 1);
 
 	BeaconInit();
@@ -245,78 +253,80 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1)
+	{
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  WdogReset();
+		WdogReset();
 
-	  if(Ax25GetReceivedFrameBitmap())
-		  handleFrame();
+		if (Ax25GetReceivedFrameBitmap())
+			handleFrame();
 
-	  DigiUpdateState(); //update digipeater state
+		DigiUpdateState(); // update digipeater state
 
-	  Ax25TransmitBuffer(); //transmit buffer (will return if nothing to be transmitted)
+		Ax25TransmitBuffer(); // transmit buffer (will return if nothing to be transmitted)
 
-	  Ax25TransmitCheck(); //check for pending transmission request
+		Ax25TransmitCheck(); // check for pending transmission request
 
-	  if(UartUsb.rxType != DATA_NOTHING)
-	  {
-		  TermHandleSpecial(&UartUsb);
-		  if(UartUsb.rxType == DATA_KISS)
-		  {
-			  KissProcess(&UartUsb);
-		  }
-		  else if(UartUsb.rxType != DATA_USB)
-		  {
+		if (UartUsb.rxType != DATA_NOTHING)
+		{
+			TermHandleSpecial(&UartUsb);
+			if (UartUsb.rxType == DATA_KISS)
+			{
+				KissProcess(&UartUsb);
+			}
+			else if (UartUsb.rxType != DATA_USB)
+			{
 
-			  TermParse(&UartUsb);
-		  	  UartClearRx(&UartUsb);
-		  }
-		  //previously there was just UartUsb.rxType = DATA_NOTHING, which could introduce deadlocks
-		  //assume that we were here, because rxType was DATA_USB, but in the meantime a new USB interrupt fired and rxType changed to DATA_KISS,
-		  //and the KISS parsing handler would set kissProcessingOngoing to 1. Then, we change rxType to DATA_NOTHING and are left in an incorrect scenario, when
-		  //rxType is DATA_NOTHING, and kissProcessingOngoing is 1, which is a clear deadlock, because then DATA_KISS can never be reached again.
-		  //That's why it is necessary to disable interrupts and check one more time for rxType before clearing it
-		  else
-		  {
-			  __disable_irq();
-			  if(UartUsb.rxType == DATA_USB)
-				  UartUsb.rxType = DATA_NOTHING;
-			  __enable_irq();
-		  }
-	  }
-	  if(Uart1.rxType != DATA_NOTHING)
-	  {
-		  if(Uart1.rxType == DATA_KISS)
-		  {
-			  KissProcess(&Uart1);
-		  }
-		  else
-		  {
-			  TermParse(&Uart1);
-			  UartClearRx(&Uart1);
-		  }
-	  }
-	  if(Uart2.rxType != DATA_NOTHING)
-	  {
-		  if(Uart2.rxType == DATA_KISS)
-		  {
-			  KissProcess(&Uart2);
-		  }
-		  else
-		  {
-			  TermParse(&Uart2);
-			  UartClearRx(&Uart2);
-		  }
-	  }
+				TermParse(&UartUsb);
+				UartClearRx(&UartUsb);
+			}
+			// previously there was just UartUsb.rxType = DATA_NOTHING, which could introduce deadlocks
+			// assume that we were here, because rxType was DATA_USB, but in the meantime a new USB interrupt fired and rxType changed to DATA_KISS,
+			// and the KISS parsing handler would set kissProcessingOngoing to 1. Then, we change rxType to DATA_NOTHING and are left in an incorrect scenario, when
+			// rxType is DATA_NOTHING, and kissProcessingOngoing is 1, which is a clear deadlock, because then DATA_KISS can never be reached again.
+			// That's why it is necessary to disable interrupts and check one more time for rxType before clearing it
+			else
+			{
+				__disable_irq();
+				if (UartUsb.rxType == DATA_USB)
+					UartUsb.rxType = DATA_NOTHING;
+				__enable_irq();
+			}
+		}
+#ifdef BLUE_PILL
+		if (Uart1.rxType != DATA_NOTHING)
+		{
+			if (Uart1.rxType == DATA_KISS)
+			{
+				KissProcess(&Uart1);
+			}
+			else
+			{
+				TermParse(&Uart1);
+				UartClearRx(&Uart1);
+			}
+		}
+		if (Uart2.rxType != DATA_NOTHING)
+		{
+			if (Uart2.rxType == DATA_KISS)
+			{
+				KissProcess(&Uart2);
+			}
+			else
+			{
+				TermParse(&Uart2);
+				UartClearRx(&Uart2);
+			}
+		}
+#endif
 
-	  BeaconCheck(); //check beacons
+		BeaconCheck(); // check beacons
 
-	  if(SysTickGet() > 0xFFFFF000) //going to wrap around soon - hard reset the device
-		  NVIC_SystemReset();
-  }
+		if (HAL_GetTick() > 0xFFFFF000) // going to wrap around soon - hard reset the device
+			NVIC_SystemReset();
+	}
   /* USER CODE END 3 */
 }
 
@@ -366,24 +376,6 @@ void SystemClock_Config(void)
   }
 }
 
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
-}
-
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
@@ -395,11 +387,11 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1)
+	{
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -414,8 +406,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	/* User can add his own implementation to report the file name and line number,
+	   ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

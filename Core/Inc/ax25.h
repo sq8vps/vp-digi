@@ -22,6 +22,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "defines.h"
 
 #define AX25_NOT_FX25 255
 

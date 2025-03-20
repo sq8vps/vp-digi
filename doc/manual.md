@@ -12,7 +12,8 @@ The changelog is placed at the bottom of this document.
       - [2.1.2. Example configuration](#212-example-configuration)
     - [2.2. Monitor mode](#22-monitor-mode)
       - [2.2.1. Commands](#221-commands)
-      - [2.2.2. Received packet view](#222-received-packet-view)
+      - [2.2.2. Calibration mode](#222-calibration-mode)
+      - [2.2.3. Received packet view](#223-received-packet-view)
     - [2.3. KISS mode](#23-kiss-mode)
     - [2.4. Signal level setting](#24-signal-level-setting)
     - [2.5. Programming](#25-programming)
@@ -96,7 +97,6 @@ The following commands are available in configuration mode:
 - `quiet TIME` – sets the time that must elapse between channel release and transmission start. Value in milliseconds, ranging from 100 to 2550.
 - `uart NUMBER baud RATE` - sets the baud rate (1200-115200 Bd) for the selected serial port.
 - `uart NUMBER mode <kiss/monitor/config>` - sets the default operating mode for the selected serial port (0 for USB).
-- `pwm <on/off>` – sets the DAC type. *on* when a PWM filter is installed, *off* when an R2R ladder is installed. Starting from version 2.0.0, it is recommended to use only PWM.
 - `flat <on/off>` – configures the modem for use with a radio with *flat audio* output. *on* when the signal is fed from the *flat audio* connector, *off* when the signal is fed from the headphone jack. This option only affects 1200 Bd modems.
 - `beacon NUMBER <on/off>` – *on* activates, *off* deactivates the beacon with the specified number, ranging from 0 to 7.
 - `beacon NUMBER iv TIME` – sets the beacon transmission interval (in minutes) for the beacon with the specified number, ranging from 0 to 7.
@@ -121,6 +121,12 @@ The following commands are available in configuration mode:
 - `nonaprs <on/off>` – *on* enables, *off* disables the reception of non-APRS packets (e.g., for Packet Radio).
 - `fx25 <on/off>` - *on* enables, *off* disables FX.25 protocol support. When enabled, both AX.25 and FX.25 packets will be received simultaneously.
 - `fx25tx <on/off>` - *on* enables, *off* disables transmission using the FX.25 protocol. If FX.25 support is completely disabled (command *fx25 off*), packets will always be transmitted using AX.25.
+
+On AIOC, the following commands are additionally available:
+- `ptt <pri/sec>` - selects primary (*pri*) or secondary (*sec*) PTT output.
+- `att <on/off>` - *on* enables, *off* disables TX signal attenuator.
+- `level VALUE` - sets TX signal level given in %.
+- `gain <1/2/4/8/16>` - sets RX signal gain to 1, 2, 4, 8, or 16 (AIOC rev1.2+ only).
 
 Additionally, there are control commands available:
 - `print` – displays the current settings.
@@ -192,7 +198,7 @@ In monitor mode, received and transmitted packets are displayed, and it is also 
 The following commands are available:
 
 - `beacon NUMBER` - transmits a beacon from 0 to 7 if that beacon is enabled.
-- `cal <low/high/alt/stop>` - starts or stops calibration mode: *low* transmits a low tone, *high* transmits a high tone, *alt* transmits zero bytes/alternating tones, and *stop* stops transmission. For the 9600 Bd modem, zero bytes are always transmitted.
+- `cal` - enters interactive calibration mode.
 
 Common commands are also available:
 
@@ -201,8 +207,24 @@ Common commands are also available:
 - `version` – displays software version information.
 - `config` – switches the port to configuration mode.
 - `kiss` – switches the port to KISS mode.
-  
-#### 2.2.2. Received packet view
+
+#### 2.2.2. Calibration mode
+
+The calibration mode is entered using `cal` command. The following keys are available:
+- `l` - transmits low/mark tone.
+- `h` - transmits high/space tone.
+- `a` - transmits alternating symbols (logical zeros).
+- `s` - stops transmission.
+- `q` - quit calibration mode and stop transmission (if necessary).
+
+On AIOC, the following keys are additionally available:
+- `x` - switches TX attenuator on/off.
+- `n` - decreases TX level by 1%.
+- `m` - increases TX level by 1%.
+
+The calibration mode does not require pressing the enter key. Remember to save the TX level set with `n` and `m` keys by switching to the configuration mode and using `save`.
+
+#### 2.2.3. Received packet view
 
 For each received AX.25 packet, the header is displayed in the following format:
 > Frame received [...], signal level XX% (HH%/LL%)
@@ -234,8 +256,8 @@ KISS mode is used for working as a standard TNC KISS, compatible with many Packe
 After device startup, you should enter monitor mode (using the `monitor` command) and wait for packets to appear. You should adjust the signal level so that most packets have a signal level of around 50% (as described in [section 2.2.2](#222-received-packet-view)). The received signal level should be maintained within the range of 10-90%.\
 The correct setting of the audio output type from the transceiver using the `flat <on/off>` command is crucial for the performance of the 1200 Bd modem. If you are using the headphone/speaker output (filtered), this option should be set to *off*. If you are using the *flat audio* output (unfiltered), this option should be set to *on*. This setting does not affect modems other than 1200 Bd.\
 To ensure the best network performance, the transmitted signal level should also be properly set. This is especially important for the 1200 Bd modem, where the signal is transmitted through the standard microphone connector of an FM radio. Excessive signal levels can lead to distortion and significant tone amplitude imbalances.
-Signal calibration requires an FM receiver tuned to the same frequency as the transmitter. You should enter monitor mode (using the `monitor` command) and enable high tone transmission (using the `cal high` command). You should set the potentiometer to the minimum amplitude level position and then slowly increase the level while carefully monitoring the signal strength in the receiver, which should increase. At some point, the signal level will stop increasing. At that point, gently retract the potentiometer and turn off the calibration mode (using the `cal stop` command). After this operation, the transmitter should be correctly driven.
-> Note! If you fail to reach the point where the signal level stops increasing, the resistor value in the TX path is probably too high. If the signal level is clearly too low, reduce the value of this resistor. Otherwise, no action is necessary.
+Signal calibration requires an FM receiver tuned to the same frequency as the transmitter. You should enter monitor mode (using the `monitor` command), switch to calibration mode (using the `cal` command) and enable high tone transmission (using `h` key). You should set the potentiometer to the minimum amplitude level position (or reduce TX level to 0% using `n` key on AIOC) and then slowly increase the level (using `m` key on AIOC) while carefully monitoring the signal strength in the receiver, which should increase. At some point, the signal level will stop increasing. At that point, gently retract the potentiometer (or use `n` key on AIOC) and turn off the calibration mode (using `q` key). After this operation, the transmitter should be correctly driven.
+> Note! If you fail to reach the point where the signal level stops increasing, the resistor value in the TX path is probably too high. If the signal level is clearly too low, reduce the value of this resistor. On AIOC, consult AIOC documentation. Otherwise, no action is necessary.
 
 ### 2.5. Programming
 Programming (flashing firmware) can be done in two ways: using an ST-Link programmer or through the UART1 serial port (e.g., using a USB-UART adapter).
@@ -349,6 +371,8 @@ If *viscous delay* functionality is enabled for the matched alias, the completed
 In addition, the *viscous delay* buffer is regularly refreshed. If the specified time has passed, and the packet has not been removed from the buffer (see *the beginning of this section*), its hash is saved to the duplicate filter buffer, the packet is transmitted, and removed from the *viscous delay* buffer.
 
 ## 4. Documentation changelog
+### 2025/03/20
+- Calibration instructions updated, AIOC instructions added - Piotr Wilkoń
 ### 2025/03/04
 - New schematic - Piotr Wilkoń
 ### 2024/05/16

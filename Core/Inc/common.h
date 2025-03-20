@@ -23,21 +23,41 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include "uart.h"
 
+#if defined(STM32F103xB) || defined(STM32F103x8)
+#include "stm32f1xx_hal.h"
+#elif defined(STM32F302xC)
+#include "stm32f3xx_hal.h"
+#endif
+
+#define VPDIGI_HAL_TICK_FREQUENCY HAL_TICK_FREQ_100HZ /**< Systick frequency for HAL. Use this to change systick frequency */
+
+#if VPDIGI_HAL_TICK_FREQUENCY == HAL_TICK_FREQ_100HZ
+#define SYSTICK_INTERVAL (10)
+#elif VPDIGI_HAL_TICK_FREQUENCY == HAL_TICK_FREQ_10HZ
+#define SYSTICK_INERVAL (100)
+#elif VPDIGI_HAL_TICK_FREQUENCY == HAL_TICK_FREQ_1KHZ
+#define SYSTICK_INTERVAL (1)
+#else
+#error Wrong systick frequency!
+#endif
+
+#define SYSTICK_FREQUENCY (1000 / SYSTICK_INTERVAL)
+
 #define IS_UPPERCASE_ALPHANUMERIC(x) ((((x) >= '0') && ((x) <= '9')) || (((x) >= 'A') && ((x) <= 'Z')))
 #define IS_NUMBER(x) (((x) >= '0') && ((x) <= '9'))
 #define ABS(x) (((x) > 0) ? (x) : (-x))
 
 #define CRC32_INIT 0xFFFFFFFF
 
-struct _GeneralConfig
+struct GeneralConfig
 {
 	uint8_t call[6]; //device callsign
 	uint8_t callSsid; //device ssid
-	uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
+	uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for Blue Pill VP-Digi and APNV02-0 for AIOC VP-Digi, but can be changed. SSID MUST remain 0.
 	uint8_t kissMonitor;
 };
 
-extern struct _GeneralConfig GeneralConfig;
+extern struct GeneralConfig GeneralConfig;
 
 extern const char versionString[]; //version string
 

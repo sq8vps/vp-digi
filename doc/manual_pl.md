@@ -14,7 +14,8 @@ Rejestr zmian dostępny jest na końcu tego dokumentu.
       - [2.1.2. Przykładowe ustawienia](#212-przykładowe-ustawienia)
     - [2.2. Tryb monitora](#22-tryb-monitora)
       - [2.2.1. Polecenia](#221-polecenia)
-      - [2.2.2. Widok pakietów odbieranych](#222-widok-pakietów-odbieranych)
+      - [2.2.2. Tryb kalibracji](#222-tryb-kalibracji)
+      - [2.2.3. Widok pakietów odbieranych](#223-widok-pakietów-odbieranych)
     - [2.3. Tryb KISS](#23-tryb-kiss)
     - [2.4. Kalibracja poziomów sygnału](#24-kalibracja-poziomów-sygnału)
     - [2.5. Programowanie](#25-programowanie)
@@ -98,14 +99,13 @@ W trybie konfiguracji dostępne są następujące polecenia:
 - `quiet CZAS` – ustawia czas, który musi upłynąć pomiędzy zwolnieniem się kanału a włączeniem nadawania. Wartość w milisekundach z zakresu od 100 do 2550.
 - `uart NUMER baud PREDKOSC` - ustawia prędkość (1200-115200 Bd) pracy wybranego portu szeregowego.
 - `uart NUMBER mode <kiss/monitor/config` - ustawia domyślny tryb pracy wybranego portu szeregowego (0 dla USB).
-- `pwm <on/off>` – ustawia typ DAC. *on*, gdy zainstalowany jest filtr PWM, *off* gdy zainstalowana jest drabinka R2R. Od wersji 2.0.0 zalecane jest użycie wyłącznie PWM.
 - `flat <on/off>` – konfiguruje modem do użycia z radiem z wyjściem *flat audio*. *on* gdy sygnał podawany jest ze złącza *flat audio*, *off* gdy sygnał podawany jest ze złącza słuchawkowego. Opcja ma wpływ jedynie na modemy 1200 Bd.
 - `beacon NUMER <on/off>` – *on* włącza, *off* wyłącza beacon o podanym numerze z zakresu od 0 do 7.
 - `beacon NUMER iv CZAS` – ustawia interwał nadawania (w minutach) beaconu o numerze z zakresu od 0 do 7.
 - `beacon NUMER dl CZAS` – ustawia opóźnienie/przesunięcie nadawania (w minutach) beaconu o numerze z zakresu od 0 do 7.
 - `beacon NUMER path SCIEZKAn-N[,SCIEZKAn-N]/none` – ustawia ścieżkę beaconu o numerze z zakresu od 0 do 7. Polecenie przyjmuje jeden (np. *WIDE2-2*) lub dwa (np. *WIDE2-2,SP3-3*) elementy ścieżki albo opcję *none* dla braku ścieżki.
 - `beacon NUMER data TRESC` – ustawia treść beaconu o numerze z zakresu od 0 do 7.
-- `digi <on/off>` – *on* włącza, *off* wyłącza digipeater
+- `digi <on/off>` – *on* włącza, *off* wyłącza digipeater.
 - `digi NUMER <on/off>` – *on* włącza, *off* wyłącza obsługę aliasu o numerze z zakresu od 0 do 7.
 - `digi NUMER alias ALIAS` – ustawia alias o numerze z zakresu od 0 do 7. W przypadku slotów 0-3 (typ *n-N*) przyjmuje do 5 znaków bez SSID, w przypadku slotów 4-7 (aliasy proste) przyjmuje aliasy w formie jak znak wywoławczy wraz z SSID lub bez.
 - `digi NUMER max N` – ustawia maksymalne *n* (z zakresu od 1 do 7) dla normalnego powtarzania aliasów typu *n-N* (zakres od 0 do 3).
@@ -123,6 +123,12 @@ W trybie konfiguracji dostępne są następujące polecenia:
 - `nonaprs <on/off>` – *on* włącza, *off* wyłącza odbiór pakietów niebędących pakietami APRS (np. dla Packet Radio)
 - `fx25 <on/off>` - *on* włącza, *off* wyłącza obsługę protokołu FX.25. Po włączeniu jednocześnie będą odbierane pakiety AX.25 i FX.25.
 - `fx25tx <on/off>` - *on* włącza, *off* wyłącza nadawanie z użyciem protokołu FX.25. Jeśli obsługa FX.25 jest wyłączona całkowicie (polecenie *fx25 off*), to pakiety zawsze będą nadawane z użyciem AX.25.
+
+Dla platformy AIOC dostępne są dodatkowo następujące polecenia:
+- `ptt <pri/sec>` - wybiera podstawowe (*pri*) lub dodatkowe (*sec*) wyjście PTT.
+- `att <on/off>` - *on* włącza, *off* wyłącza tłumik sygnału nadawanego.
+- `level WARTOSC` - ustawia poziom sygnału nadawanego podany w %.
+- `gain <1/2/4/8/16>` - ustawia wzmocnienie sygnału odbieranego na 1, 2, 4, 8 lub 16 (tylko dla AIOC rev1.2+).
 
 Ponadto dostępne są polecenia kontrolne:
 - `print` – pokazuje aktualne ustawienia.
@@ -189,7 +195,7 @@ W trybie monitora wyświetlane są pakiety odbierane i nadawane, a ponadto możl
 #### 2.2.1. Polecenia
 Dostępne są następujące polecenia:
 - `beacon NUMER` - nadaje beacon z zakresu 0 do 7, o ile ten beacon jest włączony.
-- `cal <low/high/alt/stop>` - rozpoczyna lub kończy tryb kalibracji: *low* nadaje niski ton, *high* nadaje wysoki ton, *alt* nadaje bajty zerowe/zmieniające się tony, a *stop* zatrzymuje transmisję. Dla modemu 9600 Bd zawsze nadawane są bajty zerowe. 
+- `cal` - przechodzi do interaktywnego trybu kalibracji.
 
 Dostępne są także polecenia wspólne:
 - `help` – pokazuje stronę pomocy
@@ -197,8 +203,24 @@ Dostępne są także polecenia wspólne:
 - `version` – pokazuje informacje o wersji oprogramowania
 - `config` – przełącza port do trybu konfiguracji
 - `kiss` – przełącza port do trybu KISS
-  
-#### 2.2.2. Widok pakietów odbieranych
+
+#### 2.2.2. Tryb kalibracji
+
+Tryb kalibracji uruchamiany jest poprzez polecenie `cal`. W tym trybie dostępne są następujące klawisze:
+- `l` - nadaje niski ton.
+- `h` - nadaje wysoki ton.
+- `a` - nadaje zmieniające się tony (logiczne zera).
+- `s` - zatrzymuje transmisję.
+- `q` - wychodzi z trybu kalibracji i zatrzymuje transmisję (jeśli to konieczne).
+
+Na platformie AIOC dostępne są dodatkowo klawisze:
+- `x` - włącza/wyłącza tłumik sygnału nadawanego.
+- `n` - zmniejsza poziom sygnału nadawanego o 1%.
+- `m` - zwiększa poziom sygnału nadawanego o 1%.
+
+W trybie kalibracji nie jest konieczne zatwierdzanie enterem. Należy pamiętać, aby zapisać poziom sygnału nadawanego ustawiony klawiszami `n` i `m` poprzez przejście do trybu konfiguracji i użycie polecenia `save`.
+
+#### 2.2.3. Widok pakietów odbieranych
 
 Dla każdego odebranego pakietu AX.25 wyświetlany jest nagłówek w następującym formacie:
 > Frame received [...], signal level XX% (HH%/LL%)
@@ -229,7 +251,7 @@ Tryb KISS służy do pracy jako standardowe TNC KISS, współpracujące z wielom
 Po uruchomieniu urządzenia należy przejść do trybu monitora (polecenie `monitor`) i czekać na pojawienie się pakietów. Należy wyregulować poziom sygnału tak, aby większość pakietów miała poziom sygnału ok. 50% (jak opisano w [sekcji 2.2.2](#222-widok-pakietów-odbieranych)) Poziom sygnału odbieranego należy utrzymywać w zakresie 10-90%.\
 Istotne dla wydajności modemu 1200 Bd jest odpowiednie ustawienie typu wyjścia audio z radiotelefonu przy pomocy polecenia `flat <on/off>`. Jeśli używane jest wyjście słuchawkowe/głośnikowe (filtrowane), to opcja ta powinna być ustawiona na *off*. Jeśli używane jest wyjście zwane *flat audio* (niefiltrowane), to opcja ta powinna być ustawiona na *on*. To ustawienie nie ma wpływu na modemy inne niż 1200 Bd.\
 Aby zapewnić najlepszą wydajność sieci, poziom sygnału nadawanego powinien być prawidłowo ustawiony. Jest to szczególnie istotne w przypadku modemu 1200 Bd, gdzie sygnał nadawany jest przez standardowe złącze mikrofonowe radiotelefonu FM. Zbyt duży poziom sygnału prowadzi do występowania zniekształceń i dużych dysproporcji amplitud tonów.\
-Do kalibracji potrzebny jest odbiornik FM zestrojony na tę samą częstotliwość, co nadajnik. Należy przejść do trybu monitora (polecenie `monitor`) i właczyć nadawanie tonu wysokiego (polecenie `cal high`). Należy ustawić potencjometr do pozycji minimalnego poziomu wysterowania, a następnie powoli zwiększać poziom, jednocześnie uważnie nasłuchując siły sygnału w odbiorniku, który powinien rosnąć. W pewnym momencie poziom sygnału przestanie się zwiększać. Wówczas należy delikatnie cofnąć potencjometr i wyłączyć tryb kalibracji (polecenie `cal stop`). Po tej operacji nadajnik powinien być poprawnie wysterowany.
+Do kalibracji potrzebny jest odbiornik FM zestrojony na tę samą częstotliwość, co nadajnik. Należy przejść do trybu monitora (polecenie `monitor`), uruchomić tryb kalibracji (polecenie `cal`) i właczyć nadawanie tonu wysokiego (klawisz `h`). Należy ustawić potencjometr do pozycji minimalnego poziomu wysterowania (lub zmniejszyć poziom sygnału do 0% używając klawisza `n` na AIOC), a następnie powoli zwiększać poziom (używając klawisza `m` na AIOC), jednocześnie uważnie nasłuchując siły sygnału w odbiorniku, który powinien rosnąć. W pewnym momencie poziom sygnału przestanie się zwiększać. Wówczas należy delikatnie cofnąć potencjometr (używając klawisza `n` na AIOC) i wyłączyć tryb kalibracji (klawisz `q`). Po tej operacji nadajnik powinien być poprawnie wysterowany.
 > Uwaga! Jeśli nie uda się osiągnąć punktu, w którym poziom sygnału przestanie się zwiększać, to prawdopodobnie wartość rezystancji w torze nadawczym jest zbyt duża. Jeśli poziom sygnału jest wyraźnie zbyt niski, należy zmniejszyć wartość tej rezystancji. W przeciwnym wypadku nie jest konieczne podejmowanie kroków.
 
 ### 2.5. Programowanie
@@ -333,6 +355,8 @@ Jeśli dla dopasowanego aliasu włączona jest funkcja *viscous delay*, to gotow
 Ponadto regularnie odświeżany jest bufor funkcji *viscous delay*. Jeśli minął odpowiedni czas i pakiet nie został usunięty z bufora (patrz *początek tej sekcji*), to jego hasz jest zapisywany do bufora filtra duplikatów, pakiet jest wysyłany i usuwany z bufora *viscous delay*.
 
 ## 4. Rejestr zmian dokumentacji
+### 2025/03/20
+- Zaktualizowano instrukcję kalibracji, dodano instrukcje do AIOC - Piotr Wilkoń
 ### 2025/03/04
 - Nowy schemat - Piotr Wilkoń
 ### 2024/05/16

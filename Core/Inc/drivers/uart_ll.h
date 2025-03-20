@@ -23,9 +23,13 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DRIVERS_UART_LL_H_
 #define DRIVERS_UART_LL_H_
 
-#if defined(STM32F103xB) || defined(STM32F103x8)
+#include "defines.h"
+
+#if defined(BLUE_PILL)
 
 #include "stm32f1xx.h"
+
+#define UART_BUFFER_SIZE 130
 
 #define UART_LL_ENABLE(port) (port->CR1 |= USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE | USART_CR1_IDLEIE)
 #define UART_LL_DISABLE(port) (port->CR1 &= (~USART_CR1_RXNEIE) & (~USART_CR1_TE) & (~USART_CR1_RE) &  (~USART_CR1_UE) & (~USART_CR1_IDLEIE))
@@ -75,6 +79,10 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 	GPIOA->CRL &= ~GPIO_CRL_CNF3_1; \
 	UART_LL_UART2_STRUCTURE->BRR = (SystemCoreClock / (baudrate * 2)); \
 } while(0); \
+
+#elif defined(AIOC)
+
+#define UART_BUFFER_SIZE 130
 
 #endif
 

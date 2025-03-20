@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -23,8 +23,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include "ax25.h"
 #include "common.h"
-#include "systick.h"
 #include "drivers/modem_ll.h"
+#include "filter.h"
 
 /*
  * Configuration for PLL-based data carrier detection
@@ -86,13 +86,12 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #define PLL_TUNE_BITS 8 //number of bits when tuning PLL to avoid floating point operations
 
-
 struct ModemDemodConfig ModemConfig;
 
 static uint8_t N; //samples per symbol
 static enum ModemTxTestMode txTestState; //current TX test mode
 static uint8_t demodCount; //actual number of parallel demodulators
-static uint16_t dacSine[DAC_SINE_SIZE]; //sine samples for DAC
+static sample_t dacSine[DAC_SINE_SIZE]; //sine samples for DAC
 static uint8_t dacSineIdx; //current sine sample index
 static volatile uint16_t samples[MODEM_LL_OVERSAMPLING_FACTOR]; //very raw received samples, filled directly by DMA
 static uint8_t currentSymbol; //current symbol for NRZI encoding
@@ -103,90 +102,11 @@ static float baudRate; //baudrate
 static uint8_t markStep; //mark timer step
 static uint8_t spaceStep; //space timer step
 static uint16_t baudRateStep; //baudrate timer step
-static int16_t coeffHiI[NMAX], coeffLoI[NMAX], coeffHiQ[NMAX], coeffLoQ[NMAX]; //correlator IQ coefficients
+static sample_t coeffHiI[NMAX], coeffLoI[NMAX], coeffHiQ[NMAX], coeffLoQ[NMAX]; //correlator IQ coefficients
 static uint8_t dcd = 0; //multiplexed DCD state from both demodulators
 static uint32_t lfsr = 0xFFFFF; //LFSR for 9600 Bd
+static int32_t adcBias = 4095; //ADC bias after decimation
 
-/**
- * @brief BPF filter with 2200 Hz tone 6 dB preemphasis (it actually attenuates 1200 Hz tone by 6 dB)
- */
-static const int16_t bpf1200[8] =
-{
-      728,
-    -13418,
-     -554,
-    19493,
-     -554,
-    -13418,
-      728,
-     2104
-};
-
-/**
- * @brief BPF filter with 2200 Hz tone 6 dB deemphasis
- */
-static const int16_t bpf1200Inv[8] =
-{
-	-10513,
-	-10854,
-	9589,
-	23884,
-	9589,
-	-10854,
-	-10513,
-	-879
-};
-
-//fs=9600, rectangular, fc1=1500, fc2=1900, 0 dB @ 1600 Hz and 1800 Hz, N = 15, gain 65536
-static const int16_t bpf300[15] =
-{
-	186, 8887, 8184, -1662, -10171, -8509, 386, 5394, 386, -8509, -10171, -1662, 8184, 8887, 186,
-};
-
-#define BPF_MAX_TAPS 15
-
-//fs=9600 Hz, raised cosine, fc=300 Hz (BR=600 Bd), beta=0.8, N=14, gain=65536
-static const int16_t lpf300[14] =
-{
-	4385, 4515, 4627, 4720, 4793, 4846, 4878, 4878, 4846, 4793, 4720, 4627, 4515, 4385,
-};
-
-//I don't remember what are this filter parameters,
-//but it seems to be the best among all I have tested
-static const int16_t lpf1200[15] =
-{
-	-6128,
-	-5974,
-	-2503,
-	4125,
-	12679,
-	21152,
-	27364,
-	29643,
-	27364,
-	21152,
-	12679,
-	4125,
-	-2503,
-	-5974,
-	-6128
-};
-
-//fs=38400 Hz, Gaussian, fc=4800 Hz (9600 Bd), N=9, gain=65536
-//seems like there is almost no difference between N=9 and any higher order
-static const int16_t lpf9600[9] = {497, 2360, 7178, 13992, 17478, 13992, 7178, 2360, 497};
-
-#define LPF_MAX_TAPS 15
-
-#define FILTER_MAX_TAPS ((LPF_MAX_TAPS > BPF_MAX_TAPS) ? LPF_MAX_TAPS : BPF_MAX_TAPS)
-
-struct Filter
-{
-	int16_t *coeffs;
-	uint8_t taps;
-	int32_t samples[FILTER_MAX_TAPS];
-	uint8_t gainShift;
-};
 
 struct DemodState
 {
@@ -195,7 +115,7 @@ struct DemodState
 
 	enum ModemPrefilter prefilter;
 	struct Filter bpf;
-	int16_t correlatorSamples[NMAX];
+	sample_t correlatorSamples[NMAX];
 	uint8_t correlatorSamplesIdx;
 	struct Filter lpf;
 
@@ -215,30 +135,16 @@ struct DemodState
 	uint16_t dcdDec;
 	int32_t dcdTune;
 
-	int16_t peak;
-	int16_t valley;
+	sample_t peak;
+	sample_t valley;
 };
 
 static struct DemodState demodState[MODEM_MAX_DEMODULATOR_COUNT];
 
 static void decode(uint8_t symbol, uint8_t demod);
-static int32_t demodulate(int16_t sample, struct DemodState *dem);
+static sample_t demodulate(sample_t sample, struct DemodState *dem);
 static void setPtt(bool state);
 
-static int32_t filter(struct Filter *filter, int32_t input)
-{
-	int32_t out = 0;
-
-	for(uint8_t i = filter->taps - 1; i > 0; i--)
-		filter->samples[i] = filter->samples[i - 1]; //shift old samples
-
-	filter->samples[0] = input; //store new sample
-	for(uint8_t i = 0; i < filter->taps; i++)
-	{
-		out += (int32_t)filter->coeffs[i] * filter->samples[i];
-	}
-	return out >> filter->gainShift;
-}
 
 float ModemGetBaudrate(void)
 {
@@ -265,9 +171,15 @@ uint8_t ModemIsTxTestOngoing(void)
 
 void ModemGetSignalLevel(uint8_t modem, int8_t *peak, int8_t *valley, uint8_t *level)
 {
+#ifndef USE_FPU
 	*peak = (100 * (int32_t)demodState[modem].peak) >> 12;
 	*valley = (100 * (int32_t)demodState[modem].valley) >> 12;
 	*level = (100 * (int32_t)(demodState[modem].peak - demodState[modem].valley)) >> 13;
+#else
+	*peak = 100.f * demodState[modem].peak;
+	*valley = 100.f * demodState[modem].valley;
+	*level = 50.f * (demodState[modem].peak - demodState[modem].valley);
+#endif
 }
 
 enum ModemPrefilter ModemGetFilterType(uint8_t modem)
@@ -281,14 +193,10 @@ enum ModemPrefilter ModemGetFilterType(uint8_t modem)
  */
 static void setDcd(bool state)
 {
-	 if(state)
-	 {
-		 MODEM_LL_DCD_LED_ON();
-	 }
-	 else
-	 {
-		 MODEM_LL_DCD_LED_OFF();
-	 }
+	if(state)
+		MODEM_LL_DCD_LED_ON();
+	else
+		MODEM_LL_DCD_LED_OFF();
 }
 
 static inline uint8_t descramble(uint8_t in)
@@ -314,15 +222,17 @@ static inline uint8_t scramble(uint8_t in)
 /**
  * @brief ISR for demodulator
  */
-void MODEM_LL_DMA_INTERRUPT_HANDLER(void) __attribute__ ((interrupt));
 void MODEM_LL_DMA_INTERRUPT_HANDLER(void)
 {
 	 if(MODEM_LL_DMA_TRANSFER_COMPLETE_FLAG)
 	 {
 		 MODEM_LL_DMA_CLEAR_TRANSFER_COMPLETE_FLAG();
 
-		//each sample is 12 bits, output sample is 13 bits
-		int32_t sample = ((samples[0] + samples[1] + samples[2] + samples[3]) >> 1) - 4095; //calculate input sample (decimation)
+		//each sample is 12 bits, output sample is 13 bits (non-FPU)
+		sample_t sample = (sample_t)((int32_t)((samples[0] + samples[1] + samples[2] + samples[3]) >> 1) - adcBias); //calculate input sample (decimation)
+#ifdef USE_FPU
+		sample *= (1.f / 4096.f);
+#endif
 
 		bool partialDcd = false;
 
@@ -350,20 +260,19 @@ void MODEM_LL_DMA_INTERRUPT_HANDLER(void)
 /**
  * @brief ISR for pushing DAC samples
  */
- void MODEM_LL_DAC_INTERRUPT_HANDLER(void) __attribute__ ((interrupt));
  void MODEM_LL_DAC_INTERRUPT_HANDLER(void)
  {
 	 MODEM_LL_DAC_TIMER_CLEAR_INTERRUPT_FLAG;
 
- 	int32_t sample = 0;
+ 	sample_t sample;
 
  	if(ModemConfig.modem == MODEM_9600)
  	{
- 		if(ModemConfig.usePWM)
- 			sample = scrambledSymbol ? 256 : 1;
- 		else
- 			sample = scrambledSymbol ? 15 : 0;
-
+#ifdef USE_FPU
+ 		sample = (sample_t)(scrambledSymbol ? 1.f : -1.f);
+#else
+		sample = (sample_t)(scrambledSymbol ? MODEM_LL_DAC_MAX : 0);
+#endif
  		sample = filter(&demodState[0].lpf, sample);
  	}
  	else
@@ -373,22 +282,29 @@ void MODEM_LL_DMA_INTERRUPT_HANDLER(void)
  		dacSineIdx %= DAC_SINE_SIZE;
  	}
 
- 	if(ModemConfig.usePWM)
- 	{
- 		MODEM_LL_PWM_PUT_VALUE(sample);
- 	}
- 	else
- 	{
- 		MODEM_LL_R2R_PUT_VALUE(sample);
- 	}
+#ifdef AIOC
+ 	sample = (sample * (sample_t)ModemConfig.txLevel) / (sample_t)100;
+#endif
 
+ 	int32_t dacSample;
+#ifdef USE_FPU
+ 	dacSample = ((sample + 1.f) * 0.5f) * (sample_t)MODEM_LL_DAC_MAX;
+#else
+ 	dacSample = sample;
+#endif
+
+ 	if(dacSample < 0)
+ 		dacSample = 0;
+ 	else if(dacSample > MODEM_LL_DAC_MAX)
+ 		dacSample = MODEM_LL_DAC_MAX;
+
+ 	MODEM_LL_DAC_PUT_VALUE(dacSample);
 }
 
 
 /**
  * @brief ISR for baudrate generator timer. NRZI encoding is done here.
  */
- void MODEM_LL_BAUDRATE_TIMER_INTERRUPT_HANDLER(void) __attribute__ ((interrupt));
  void MODEM_LL_BAUDRATE_TIMER_INTERRUPT_HANDLER(void)
  {
 	 MODEM_LL_BAUDRATE_TIMER_CLEAR_INTERRUPT_FLAG();
@@ -432,14 +348,15 @@ void MODEM_LL_DMA_INTERRUPT_HANDLER(void)
 
 /**
  * @brief Demodulate received sample (4x oversampling)
- * @param[in] sample Received sample, no more than 13 bits
+ * @param[in] sample Received sample, not more than 13 bits (non-FPU)
  * @param[in] *dem Demodulator state
  * @return Current tone (0 or 1)
  */
-static int32_t demodulate(int16_t sample, struct DemodState *dem)
+static sample_t demodulate(sample_t sample, struct DemodState *dem)
 {
 	//input signal amplitude tracking
-	if(sample >= dem->peak)
+#ifndef USE_FPU
+	if(sample > dem->peak)
 	{
 		dem->peak += (((int32_t)(AMP_TRACKING_ATTACK * (float)32768) * (int32_t)(sample - dem->peak)) >> 15);
 	}
@@ -448,7 +365,7 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 		dem->peak += (((int32_t)(AMP_TRACKING_DECAY * (float)32768) * (int32_t)(sample - dem->peak)) >> 15);
 	}
 
-	if(sample <= dem->valley)
+	if(sample < dem->valley)
 	{
 		dem->valley -= (((int32_t)(AMP_TRACKING_ATTACK * (float)32768) * (int32_t)(dem->valley - sample)) >> 15);
 	}
@@ -456,6 +373,25 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 	{
 		dem->valley -= (((int32_t)(AMP_TRACKING_DECAY * (float)32768) * (int32_t)(dem->valley - sample)) >> 15);
 	}
+#else
+	if(sample > dem->peak)
+	{
+		dem->peak += ((sample_t)AMP_TRACKING_ATTACK * (sample - dem->peak));
+	}
+	else
+	{
+		dem->peak += ((sample_t)AMP_TRACKING_DECAY * (sample - dem->peak));
+	}
+
+	if(sample < dem->valley)
+	{
+		dem->valley -= ((sample_t)AMP_TRACKING_ATTACK * (dem->valley - sample));
+	}
+	else
+	{
+		dem->valley -= ((sample_t)AMP_TRACKING_DECAY * (dem->valley - sample));
+	}
+#endif
 
 
 	if(ModemConfig.modem != MODEM_9600)
@@ -471,23 +407,28 @@ static int32_t demodulate(int16_t sample, struct DemodState *dem)
 
 		dem->correlatorSamplesIdx %= N;
 
-		int32_t outLoI = 0, outLoQ = 0, outHiI = 0, outHiQ = 0; //output values after correlating
+		sample_t outLoI = 0, outLoQ = 0, outHiI = 0, outHiQ = 0; //output values after correlating
 
 		for(uint8_t i = 0; i < N; i++)
 		{
-			int16_t t = dem->correlatorSamples[(dem->correlatorSamplesIdx + i) % N]; //read sample
+			sample_t t = dem->correlatorSamples[(dem->correlatorSamplesIdx + i) % N]; //read sample
 			outLoI += t * coeffLoI[i]; //correlate sample
 			outLoQ += t * coeffLoQ[i];
 			outHiI += t * coeffHiI[i];
 			outHiQ += t * coeffHiQ[i];
 		}
 
+#ifndef USE_FPU
 		outHiI >>= 14;
 		outHiQ >>= 14;
 		outLoI >>= 14;
 		outLoQ >>= 14;
 
 		sample = (abs(outLoI) + abs(outLoQ)) - (abs(outHiI) + abs(outHiQ));
+#else
+		sample = (fabs(outLoI) + fabs(outLoQ)) - (fabs(outHiI) + fabs(outHiQ));
+#endif
+
 	}
 
 	//DCD using "PLL"
@@ -690,38 +631,51 @@ void ModemTransmitStop(void)
 }
 
 /**
- * @brief Controls PTT output
+ * @brief Control PTT output
  * @param state False - PTT off, true - PTT on
  */
 static void setPtt(bool state)
 {
 	 if(state)
 	 {
-	 	MODEM_LL_PTT_ON();
+	 	MODEM_LL_PTT_ON(ModemConfig.pttOutput);
 	 }
 	 else
 	 {
-	 	MODEM_LL_PTT_OFF();
+	 	MODEM_LL_PTT_OFF(ModemConfig.pttOutput);
 	 }
 }
 
 
-/**
- * @brief Initialize AFSK module
- */
+void ModemApplyRxGain(void)
+{
+#ifdef AIOC
+	MODEM_LL_SET_GAIN(1 << ModemConfig.gain);
+#endif
+}
+
+void ModemApplyTxAttenuator(void)
+{
+#ifdef AIOC
+	MODEM_LL_SET_TX_ATTENUATOR(ModemConfig.attenuator);
+#endif
+}
+
 void ModemInit(void)
 {
 	memset(demodState, 0, sizeof(demodState));
 
-	MODEM_LL_INITIALIZE_RCC(); //initialize peripheral clocks
+	MODEM_LL_INITIALIZE_RCC();
 
 	MODEM_LL_INITIALIZE_OUTPUTS();
 
-	MODEM_LL_INITIALIZE_ADC();
+	volatile ADC_TypeDef *adc = MODEM_LL_INITIALIZE_ADC(&adcBias);
 
-	MODEM_LL_INITIALIZE_DMA(samples);
+	MODEM_LL_INITIALIZE_DMA(samples, MODEM_LL_OVERSAMPLING_FACTOR, adc);
 
 	NVIC_EnableIRQ(MODEM_LL_DMA_IRQ);
+
+	MODEM_LL_INITIALIZE_DAC();
 
 	MODEM_LL_ADC_TIMER_INITIALIZE();
 
@@ -769,12 +723,12 @@ void ModemInit(void)
 		demodState[1].dcdTune = DCD1200_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 
 		demodState[1].prefilter = PREFILTER_NONE;
-		demodState[1].lpf.coeffs = (int16_t*)lpf1200;
+		demodState[1].lpf.coeffs = lpf1200;
 		demodState[1].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
 		demodState[1].lpf.gainShift = 15;
 
 
-		demodState[0].lpf.coeffs = (int16_t*)lpf1200;
+		demodState[0].lpf.coeffs = lpf1200;
 		demodState[0].lpf.taps = sizeof(lpf1200) / sizeof(*lpf1200);
 		demodState[0].lpf.gainShift = 15;
 		demodState[0].prefilter = PREFILTER_NONE;
@@ -787,7 +741,7 @@ void ModemInit(void)
 			else
 #endif
 				demodState[0].prefilter = PREFILTER_DEEMPHASIS;
-			demodState[0].bpf.coeffs = (int16_t*)bpf1200Inv;
+			demodState[0].bpf.coeffs = bpf1200Inv;
 			demodState[0].bpf.taps = sizeof(bpf1200Inv) / sizeof(*bpf1200Inv);
 			demodState[0].bpf.gainShift = 15;
 
@@ -795,7 +749,7 @@ void ModemInit(void)
 		else //when used with normal (filtered) audio input, use flat and preemphasis modems
 		{
 			demodState[0].prefilter = PREFILTER_PREEMPHASIS;
-			demodState[0].bpf.coeffs = (int16_t*)bpf1200;
+			demodState[0].bpf.coeffs = bpf1200;
 			demodState[0].bpf.taps = sizeof(bpf1200) / sizeof(*bpf1200);
 			demodState[0].bpf.gainShift = 15;
 		}
@@ -830,10 +784,10 @@ void ModemInit(void)
 		demodState[0].dcdTune = DCD300_TUNE * (float)((uint32_t)1 << PLL_TUNE_BITS);
 
 		demodState[0].prefilter = PREFILTER_FLAT;
-		demodState[0].bpf.coeffs = (int16_t*)bpf300;
+		demodState[0].bpf.coeffs = bpf300;
 		demodState[0].bpf.taps = sizeof(bpf300) / sizeof(*bpf300);
 		demodState[0].bpf.gainShift = 16;
-		demodState[0].lpf.coeffs = (int16_t*)lpf300;
+		demodState[0].lpf.coeffs = lpf300;
 		demodState[0].lpf.taps = sizeof(lpf300) / sizeof(*lpf300);
 		demodState[0].lpf.gainShift = 15;
 	}
@@ -855,7 +809,7 @@ void ModemInit(void)
 
 		demodState[0].prefilter = PREFILTER_NONE;
 		//this filter will be used for RX and TX
-		demodState[0].lpf.coeffs = (int16_t*)lpf9600;
+		demodState[0].lpf.coeffs = lpf9600;
 		demodState[0].lpf.taps = sizeof(lpf9600) / sizeof(*lpf9600);
 		demodState[0].lpf.gainShift = 16;
 
@@ -874,24 +828,23 @@ void ModemInit(void)
 
 	for(uint8_t i = 0; i < N; i++) //calculate correlator coefficients
 	{
-		coeffLoI[i] = 4095.f * cosf(2.f * 3.1416f * (float)i / (float)N * markFreq / baudRate);
-		coeffLoQ[i] = 4095.f * sinf(2.f * 3.1416f * (float)i / (float)N * markFreq / baudRate);
-		coeffHiI[i] = 4095.f * cosf(2.f * 3.1416f * (float)i / (float)N * spaceFreq / baudRate);
-		coeffHiQ[i] = 4095.f * sinf(2.f * 3.1416f * (float)i / (float)N * spaceFreq / baudRate);
+#ifdef USE_FPU
+#define COEFF_SCALE 1.f
+#else
+#define COEFF_SCALE 4095.f
+#endif
+		coeffLoI[i] = cosf(2.f * 3.1416f * (float)i / (float)N * markFreq / baudRate) * COEFF_SCALE;
+		coeffLoQ[i] = sinf(2.f * 3.1416f * (float)i / (float)N * markFreq / baudRate) * COEFF_SCALE;
+		coeffHiI[i] = cosf(2.f * 3.1416f * (float)i / (float)N * spaceFreq / baudRate) * COEFF_SCALE;
+		coeffHiQ[i] = sinf(2.f * 3.1416f * (float)i / (float)N * spaceFreq / baudRate) * COEFF_SCALE;
 	}
 
 	for(uint8_t i = 0; i < DAC_SINE_SIZE; i++) //calculate DAC sine samples
 	{
-		if(ModemConfig.usePWM)
-			//produce values in range 1 to 256
-			dacSine[i] = ((sinf(2.f * 3.1416f * (float)i / (float)DAC_SINE_SIZE) + 1.f) * 128.f);
-		else
-			dacSine[i] = ((7.f * sinf(2.f * 3.1416f * (float)i / (float)DAC_SINE_SIZE)) + 8.f);
+#if defined(USE_FPU)
+		dacSine[i] = (sinf(2.f * 3.1416f * (float)i / (float)DAC_SINE_SIZE));
+#else
+		dacSine[i] = ((sinf(2.f * 3.1416f * (float)i / (float)DAC_SINE_SIZE) + 1.f) * ((float)MODEM_LL_DAC_MAX / 2.f));
+#endif
 	}
-
-	if(ModemConfig.usePWM)
-	{
-		MODEM_LL_PWM_INITIALIZE();
-	}
-
 }

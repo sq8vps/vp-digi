@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2024 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -23,18 +23,25 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include "usbd_cdc_if.h"
 
-struct _GeneralConfig GeneralConfig =
+struct GeneralConfig GeneralConfig =
 {
 		.call = {'N' << 1, '0' << 1, 'C' << 1, 'A' << 1, 'L' << 1, 'L' << 1},
 		.callSsid = 0,
+#ifdef BLUE_PILL
 		.dest = {130, 160, 156, 172, 96, 98, 96}, //destination address: APNV01-0 by default. SSID MUST remain 0.
+#elif defined(AIOC)
+		.dest = {130, 160, 156, 172, 96, 100, 96}, //destination address: APNV02-0 by default. SSID MUST remain 0.
+#endif
 		.kissMonitor = 0,
 };
 
 
-const char versionString[] = "VP-Digi v. 2.1.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
+const char versionString[] = "VP-Digi v. 2.2.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
 #ifdef ENABLE_FX25
 		"With FX.25 support compiled-in\r\n"
+#endif
+#ifdef AIOC
+		"Built for AIOC\r\n"
 #endif
 		;
 
@@ -169,10 +176,12 @@ void SendTNC2(uint8_t *from, uint16_t len)
 {
 	if(UartUsb.mode == MODE_MONITOR)
 		sendTNC2ToUart(&UartUsb, from, len);
+#ifdef BLUE_PILL
 	if(Uart1.mode == MODE_MONITOR)
 		sendTNC2ToUart(&Uart1, from, len);
 	if(Uart2.mode == MODE_MONITOR)
 		sendTNC2ToUart(&Uart2, from, len);
+#endif
 }
 
 uint32_t Crc32(uint32_t crc0, uint8_t *s, uint64_t n)
@@ -256,4 +265,25 @@ bool ParseSsid(const char *in, uint16_t size, uint8_t *out)
 	return false;
 }
 
+extern volatile uint32_t uwTick;
 
+void HAL_IncTick(void)
+{
+  ++uwTick;
+}
+
+void HAL_Delay(uint32_t Delay)
+{
+  uint32_t tickstart = HAL_GetTick();
+  uint32_t wait = Delay / SYSTICK_INTERVAL;
+
+  /* Add freq to guarantee minimum wait */
+  if (wait < HAL_MAX_DELAY)
+  {
+    ++wait;
+  }
+
+  while((HAL_GetTick() - tickstart) < wait)
+  {
+  }
+}

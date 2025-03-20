@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -24,11 +24,62 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "digipeater.h"
 #include "config.h"
 #include "ax25.h"
-#include "systick.h"
 #include "kiss.h"
+#include "uart.h"
 
 void TermHandleSpecial(Uart *u)
 {
+	if(MODE_CALIBRATION == u->mode)
+	{
+		char c = u->rxBuffer[u->rxBufferHead - 1];
+		switch(c)
+		{
+			case 'l':
+				ModemTxTestStart(TEST_MARK);
+				UartSendString(u, "Transmitting mark/low tone\r\n", 0);
+				break;
+			case 'h':
+				ModemTxTestStart(TEST_SPACE);
+				UartSendString(u, "Transmitting space/high tone\r\n", 0);
+				break;
+			case 'a':
+				ModemTxTestStart(TEST_ALTERNATING);
+				UartSendString(u, "Transmitting alternating tones\r\n", 0);
+				break;
+			case 's':
+				ModemTxTestStop();
+				UartSendString(u, "Transmission stopped\r\n", 0);
+				break;
+			case 'q':
+				ModemTxTestStop();
+				u->mode = MODE_MONITOR;
+				UartSendString(u, "Left calibration mode\r\n", 0);
+				break;
+#ifdef AIOC
+			case 'x':
+				ModemConfig.attenuator ^= 1;
+				ModemApplyTxAttenuator();
+				ModemConfig.attenuator ? UartSendString(u, "Attenuator enabled\r\n", 0) : UartSendString(u, "Attenuator disabled\r\n", 0);
+				break;
+			case 'n':
+			case 'm':
+				if(('n' == c) && (ModemConfig.txLevel > 0))
+					--ModemConfig.txLevel;
+				else if(('m' == c) && (ModemConfig.txLevel	< 100))
+					++ModemConfig.txLevel;
+				UartSendString(u, "TX level set to ", 0);
+				UartSendNumber(u, ModemConfig.txLevel);
+				UartSendString(u, "%\r\n", 0);
+				break;
+#endif
+			default:
+				UartSendString(u, "Unknown key, use s to stop, q to exit\r\n", 0);
+				break;
+		}
+		UartClearRx(u);
+		return;
+	}
+
 	if(u->mode == MODE_KISS) //don't do anything in KISS mode
 	{
 		u->lastRxBufferHead = 0;
@@ -65,18 +116,22 @@ void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size)
 {
 	if(MODE_KISS == mode)
 	{
+#ifdef BLUE_PILL
 		KissSend(&Uart1, data, size);
 		KissSend(&Uart2, data, size);
+#endif
 		KissSend(&UartUsb, data, size);
 	}
 	else if(MODE_MONITOR == mode)
 	{
 		if(UartUsb.mode == MODE_MONITOR)
 			UartSendString(&UartUsb, data, size);
+#ifdef BLUE_PILL
 		if(Uart1.mode == MODE_MONITOR)
 			UartSendString(&Uart1, data, size);
 		if(Uart2.mode == MODE_MONITOR)
 			UartSendString(&Uart2, data, size);
+#endif
 	}
 }
 
@@ -86,18 +141,19 @@ void TermSendNumberToAll(enum UartMode mode, int32_t n)
 	{
 		if(UartUsb.mode == MODE_MONITOR)
 			UartSendNumber(&UartUsb, n);
+#ifdef BLUE_PILL
 		if(Uart1.mode == MODE_MONITOR)
 			UartSendNumber(&Uart1, n);
 		if(Uart2.mode == MODE_MONITOR)
 			UartSendNumber(&Uart2, n);
+#endif
 	}
 
 }
 
 static const char monitorHelp[] = "\r\nCommands available in monitor mode:\r\n"
 		"help - show this help page\r\n"
-		"cal {low|high|alt|stop} - transmit/stop transmitter calibration pattern\r\n"
-		"\tlow - transmit MARK tone, high - transmit SPACE tone, alt - transmit alternating tones (null bytes)\r\n"
+		"cal - enter TX level calibration mode\r\n"
 		"beacon <beacon_number> - immediately transmit selected beacon (number from 0 to 7)\r\n"
 		"kiss - switch to KISS mode\r\n"
 		"config - switch to config mode\r\n"
@@ -120,10 +176,18 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 		"txdelay <50-2550> - set TXDelay time (ms)\r\n"
 		"txtail <10-2550> - set TXTail time (ms)\r\n"
 		"quiet <100-2550> - set quiet time (ms)\r\n"
-		"uart <1/2> baud <1200-115200> - set UART baud rate\r\n"
-		"uart <0/1/2> mode [kiss/monitor/config] - set UART default mode (0 for USB)\r\n"
-		"pwm [on/off] - enable/disable PWM. If PWM is off, R2R will be used instead\r\n"
 		"flat [on/off] - set to \"on\" if flat audio input is used\r\n"
+#ifdef BLUE_PILL
+		"uart <0/1/2> mode [kiss/monitor/config] - set UART default mode (0 for USB)\r\n"
+		"uart <1/2> baud <1200-115200> - set UART baud rate\r\n"
+#endif
+#ifdef AIOC
+		"ptt [pri/sec] - select primary or secondary PTT output\r\n"
+		"att [on/off] - enable/disable TX signal attenuator\r\n"
+		"level <value> - set TX signal level (%)\r\n"
+		"gain [1/2/4/8/16] - set RX gain\r\n"
+		"uart 0 mode [kiss/monitor/config] - set USB default mode\r\n"
+#endif
 		"beacon <0-7> [on/off] - enable/disable specified beacon\r\n"
 		"beacon <0-7> [iv/dl] <0-720> - set interval/delay for the specified beacon (min)\r\n"
 		"beacon <0-7> path <el1,[el2]>/none - set path for the specified beacon\r\n"
@@ -149,11 +213,11 @@ static void sendUartParams(Uart *output, Uart *uart)
 {
 	if(!uart->isUsb)
 	{
-		UartSendNumber(output, uart->baudrate);
+		UartSendNumber(output, uart->config.baudrate);
 		UartSendString(output, " baud, ", 0);
 	}
 	UartSendString(output, "default mode: ", 0);
-	switch(uart->defaultMode)
+	switch(uart->config.defaultMode)
 	{
 		case MODE_KISS:
 			UartSendString(output, "KISS", 0);
@@ -163,6 +227,8 @@ static void sendUartParams(Uart *output, Uart *uart)
 			break;
 		case MODE_TERM:
 			UartSendString(output, "configuration", 0);
+			break;
+		case MODE_CALIBRATION: //calibration is a submode
 			break;
 	}
 }
@@ -209,60 +275,73 @@ static void printConfig(Uart *src)
 	UartSendNumber(src, Ax25Config.quietTime);
 	UartSendString(src, "\r\nUSB: ", 0);
 	sendUartParams(src, &UartUsb);
+#ifdef BLUE_PILL
 	UartSendString(src, "\r\nUART1: ", 0);
 	sendUartParams(src, &Uart1);
 	UartSendString(src, "\r\nUART2: ", 0);
 	sendUartParams(src, &Uart2);
-	UartSendString(src, "\r\nDAC type: ", 0);
-	if(ModemConfig.usePWM)
-		UartSendString(src, "PWM", 0);
-	else
-		UartSendString(src, "R2R", 0);
+#endif
 	UartSendString(src, "\r\nFlat audio input: ", 0);
 	if(ModemConfig.flatAudioIn)
 		UartSendString(src, "yes", 0);
 	else
 		UartSendString(src, "no", 0);
-	for(uint8_t i = 0; i < (sizeof(beacon) / sizeof(*beacon)); i++)
+#ifdef AIOC
+	UartSendString(src, "\r\nTX level: ", 0);
+	UartSendNumber(src, ModemConfig.txLevel);
+	UartSendString(src, "%, attenuator ", 0);
+	if(ModemConfig.attenuator)
+		UartSendString(src, "enabled", 0);
+	else
+		UartSendString(src, "disabled", 0);
+	UartSendString(src, "\r\nRX gain: ", 0);
+	UartSendNumber(src, 1 << ModemConfig.gain);
+	UartSendString(src, "\r\nPTT output: ", 0);
+	if(!ModemConfig.pttOutput)
+		UartSendString(src, "primary", 0);
+	else
+		UartSendString(src, "secondary", 0);
+#endif
+	for(uint8_t i = 0; i < BEACON_COUNT; i++)
 	{
 		UartSendString(src, "\r\nBeacon ", 0);
 		UartSendByte(src, i + '0');
 		UartSendString(src, ": ", 0);
-		if(beacon[i].enable)
+		if(BeaconConfig[i].enable)
 			UartSendString(src, "On, Iv: ", 0);
 		else
 			UartSendString(src, "Off, Iv: ", 0);
-		UartSendNumber(src, beacon[i].interval / 6000);
+		UartSendNumber(src, BeaconConfig[i].interval / 6000);
 		UartSendString(src, ", Dl: ", 0);
-		UartSendNumber(src, beacon[i].delay / 60);
+		UartSendNumber(src, BeaconConfig[i].delay / 60);
 		UartSendByte(src, ',');
 		UartSendByte(src, ' ');
-		if(beacon[i].path[0] != 0)
+		if(BeaconConfig[i].path[0] != 0)
 		{
 			for(uint8_t j = 0; j < 6; j++)
 			{
-				if(beacon[i].path[j] != (' ' << 1))
-					UartSendByte(src, beacon[i].path[j] >> 1);
+				if(BeaconConfig[i].path[j] != (' ' << 1))
+					UartSendByte(src, BeaconConfig[i].path[j] >> 1);
 			}
 			UartSendByte(src, '-');
-			UartSendNumber(src, beacon[i].path[6]);
-			if(beacon[i].path[7] != 0)
+			UartSendNumber(src, BeaconConfig[i].path[6]);
+			if(BeaconConfig[i].path[7] != 0)
 			{
 				UartSendByte(src, ',');
 				for(uint8_t j = 7; j < 13; j++)
 				{
-					if(beacon[i].path[j] != (' ' << 1))
-						UartSendByte(src, beacon[i].path[j] >> 1);
+					if(BeaconConfig[i].path[j] != (' ' << 1))
+						UartSendByte(src, BeaconConfig[i].path[j] >> 1);
 				}
 				UartSendByte(src, '-');
-				UartSendNumber(src, beacon[i].path[13]);
+				UartSendNumber(src, BeaconConfig[i].path[13]);
 			}
 		}
 		else
 			UartSendString(src, "no path", 0);
 		UartSendByte(src, ',');
 		UartSendByte(src, ' ');
-		UartSendString(src, beacon[i].data, 0);
+		UartSendString(src, BeaconConfig[i].data, 0);
 	}
 
 	UartSendString(src, "\r\nDigipeater: ", 0);
@@ -361,6 +440,7 @@ static void printConfig(Uart *src)
 		UartSendString(src, "On\r\n", 0);
 	else
 		UartSendString(src, "Off\r\n", 0);
+#ifdef ENABLE_FX25
 	UartSendString(src, "FX.25 protocol: ", 0);
 	if(Ax25Config.fx25 == 1)
 		UartSendString(src, "On\r\n", 0);
@@ -371,12 +451,13 @@ static void printConfig(Uart *src)
 		UartSendString(src, "On\r\n", 0);
 	else
 		UartSendString(src, "Off\r\n", 0);
+#endif
 }
 
 static void sendTime(Uart *src)
 {
 	UartSendString(src, "Time since boot: ", 0);
-	UartSendNumber(src, SysTickGet() * SYSTICK_INTERVAL / 60000); //convert from ms to minutes
+	UartSendNumber(src, HAL_GetTick() * SYSTICK_INTERVAL / 60000); //convert from ms to minutes
 	UartSendString(src, " minutes\r\n", 0);
 }
 
@@ -446,7 +527,7 @@ void TermParse(Uart *src)
 			if((cmd[7] >= '0') && (cmd[7] <= '7'))
 			{
 				uint8_t number = cmd[7] - '0';
-				if((beacon[number].interval != 0) && (beacon[number].enable != 0))
+				if((BeaconConfig[number].interval != 0) && (BeaconConfig[number].enable != 0))
 				{
 					BeaconSend(number);
 				}
@@ -464,28 +545,13 @@ void TermParse(Uart *src)
 		}
 		else if(!strncmp(cmd, "cal", 3))
 		{
-			if(!strncmp(&cmd[4], "low", 3))
-			{
-				UartSendString(src, "Starting low tone calibration transmission\r\n", 0);
-				ModemTxTestStart(TEST_MARK);
-			}
-			else if(!strncmp(&cmd[4], "high", 4))
-			{
-				UartSendString(src, "Starting high tone calibration transmission\r\n", 0);
-				ModemTxTestStart(TEST_SPACE);
-			}
-			else if(!strncmp(&cmd[4], "alt", 3))
-			{
-				UartSendString(src, "Starting alternating tones calibration transmission\r\n", 0);
-				ModemTxTestStart(TEST_ALTERNATING);
-			}
-			else if(!strncmp(&cmd[4], "stop", 4))
-			{
-				UartSendString(src, "Stopping calibration transmission\r\n", 0);
-				ModemTxTestStop();
-			}
-			else
-				UartSendString(src, "Usage: cal {low|high|alt|stop}\r\n", 0);
+			UartSendString(src, "Entered calibration mode\r\n", 0);
+			UartSendString(src, "l - low tone, h - high tone, a - alternating tones, s - stop, q - exit\r\n", 0);
+#ifdef AIOC
+			UartSendString(src, "n - decrease TX level, m - increase TX level, x - enable/disable attenuator\r\n", 0);
+#endif
+			UartSendString(src, "Values must be saved by switching to the configuration mode and using \"save\"!\r\n", 0);
+			src->mode = MODE_CALIBRATION;
 		}
 		else
 			UartSendString(src, "Unknown command. For command list type \"help\"\r\n", 0);
@@ -680,12 +746,14 @@ void TermParse(Uart *src)
 	else if(!strncmp(cmd, "uart", 4))
 	{
 		Uart *u = NULL;
-		if((cmd[5] - '0') == 1)
+		if((cmd[5] - '0') == 0)
+			u = &UartUsb;
+#ifdef BLUE_PILL
+		else if((cmd[5] - '0') == 1)
 			u = &Uart1;
 		else if((cmd[5] - '0') == 2)
 			u = &Uart2;
-		else if((cmd[5] - '0') == 0)
-			u = &UartUsb;
+#endif
 		else
 		{
 			UartSendString(src, "Incorrect UART number!\r\n", 0);
@@ -699,21 +767,21 @@ void TermParse(Uart *src)
 				UartSendString(src, "Incorrect baud rate!\r\n", 0);
 				return;
 			}
-			u->baudrate = (uint32_t)t;
+			u->config.baudrate = (uint32_t)t;
 		}
 		else if(!strncmp(&cmd[7], "mode", 4))
 		{
 			if(!strncmp(&cmd[12], "kiss", 4))
 			{
-				u->defaultMode = MODE_KISS;
+				u->config.defaultMode = MODE_KISS;
 			}
 			else if(!strncmp(&cmd[12], "monitor", 7))
 			{
-				u->defaultMode = MODE_MONITOR;
+				u->config.defaultMode = MODE_MONITOR;
 			}
 			else if(!strncmp(&cmd[12], "config", 6))
 			{
-				u->defaultMode = MODE_TERM;
+				u->config.defaultMode = MODE_TERM;
 			}
 			else
 			{
@@ -737,9 +805,9 @@ void TermParse(Uart *src)
 			return;
 		}
 		if(!strncmp(&cmd[9], "on", 2))
-			beacon[bcno].enable = 1;
+			BeaconConfig[bcno].enable = 1;
 		else if(!strncmp(&cmd[9], "off", 3))
-			beacon[bcno].enable = 0;
+			BeaconConfig[bcno].enable = 0;
 		else if(!strncmp(&cmd[9], "iv", 2) || !strncmp(&cmd[9], "dl", 2)) //interval or delay
 		{
 			int64_t t = StrToInt(&cmd[12], len - 12);
@@ -749,9 +817,9 @@ void TermParse(Uart *src)
 				return;
 			}
 			if(!strncmp(&cmd[9], "iv", 2))
-				beacon[bcno].interval = t * 6000;
+				BeaconConfig[bcno].interval = t * 6000;
 			else
-				beacon[bcno].delay = t * 60;
+				BeaconConfig[bcno].delay = t * 60;
 
 		}
 		else if(!strncmp(&cmd[9], "data", 4))
@@ -763,8 +831,8 @@ void TermParse(Uart *src)
 			}
 			uint16_t i = 0;
 			for(; i < (len - 14); i++)
-				beacon[bcno].data[i] = cmd[14 + i];
-			beacon[bcno].data[i] = 0;
+				BeaconConfig[bcno].data[i] = cmd[14 + i];
+			BeaconConfig[bcno].data[i] = 0;
 		}
 		else if(!strncmp(&cmd[9], "path", 4))
 		{
@@ -776,7 +844,7 @@ void TermParse(Uart *src)
 			}
 			if(((len - 14) == 4) && !strncmp(&cmd[14], "none", 4)) //"none" path
 			{
-				memset(beacon[bcno].path, 0, sizeof(beacon[bcno].path));
+				memset(BeaconConfig[bcno].path, 0, sizeof(BeaconConfig[bcno].path));
 
 				UartSendString(src, "OK\r\n", 0);
 				return;
@@ -815,7 +883,7 @@ void TermParse(Uart *src)
 				return;
 			}
 
-			memcpy(beacon[bcno].path, tmp, 14);
+			memcpy(BeaconConfig[bcno].path, tmp, 14);
 		}
 		else
 		{
@@ -1045,15 +1113,6 @@ void TermParse(Uart *src)
 		else
 			err = true;
 	}
-	else if(!strncmp(cmd, "pwm ", 4))
-	{
-		if(!strncmp(&cmd[4], "on", 2))
-			ModemConfig.usePWM = 1;
-		else if(!strncmp(&cmd[4], "off", 3))
-			ModemConfig.usePWM = 0;
-		else
-			err = true;
-	}
 	else if(!strncmp(cmd, "flat ", 5))
 	{
 		if(!strncmp(&cmd[5], "on", 2))
@@ -1063,6 +1122,54 @@ void TermParse(Uart *src)
 		else
 			err = true;
 	}
+#ifdef AIOC
+	else if(!strncmp(cmd, "att ", 4))
+	{
+		if(!strncmp(&cmd[4], "on", 2))
+			ModemConfig.attenuator = 1;
+		else if(!strncmp(&cmd[4], "off", 3))
+			ModemConfig.attenuator = 0;
+		else
+			err = true;
+		ModemApplyTxAttenuator();
+	}
+	else if(!strncmp(cmd, "ptt ", 4))
+	{
+		if(!strncmp(&cmd[4], "pri", 3))
+			ModemConfig.pttOutput = 0;
+		else if(!strncmp(&cmd[4], "sec", 3))
+			ModemConfig.pttOutput = 1;
+		else
+			err = true;
+	}
+	else if(!strncmp(cmd, "gain ", 5))
+	{
+		int64_t t = StrToInt(&cmd[5], len - 5);
+		if((t >= 1) && (t <= 16) && (1 == __builtin_popcount((uint32_t)t)))
+		{
+			ModemConfig.gain = __builtin_ctz((uint32_t)t);
+			ModemApplyRxGain();
+		}
+		else
+		{
+			UartSendString(src, "Incorrect value!\r\n", 0);
+			return;
+		}
+	}
+	else if(!strncmp(cmd, "level ", 6))
+	{
+		int64_t t = StrToInt(&cmd[6], len - 6);
+		if((t >= 0) && (t <= 100))
+		{
+			ModemConfig.txLevel = t;
+		}
+		else
+		{
+			UartSendString(src, "Incorrect value!\r\n", 0);
+			return;
+		}
+	}
+#endif
 	else if(!strncmp(cmd, "monkiss ", 8))
 	{
 		if(!strncmp(&cmd[8], "on", 2))

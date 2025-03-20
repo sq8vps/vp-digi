@@ -17,11 +17,12 @@ You should have received a copy of the GNU General Public License
 along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "fx25.h"
+
 #ifdef ENABLE_FX25
 
-#include "fx25.h"
 #include <stddef.h>
-#include "rs.h"
+#include "../../lwfec/rs.h"
 
 #define FX25_RS_FCR 1
 

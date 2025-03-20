@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -25,14 +25,61 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "digipeater.h"
 #include "ax25.h"
 #include "beacon.h"
-#include "stm32f1xx.h"
+#include "drivers/config_ll.h"
 
-#define CONFIG_ADDRESS 0x800F000
-#define CONFIG_PAGE_COUNT 2
-#define CONFIG_PAGE_SIZE 1024 //1024 words (2048 bytes)
+/**
+* @brief Read string from configuration space
+* @param address Relative address
+* @param *data Output string pointer
+* @param len Number of bytes
+*/
+static void readString(uint32_t address, void *data, uint16_t len)
+{
+	uint8_t *d = data;
+	uint16_t i = 0;
+	for(; i < len; i += 2)
+	{
+		uint16_t t = read(address + i);
+		d[i] = t & 0xFF;
+		d[i + 1] = t >> 8;
+	}
+	if(len & 1)
+	{
+		d[i] = read(address + i);
+	}
+}
+
+/**
+* @brief Write string to configuration space
+* @param address Relative address
+* @param *data Input string pointer
+* @param len Number of bytes
+*/
+static void writeString(uint32_t address, const void *data, uint16_t len)
+{
+	const uint8_t *d = data;
+	uint16_t i = 0;
+	for(; i < len; i += 2)
+	{
+		write(address + i, (uint16_t)d[i] | ((uint16_t)d[i + 1] << 8));
+	}
+	if(len & 1)
+	{
+		write(address + i, d[i]);
+	}
+}
+
+void ConfigErase(void)
+{
+	unlock();
+	erase();
+	lock();
+}
+
+
+#ifdef BLUE_PILL
 
 #define CONFIG_FLAG_WRITTEN 0x6B
-
 
 //these are relative addresses, absolute address is calculated as relative address + MEM_CONFIG
 //all fields are 16-bit or n*16-bit long, as data in flash is stored in 16-bit words
@@ -91,7 +138,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_DIGISSID5 1198
 #define CONFIG_DIGISSID6 1200
 #define CONFIG_DIGISSID7 1202
-#define CONFIG_PWM_FLAT 1204
+#define CONFIG_PWM_FLAT_PTT 1204
 #define CONFIG_KISSMONITOR 1206
 #define CONFIG_DEST 1208
 #define CONFIG_ALLOWNONAPRS 1214
@@ -100,108 +147,14 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_MODE_USB 1220
 #define CONFIG_MODE_UART1 1222
 #define CONFIG_MODE_UART2 1224
-#define CONFIG_XXX 1226 //next address (not used)
+#define CONFIG_TX_LEVEL 1226
+#define CONFIG_XXX 1228 //next address (not used)
 
-
-/**
- * @brief Write word to configuration part in flash
- * @param[in] address Relative address
- * @param[in] data Data to write
- * @warning Flash must be unlocked first
- */
-static void write(uint32_t address, uint16_t data)
-{
-    FLASH->CR |= FLASH_CR_PG; //programming mode
-
-    *((volatile uint16_t*)(address + CONFIG_ADDRESS)) = data; //store data
-
-	while (FLASH->SR & FLASH_SR_BSY);; //wait for completion
-	if(!(FLASH->SR & FLASH_SR_EOP)) //an error occurred
-		FLASH->CR &= ~FLASH_CR_PG;
-	else
-		FLASH->SR |= FLASH_SR_EOP;
-}
-
-/**
- * @brief Write data array to configuration part in flash
- * @param[in] address Relative address
- * @param[in] *data Data to write
- * @param[in] len Data length
- * @warning Flash must be unlocked first
- */
-static void writeString(uint32_t address, uint8_t *data, uint16_t len)
-{
-	uint16_t i = 0;
-	for(; i < (len / 2); i++)
-	{
-		write(address + (i << 1), *(data + (i << 1)) | (*(data + 1 + (i << 1)) << 8)); //program memory
-	}
-	if((len % 2) > 0)
-	{
-		write(address + (i << 1), *(data + (i << 1))); //store last byte if number of bytes is odd
-	}
-}
-
-/**
- * @brief Read single word from configuration part in flash
- * @param[in] address Relative address
- * @return Data (word)
- */
-static uint16_t read(uint32_t address)
-{
-	return *(volatile uint16_t*)((address + CONFIG_ADDRESS));
-}
-
-/**
-* @brief Read array from configuration part in flash
-* @param[in] address Relative address
-* @param[out] *data Data
-* @param[in] len Byte count
-*/
-static void readString(uint32_t address, uint8_t *data, uint16_t len)
-{
-	uint16_t i = 0;
-	for(; i < (len >> 1); i++)
-	{
-		*(data + (i << 1)) = (uint8_t)read(address + (i << 1));
-		*(data + 1 + (i << 1)) = (uint8_t)read(address + 1 + (i << 1));
-	}
-	if((len % 2) > 0)
-	{
-		*(data + (i << 1)) = (uint8_t)read(address + (i << 1));
-	}
-}
-
-void ConfigErase(void)
-{
-	FLASH->KEYR = 0x45670123; //unlock memory
-    FLASH->KEYR = 0xCDEF89AB;
-	while (FLASH->SR & FLASH_SR_BSY)
-		;
-	FLASH->CR |= FLASH_CR_PER; //erase mode
-	for(uint8_t i = 0; i < CONFIG_PAGE_COUNT; i++)
-	{
-		FLASH->AR = CONFIG_ADDRESS + (CONFIG_PAGE_SIZE * i);
-    	FLASH->CR |= FLASH_CR_STRT; //start erase
-    	while (FLASH->SR & FLASH_SR_BSY)
-    		;
-    	if(!(FLASH->SR & FLASH_SR_EOP))
-    	{
-        	FLASH->CR &= ~FLASH_CR_PER;
-    		return;
-    	}
-    	else
-    		FLASH->SR |= FLASH_SR_EOP;
-	}
-    FLASH->CR &= ~FLASH_CR_PER;
-}
-
-/**
- * @brief Store configuration from RAM to Flash
- */
 void ConfigWrite(void)
 {
 	ConfigErase();
+
+	unlock();
 
 	writeString(CONFIG_CALL, GeneralConfig.call, 6);
 	write(CONFIG_SSID, GeneralConfig.callSsid);
@@ -209,34 +162,37 @@ void ConfigWrite(void)
 	write(CONFIG_TXDELAY, Ax25Config.txDelayLength);
 	write(CONFIG_TXTAIL, Ax25Config.txTailLength);
 	write(CONFIG_TXQUIET, Ax25Config.quietTime);
-	writeString(CONFIG_RS1BAUD, (uint8_t*)&Uart1.baudrate, 4);
-	writeString(CONFIG_RS2BAUD, (uint8_t*)&Uart2.baudrate, 4);
-
-	write(CONFIG_BEACONS, (beacon[0].enable > 0) | ((beacon[1].enable > 0) << 1) | ((beacon[2].enable > 0) << 2) | ((beacon[3].enable > 0) << 3) | ((beacon[4].enable > 0) << 4) | ((beacon[5].enable > 0) << 5) | ((beacon[6].enable > 0) << 6) | ((beacon[7].enable > 0) << 7));
+#ifdef BLUE_PILL
+	writeString(CONFIG_RS1BAUD, (uint8_t*)&Uart1.config.baudrate, 4);
+	write(CONFIG_MODE_UART1, Uart1.config.defaultMode);
+	writeString(CONFIG_RS2BAUD, (uint8_t*)&Uart2.config.baudrate, 4);
+	write(CONFIG_MODE_UART2, Uart2.config.defaultMode);
+#endif
+	write(CONFIG_BEACONS, (BeaconConfig[0].enable > 0) | ((BeaconConfig[1].enable > 0) << 1) | ((BeaconConfig[2].enable > 0) << 2) | ((BeaconConfig[3].enable > 0) << 3) | ((BeaconConfig[4].enable > 0) << 4) | ((BeaconConfig[5].enable > 0) << 5) | ((BeaconConfig[6].enable > 0) << 6) | ((BeaconConfig[7].enable > 0) << 7));
 	for(uint8_t s = 0; s < 8; s++)
 	{
-		write(CONFIG_BCIV + (2 * s), beacon[s].interval / 6000);
+		write(CONFIG_BCIV + (2 * s), BeaconConfig[s].interval / 6000);
 	}
 	for(uint8_t s = 0; s < 8; s++)
 	{
-		write(CONFIG_BCDL + (2 * s), beacon[s].delay / 60);
+		write(CONFIG_BCDL + (2 * s), BeaconConfig[s].delay / 60);
 	}
-	writeString(CONFIG_BC0, beacon[0].data, 100);
-	writeString(CONFIG_BC1, beacon[1].data, 100);
-	writeString(CONFIG_BC2, beacon[2].data, 100);
-	writeString(CONFIG_BC3, beacon[3].data, 100);
-	writeString(CONFIG_BC4, beacon[4].data, 100);
-	writeString(CONFIG_BC5, beacon[5].data, 100);
-	writeString(CONFIG_BC6, beacon[6].data, 100);
-	writeString(CONFIG_BC7, beacon[7].data, 100);
-	writeString(CONFIG_BCP0, beacon[0].path, 14);
-	writeString(CONFIG_BCP1, beacon[1].path, 14);
-	writeString(CONFIG_BCP2, beacon[2].path, 14);
-	writeString(CONFIG_BCP3, beacon[3].path, 14);
-	writeString(CONFIG_BCP4, beacon[4].path, 14);
-	writeString(CONFIG_BCP5, beacon[5].path, 14);
-	writeString(CONFIG_BCP6, beacon[6].path, 14);
-	writeString(CONFIG_BCP7, beacon[7].path, 14);
+	writeString(CONFIG_BC0, BeaconConfig[0].data, 100);
+	writeString(CONFIG_BC1, BeaconConfig[1].data, 100);
+	writeString(CONFIG_BC2, BeaconConfig[2].data, 100);
+	writeString(CONFIG_BC3, BeaconConfig[3].data, 100);
+	writeString(CONFIG_BC4, BeaconConfig[4].data, 100);
+	writeString(CONFIG_BC5, BeaconConfig[5].data, 100);
+	writeString(CONFIG_BC6, BeaconConfig[6].data, 100);
+	writeString(CONFIG_BC7, BeaconConfig[7].data, 100);
+	writeString(CONFIG_BCP0, BeaconConfig[0].path, 14);
+	writeString(CONFIG_BCP1, BeaconConfig[1].path, 14);
+	writeString(CONFIG_BCP2, BeaconConfig[2].path, 14);
+	writeString(CONFIG_BCP3, BeaconConfig[3].path, 14);
+	writeString(CONFIG_BCP4, BeaconConfig[4].path, 14);
+	writeString(CONFIG_BCP5, BeaconConfig[5].path, 14);
+	writeString(CONFIG_BCP6, BeaconConfig[6].path, 14);
+	writeString(CONFIG_BCP7, BeaconConfig[7].path, 14);
 	write(CONFIG_DIGION, DigiConfig.enable);
 	write(CONFIG_DIGIEN, DigiConfig.enableAlias);
 	write(CONFIG_DIGIVISC, ((uint16_t)DigiConfig.viscous << 8) | (uint16_t)DigiConfig.directOnly);
@@ -265,19 +221,17 @@ void ConfigWrite(void)
 	write(CONFIG_DIGICALLFILEN, DigiConfig.callFilterEnable);
 	write(CONFIG_DIGIFILTYPE, DigiConfig.filterPolarity);
 	writeString(CONFIG_DIGIFILLIST, DigiConfig.callFilter[0], sizeof(DigiConfig.callFilter));
-	write(CONFIG_PWM_FLAT, ModemConfig.usePWM | (ModemConfig.flatAudioIn << 1));
+	write(CONFIG_PWM_FLAT_PTT, ModemConfig.usePWM | (ModemConfig.flatAudioIn << 1) | (ModemConfig.pttOutput << 2));
+	write(CONFIG_TX_LEVEL, ModemConfig.txLevel);
 	write(CONFIG_KISSMONITOR, GeneralConfig.kissMonitor);
 	write(CONFIG_ALLOWNONAPRS, Ax25Config.allowNonAprs);
 	write(CONFIG_FX25, Ax25Config.fx25 | (Ax25Config.fx25Tx << 1));
 	write(CONFIG_MODEM, ModemConfig.modem);
-	write(CONFIG_MODE_USB, UartUsb.defaultMode);
-	write(CONFIG_MODE_UART1, Uart1.defaultMode);
-	write(CONFIG_MODE_UART2, Uart2.defaultMode);
+	write(CONFIG_MODE_USB, UartUsb.config.defaultMode);
 
 	write(CONFIG_FLAG, CONFIG_FLAG_WRITTEN);
 
-	FLASH->CR &= ~FLASH_CR_PG;
-	FLASH->CR |= FLASH_CR_LOCK;
+	lock();
 
 }
 
@@ -298,33 +252,37 @@ uint8_t ConfigRead(void)
 	Ax25Config.txDelayLength = read(CONFIG_TXDELAY);
 	Ax25Config.txTailLength = read(CONFIG_TXTAIL);
 	Ax25Config.quietTime = read(CONFIG_TXQUIET);
-	readString(CONFIG_RS1BAUD, (uint8_t*)&Uart1.baudrate, 4);
-	readString(CONFIG_RS2BAUD, (uint8_t*)&Uart2.baudrate, 4);
+#ifdef BLUE_PILL
+	readString(CONFIG_RS1BAUD, (uint8_t*)&Uart1.config.baudrate, 4);
+	Uart1.config.defaultMode = read(CONFIG_MODE_UART1);
+	readString(CONFIG_RS2BAUD, (uint8_t*)&Uart2.config.baudrate, 4);
+	Uart2.config.defaultMode = read(CONFIG_MODE_UART2);
+#endif
 	uint8_t bce = (uint8_t)read(CONFIG_BEACONS);
-	beacon[0].enable = (bce & 1) > 0;
-	beacon[1].enable = (bce & 2) > 0;
-	beacon[2].enable = (bce & 4) > 0;
-	beacon[3].enable = (bce & 8) > 0;
-	beacon[4].enable = (bce & 16) > 0;
-	beacon[5].enable = (bce & 32) > 0;
-	beacon[6].enable = (bce & 64) > 0;
-	beacon[7].enable = (bce & 128) > 0;
-	for(uint8_t s = 0; s < (sizeof(beacon) / sizeof(*beacon)); s++)
+	BeaconConfig[0].enable = (bce & 1) > 0;
+	BeaconConfig[1].enable = (bce & 2) > 0;
+	BeaconConfig[2].enable = (bce & 4) > 0;
+	BeaconConfig[3].enable = (bce & 8) > 0;
+	BeaconConfig[4].enable = (bce & 16) > 0;
+	BeaconConfig[5].enable = (bce & 32) > 0;
+	BeaconConfig[6].enable = (bce & 64) > 0;
+	BeaconConfig[7].enable = (bce & 128) > 0;
+	for(uint8_t s = 0; s < BEACON_COUNT; s++)
 	{
-		 beacon[s].interval = read(CONFIG_BCIV + (2 * s)) * 6000;
+		 BeaconConfig[s].interval = read(CONFIG_BCIV + (2 * s)) * 6000;
 	}
-	for(uint8_t s = 0; s < (sizeof(beacon) / sizeof(*beacon)); s++)
+	for(uint8_t s = 0; s < BEACON_COUNT; s++)
 	{
-		 beacon[s].delay = read(CONFIG_BCDL + (2 * s)) * 60;
+		 BeaconConfig[s].delay = read(CONFIG_BCDL + (2 * s)) * 60;
 	}
 
-	for(uint8_t g = 0; g < (sizeof(beacon) / sizeof(*beacon)); g++)
+	for(uint8_t g = 0; g < BEACON_COUNT; g++)
 	{
-		readString(CONFIG_BC0 + (g * 100), beacon[g].data, 100);
+		readString(CONFIG_BC0 + (g * 100), BeaconConfig[g].data, 100);
 	}
-	for(uint8_t g = 0; g < (sizeof(beacon) / sizeof(*beacon)); g++)
+	for(uint8_t g = 0; g < BEACON_COUNT; g++)
 	{
-		readString(CONFIG_BCP0 + (g * 14), beacon[g].path, 14);
+		readString(CONFIG_BCP0 + (g * 14), BeaconConfig[g].path, 14);
 	}
 	DigiConfig.enable = (uint8_t)read(CONFIG_DIGION);
 	DigiConfig.enableAlias = (uint8_t)read(CONFIG_DIGIEN);
@@ -356,18 +314,68 @@ uint8_t ConfigRead(void)
 	DigiConfig.callFilterEnable = (uint8_t)read(CONFIG_DIGICALLFILEN);
 	DigiConfig.filterPolarity = (uint8_t)read(CONFIG_DIGIFILTYPE);
 	readString(CONFIG_DIGIFILLIST, DigiConfig.callFilter[0], 140);
-	t = (uint8_t)read(CONFIG_PWM_FLAT);
+	t = (uint8_t)read(CONFIG_PWM_FLAT_PTT);
 	ModemConfig.usePWM = t & 1;
 	ModemConfig.flatAudioIn = (t & 2) > 0;
+	ModemConfig.pttOutput = (t & 4) > 0;
+	ModemConfig.txLevel = read(CONFIG_TX_LEVEL);
 	GeneralConfig.kissMonitor = (read(CONFIG_KISSMONITOR) == 1);
 	Ax25Config.allowNonAprs = (read(CONFIG_ALLOWNONAPRS) == 1);
 	t = (uint8_t)read(CONFIG_FX25);
 	Ax25Config.fx25 = t & 1;
 	Ax25Config.fx25Tx = (t & 2) > 0;
 	ModemConfig.modem = read(CONFIG_MODEM);
-	UartUsb.defaultMode = read(CONFIG_MODE_USB);
-	Uart1.defaultMode = read(CONFIG_MODE_UART1);
-	Uart2.defaultMode = read(CONFIG_MODE_UART2);
+	UartUsb.config.defaultMode = read(CONFIG_MODE_USB);
+
 
 	return 1;
 }
+
+#elif defined(AIOC)
+
+#define CONFIG_FLAG_WRITTEN 0xA10C
+
+#define CONFIG_FLAG 0 //configuration written flag
+#define CONFIG_GENERAL 8 //GeneralConfig
+#define CONFIG_AX25 (CONFIG_GENERAL + 64) //Ax25Config
+#define CONFIG_BEACON (CONFIG_AX25 + 64) //BeaconConfig
+#define CONFIG_MODEM (CONFIG_BEACON + 144 * 8) //ModemConfig
+#define CONFIG_DIGI (CONFIG_MODEM + 256) //DigiConfig
+#define CONFIG_USB (CONFIG_DIGI + 64) //UartUsb.config
+
+
+void ConfigWrite(void)
+{
+	ConfigErase();
+
+	unlock();
+
+	writeString(CONFIG_GENERAL, &GeneralConfig, sizeof(GeneralConfig));
+	writeString(CONFIG_AX25, &Ax25Config, sizeof(Ax25Config));
+	writeString(CONFIG_BEACON, BeaconConfig, sizeof(DigiConfig));
+	writeString(CONFIG_MODEM, &ModemConfig, sizeof(ModemConfig));
+	writeString(CONFIG_DIGI, &DigiConfig, sizeof(DigiConfig));
+	writeString(CONFIG_USB, &(UartUsb.config), sizeof(UartUsb.config));
+	write(CONFIG_FLAG, CONFIG_FLAG_WRITTEN);
+
+	lock();
+}
+
+uint8_t ConfigRead(void)
+{
+	if(read(CONFIG_FLAG) != CONFIG_FLAG_WRITTEN) //no configuration stored
+	{
+		return 0;
+	}
+
+	readString(CONFIG_GENERAL, &GeneralConfig, sizeof(GeneralConfig));
+	readString(CONFIG_AX25, &Ax25Config, sizeof(Ax25Config));
+	readString(CONFIG_BEACON, BeaconConfig, sizeof(DigiConfig));
+	readString(CONFIG_MODEM, &ModemConfig, sizeof(ModemConfig));
+	readString(CONFIG_DIGI, &DigiConfig, sizeof(DigiConfig));
+	readString(CONFIG_USB, &(UartUsb.config), sizeof(UartUsb.config));
+
+	return 1;
+}
+
+#endif

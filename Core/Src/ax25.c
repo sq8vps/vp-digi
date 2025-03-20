@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2025 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -24,7 +24,6 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "common.h"
 #include <stdbool.h>
 #include <string.h>
-#include "systick.h"
 #include "digipeater.h"
 
 struct Ax25ProtoConfig Ax25Config;
@@ -33,7 +32,11 @@ struct Ax25ProtoConfig Ax25Config;
 #include "fx25.h"
 #endif
 
-#define FRAME_MAX_COUNT (10) //max count of frames in buffer
+#ifdef AIOC
+#define FRAME_MAX_COUNT (15)
+#else
+#define FRAME_MAX_COUNT (9) //max count of frames in buffer
+#endif
 #define FRAME_BUFFER_SIZE (FRAME_MAX_COUNT * AX25_FRAME_MAX_SIZE) //circular frame buffer length
 
 #define STATIC_HEADER_FLAG_COUNT 4 //number of flags sent before each frame
@@ -900,7 +903,7 @@ void Ax25TransmitBuffer(void)
 
 	 if((txFrameHead != txFrameTail) || txFrameBufferFull)
 	 {
-	 	txQuiet = (SysTickGet() + (Ax25Config.quietTime / SYSTICK_INTERVAL) + Random(0, 200 / SYSTICK_INTERVAL)); //calculate required delay
+	 	txQuiet = (HAL_GetTick() + (Ax25Config.quietTime / SYSTICK_INTERVAL) + Random(0, 200 / SYSTICK_INTERVAL)); //calculate required delay
 	 	txInitStage = TX_INIT_WAITING;
 	 }
 }
@@ -936,7 +939,7 @@ void Ax25TransmitCheck(void)
 	 if(ModemIsTxTestOngoing()) //TX test is enabled, wait for now
 	 	return;
 
-	 if(txQuiet < SysTickGet()) //quit time has elapsed
+	 if(txQuiet < HAL_GetTick()) //quit time has elapsed
 	 {
 	 	if(!ModemDcdState()) //channel is free
 	 	{
@@ -954,7 +957,7 @@ void Ax25TransmitCheck(void)
 	 		}
 	 		else //still trying
 	 		{
-	 			txQuiet = SysTickGet() + Random(100 / SYSTICK_INTERVAL, 500 / SYSTICK_INTERVAL); //try again after some random time
+	 			txQuiet = HAL_GetTick() + Random(100 / SYSTICK_INTERVAL, 500 / SYSTICK_INTERVAL); //try again after some random time
 	 			txRetries++;
 	 		}
 	 	}

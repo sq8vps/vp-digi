@@ -47,8 +47,12 @@ enum ModemTxTestMode
 struct ModemDemodConfig
 {
 	enum ModemType modem;
-	uint8_t usePWM : 1; //0 - use R2R, 1 - use PWM
-	uint8_t flatAudioIn : 1; //0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
+	uint32_t usePWM : 1; //PWM or DAC is always used, R2R support is dropped - this bit is unused since v.2.2.0
+	uint32_t flatAudioIn : 1; //0 - normal (deemphasized) audio input, 1 - flat audio (unfiltered) input
+	uint32_t pttOutput : 1; //AIOC version: 0 - PTT1 at PA1, 1 - PTT2 at PA0; non-AIOC version: don't care
+	uint32_t attenuator : 1; //AIOC version: 0 - no output attenuation, 1 - 90% attenuation; non-AIOC version: don't care
+	uint32_t gain : 3; //AIOC version: input gain = (1 << gain); non-AIOC version: don't care
+	uint32_t txLevel : 7; //TX audio level in %
 };
 
 extern struct ModemDemodConfig ModemConfig;
@@ -102,19 +106,6 @@ uint8_t ModemDcdState(void);
 uint8_t ModemIsTxTestOngoing(void);
 
 /**
- * @brief Clear modem RMS counter
- * @param number Modem number
- */
-void ModemClearRMS(uint8_t number);
-
-/**
- * @brief Get RMS value for modem
- * @param number Modem number
- * @return RMS value
- */
-uint16_t ModemGetRMS(uint8_t number);
-
-/**
  * @brief Start or restart TX test mode
  * @param type TX test type: TEST_MARK, TEST_SPACE or TEST_ALTERNATING
  */
@@ -139,6 +130,15 @@ void ModemTransmitStart(void);
  */
 void ModemTransmitStop(void);
 
+/**
+ * @brief Apply RX gain setting (if applicable)
+ */
+void ModemApplyRxGain(void);
+
+/**
+ * @brief Apply TX attenuator (if applicable)
+ */
+void ModemApplyTxAttenuator(void);
 
 /**
  * @brief Initialize modem module
