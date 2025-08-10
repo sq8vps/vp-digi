@@ -16,6 +16,7 @@ Polska wersja tego pliku dostępna jest [tutaj](README_pl.md).
 * 8 independent beacons
 * KISS mode (can be used as an ordinary Packet Radio, Winlink, APRS, etc. modem)
 * USB and 2 UARTs: independent, running in KISS, monitor, or configuration mode
+* 40-50 mA current consumption
   
 ## Download and setup
 The latest compiled firmware can be downloaded [here](https://github.com/sq8vps/vp-digi/releases).\
