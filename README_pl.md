@@ -15,6 +15,7 @@
 * 8 niezależnych beaconów
 * Tryb KISS (użycie jako zwykły modem Packet Radio, Winlink, APRS itp.)
 * USB i 2 interfejsy UART: niezależne, działające w trybie KISS, monitora lub konfiguracji
+* Pobór prądu na poziomie 40-50 mA
 
 ## Pobieranie i konfiguracja
 Najnowsze skompilowane oprogramowanie można znaleźć [tutaj](https://github.com/sq8vps/vp-digi/releases).\
