@@ -29,6 +29,28 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 //for AX.25 329 bytes is the theoretical max size assuming 2-byte Control, 1-byte PID, 256-byte info field and 8 digi address fields
 #define AX25_FRAME_MAX_SIZE (329) //single frame max length
 
+/**
+ * @brief Extract SSID from SSID byte in AX.25 frame
+ * @param byte Byte containing SSID
+ * @return Decoded SSID (0-15)
+ */
+#define EXTRACT_SSID(byte) (((byte) >> 1) & 0xF)
+
+/**
+ * @brief H-bit (has been repeated) mask
+ */
+#define H_BIT_MASK 0x80
+
+/**
+ * @brief Reserved bits in AX.25 SSID
+ */
+#define SSID_RESERVED_MASK 0x60
+
+/**
+ * @brief C-bit (end of path) mask
+ */
+#define C_BIT_MASK 0x1
+
 enum Ax25RxStage
 {
 	RX_STAGE_IDLE = 0,

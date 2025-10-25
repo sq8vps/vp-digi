@@ -49,7 +49,7 @@ void BeaconSend(uint8_t number)
 	for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //add source address
 		buf[idx++] = GeneralConfig.call[i];
 
-	buf[idx++] = ((GeneralConfig.callSsid << 1) + 0b01100000); //add source ssid
+	buf[idx++] = ((GeneralConfig.callSsid << 1) | SSID_RESERVED_MASK); //add source ssid
 
 	if(BeaconConfig[number].path[0] > 0) //this BeaconConfig has some path set
 	{
@@ -60,7 +60,7 @@ void BeaconSend(uint8_t number)
 				buf[idx] = BeaconConfig[number].path[i]; //copy path
 				if((i == 6) || (i == 13)) //it was and ssid
 				{
-					buf[idx] = ((buf[idx] << 1) + 0b01100000); //add appropriate bits for ssid
+					buf[idx] = ((buf[idx] << 1) | SSID_RESERVED_MASK); //add appropriate bits for ssid
 				}
 				idx++;
 			}
@@ -68,7 +68,7 @@ void BeaconSend(uint8_t number)
 				break; //end here
 		}
 	}
-	buf[idx - 1] |= 1; //add c-bit on the last element
+	buf[idx - 1] |= C_BIT_MASK; //add c-bit on the last element
 	buf[idx++] = 0x03; //control
 	buf[idx++] = 0xF0; //pid
 	for(uint8_t i = 0; i < strlen((char*)BeaconConfig[number].data); i++)

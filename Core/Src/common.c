@@ -101,7 +101,7 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 		}
 	}
 
-	uint8_t ssid = ((from[13] >> 1) & 0b00001111); //store ssid
+	uint8_t ssid = EXTRACT_SSID(from[13]); //store ssid
 	if(ssid > 0) //SSID >0
 	{
 		UartSendByte(uart, '-'); //add -
@@ -117,7 +117,7 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 			UartSendByte(uart, from[i] >> 1);
 		}
 	}
-	ssid = ((from[6] >> 1) & 0b00001111); //store ssid
+	ssid = EXTRACT_SSID(from[6]); //store ssid
 
 	if(ssid > 0) //SSID >0
 	{
@@ -141,20 +141,20 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
         		}
         	}
 
-            ssid = ((from[nextPathEl + 6] >> 1) & 0b00001111); //store ssid
+            ssid = EXTRACT_SSID(from[nextPathEl + 6]); //store ssid
         	if(ssid > 0) //SSID >0
         	{
         		UartSendByte(uart, '-'); //add -
         		UartSendNumber(uart, ssid);
         	}
-            if((from[nextPathEl + 6] & 0x80)) //h-bit in ssid
+            if((from[nextPathEl + 6] & H_BIT_MASK)) //h-bit in ssid
             	UartSendByte(uart, '*'); //add *
 
             nextPathEl += 7; //next path element
             if(nextPathEl > 56) //too many path elements
             	break;
         }
-        while((from[nextPathEl - 1] & 1) == 0); //loop until the c-bit is found
+        while((from[nextPathEl - 1] & C_BIT_MASK) == 0); //loop until the c-bit is found
 
     }
 

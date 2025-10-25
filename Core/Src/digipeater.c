@@ -210,7 +210,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     	if(!filterFrameCheck(&frame[7], alias)) //push source callsign through the filter
     		return;
     }
-    uint8_t ssid = (frame[elStart + 6] >> 1) - 48; //store SSID (N)
+    uint8_t ssid = EXTRACT_SSID(frame[elStart + 6]); //store SSID (N)
 
 
     if(alias < 8)
@@ -241,8 +241,8 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     		for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //replace with own call
     			buffer[elStart + i] = GeneralConfig.call[i];
 
-    		buffer[elStart + 6] &= 1; //clear everything but path end bit
-    		buffer[elStart + 6] |= ((GeneralConfig.callSsid << 1) + 0b11100000); //insert ssid and h-bit
+    		buffer[elStart + 6] &= C_BIT_MASK; //clear everything but path end bit
+    		buffer[elStart + 6] |= ((GeneralConfig.callSsid << 1) | H_BIT_MASK | SSID_RESERVED_MASK); //insert ssid and h-bit
     	}
     }
     else //standard n-N alias
@@ -263,7 +263,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     		for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //insert own call
     			buffer[(*index)++] = GeneralConfig.call[i];
 
-    		buffer[(*index)++] = ((GeneralConfig.callSsid << 1) + 0b11100000); //insert ssid and h-bit
+    		buffer[(*index)++] = ((GeneralConfig.callSsid << 1) | H_BIT_MASK | SSID_RESERVED_MASK); //insert ssid and h-bit
     		shift = 7; //additional shift when own call is inserted
     	}
 
@@ -274,9 +274,9 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     	}
 
 		buffer[elStart + shift + 6] -= 2; //decrement SSID in alias (2 because ssid is shifted left by 1)
-		if((buffer[elStart + shift + 6] & 0b11110) == 0) //if SSID is 0
+		if(EXTRACT_SSID(buffer[elStart + shift + 6]) == 0) //if SSID is 0
 		{
-			buffer[elStart + shift + 6] += 0x80; //add h-bit
+			buffer[elStart + shift + 6] |= H_BIT_MASK; //add h-bit
 		}
 
     }
@@ -314,7 +314,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
 		return;
 
     uint16_t t = 13; //start from first byte that can contain path end bit
-    while((frame[t] & 1) == 0) //look for path end
+    while((frame[t] & C_BIT_MASK) == 0) //look for path end
     {
     	if((t + 7) >= len)
     		return;
@@ -347,7 +347,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
     }
 
 
-    while((frame[t] & 0x80) == 0) //look for h-bit
+    while((frame[t] & H_BIT_MASK) == 0) //look for h-bit
     {
         if(t == 13)
         {
@@ -357,7 +357,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
     }
     t++; //now t is the index for the first byte in path element we want to process
 
-    uint8_t ssid = ((frame[t + 6] >> 1) - 0b00110000); //current path element SSID
+    uint8_t ssid = EXTRACT_SSID(frame[t + 6]); //current path element SSID
 
     uint8_t err = 0;
 
@@ -416,7 +416,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
 
         if(err == 0) //alias matching, check further
         {
-            uint8_t n = ((frame[t + j] >> 1) - 48); //get n from alias (e.g. WIDEn-N) - N is in ssid variable
+            uint8_t n = ((frame[t + j] >> 1) - '0'); //get n from alias (e.g. WIDEn-N) - N is in ssid variable
 
             //every path must meet several requirements
             //say we have a WIDEn-N path. Then:
