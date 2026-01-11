@@ -49,7 +49,10 @@ void BeaconSend(uint8_t number)
 	for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //add source address
 		buf[idx++] = GeneralConfig.call[i];
 
-	buf[idx++] = ((GeneralConfig.callSsid << 1) | SSID_RESERVED_MASK); //add source ssid
+	if(BEACON_DEFAULT_SSID == BeaconConfig[number].ssid)
+		buf[idx++] = ((GeneralConfig.callSsid << 1) | SSID_RESERVED_MASK); //add source ssid
+	else
+		buf[idx++] = (((BeaconConfig[number].ssid & 0xF) << 1) | SSID_RESERVED_MASK); //add source ssid
 
 	if(BeaconConfig[number].path[0] > 0) //this BeaconConfig has some path set
 	{

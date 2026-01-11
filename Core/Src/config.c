@@ -148,7 +148,8 @@ void ConfigErase(void)
 #define CONFIG_MODE_UART1 1222
 #define CONFIG_MODE_UART2 1224
 #define CONFIG_TX_LEVEL 1226
-#define CONFIG_XXX 1228 //next address (not used)
+#define CONFIG_BEACON_SSID 1228
+#define CONFIG_XXX 1236 //next address (not used)
 
 void ConfigWrite(void)
 {
@@ -176,6 +177,12 @@ void ConfigWrite(void)
 	for(uint8_t s = 0; s < 8; s++)
 	{
 		write(CONFIG_BCDL + (2 * s), BeaconConfig[s].delay / 60);
+	}
+	for(uint8_t i = 0; i < BEACON_COUNT / 2; i++)
+	{
+		uint16_t ssid = BeaconConfig[2 * i].ssid;
+		ssid |= ((uint16_t)BeaconConfig[(2 * i) + 1].ssid) << 8;
+		write(CONFIG_BEACON_SSID + (2 * i), ssid);
 	}
 	writeString(CONFIG_BC0, BeaconConfig[0].data, 100);
 	writeString(CONFIG_BC1, BeaconConfig[1].data, 100);
@@ -283,6 +290,12 @@ uint8_t ConfigRead(void)
 	for(uint8_t g = 0; g < BEACON_COUNT; g++)
 	{
 		readString(CONFIG_BCP0 + (g * 14), BeaconConfig[g].path, 14);
+	}
+	for(uint8_t i = 0; i < BEACON_COUNT / 2; i++)
+	{
+		uint16_t ssid = read(CONFIG_BEACON_SSID + (2 * i));
+		BeaconConfig[2 * i].ssid = ssid & 0xFF;
+		BeaconConfig[(2 * i) + 1].ssid = ssid >> 8;
 	}
 	DigiConfig.enable = (uint8_t)read(CONFIG_DIGION);
 	DigiConfig.enableAlias = (uint8_t)read(CONFIG_DIGIEN);

@@ -314,8 +314,13 @@ static void printConfig(Uart *src)
 		UartSendNumber(src, BeaconConfig[i].interval / 6000);
 		UartSendString(src, ", Dl: ", 0);
 		UartSendNumber(src, BeaconConfig[i].delay / 60);
-		UartSendByte(src, ',');
-		UartSendByte(src, ' ');
+		if(BEACON_DEFAULT_SSID != BeaconConfig[i].ssid)
+		{
+			UartSendString(src, ", SSID: ", 0);
+			UartSendNumber(src, BeaconConfig[i].ssid);
+
+		}
+		UartSendString(src, ", ", 0);
 		if(BeaconConfig[i].path[0] != 0)
 		{
 			for(uint8_t j = 0; j < 6; j++)
@@ -811,7 +816,7 @@ void TermParse(Uart *src)
 		else if(!strncmp(&cmd[9], "iv", 2) || !strncmp(&cmd[9], "dl", 2)) //interval or delay
 		{
 			int64_t t = StrToInt(&cmd[12], len - 12);
-			if(t > 720)
+			if((t > 720) || (t < 0))
 			{
 				UartSendString(src, "Interval/delay must lesser or equal to 720 minutes\r\n", 0);
 				return;
@@ -884,6 +889,21 @@ void TermParse(Uart *src)
 			}
 
 			memcpy(BeaconConfig[bcno].path, tmp, 14);
+		}
+		else if(!strncmp(&cmd[9], "ssid", 4)) //ssid override
+		{
+			if(!strncmp(&cmd[14], "default", 7))
+				BeaconConfig[bcno].ssid = BEACON_DEFAULT_SSID;
+			else
+			{
+				int64_t t = StrToInt(&cmd[14], len - 14);
+				if((t > 15) || (t < 0))
+				{
+					UartSendString(src, "SSID must be between 0 and 15 or default\r\n", 0);
+					return;
+				}
+				BeaconConfig[bcno].ssid = t;
+			}
 		}
 		else
 		{

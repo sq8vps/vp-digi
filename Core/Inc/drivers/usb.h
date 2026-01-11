@@ -51,7 +51,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 	GPIOA->MODER &= ~GPIO_MODER_MODER12_1; \
 	GPIOA->OTYPER &= ~GPIO_OTYPER_OT_12; \
 	GPIOA->BSRR = GPIO_BSRR_BR_12; \
-	HAL_Delay(20); \
+	HAL_Delay(100); \
 	GPIOA->MODER &= ~GPIO_MODER_MODER12_0; \
 	GPIOA->MODER |= GPIO_MODER_MODER12_1; \
 } while(0); \

@@ -26,6 +26,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define BEACON_MAX_PAYLOAD_SIZE 100
 #define BEACON_COUNT 8
 
+#define BEACON_DEFAULT_SSID 0xFF
+
 struct Beacon
 {
 	uint8_t enable; //enable beacon
@@ -34,6 +36,7 @@ struct Beacon
 	uint8_t data[BEACON_MAX_PAYLOAD_SIZE + 1]; //information field
 	uint8_t path[15]; //path, 2 parts max, e.g. WIDE1<sp>1SP2<sp><sp><sp>2<NUL>, <NUL> can be at byte 0, 7 and 14
 	uint32_t next; //next beacon timestamp
+	uint8_t ssid; //SSID to be used for this beacon
 };
 
 extern struct Beacon BeaconConfig[BEACON_COUNT];
