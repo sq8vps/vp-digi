@@ -119,7 +119,8 @@ W trybie konfiguracji dostępne są następujące polecenia:
 - `digi dupe CZAS` – ustawia czas bufora filtrującego duplikaty, który zapobiega wielokrotnemu powtarzaniu już powtórzonego pakietu. Czas w sekundach z zakresu od 5 do 255.
 - `digi list POZYCJA set ZNAK-SSID` – wpisuje znak na wybraną pozycję (z zakresu od 0 do 19) listy filtrującej. Można używać znaku \* do zamaskowania wszystkich liter do końca znaku. *?* maskuje pojedynczą literę w znaku. Do zamaskowania SSID można użyć \* lub *?*.
 - `digi list POZYCJA remove` – usuwa wybraną pozycję (z zakresu od 0 do 19) z listy filtrującej
-- `monkiss <on/off>` – *on* włącza, *off* wyłącza wysyłanie własnych i powtórzonych ramek na porty KISS
+- `monkiss <on/off>` – *on* włącza, *off* wyłącza wysyłanie własnych i powtórzonych ramek na porty KISS.
+- `filkiss <on/off>` - *on* włącza, *off* wyłącza filtrowanie (używając listy z `digi list`) odebranych ramek przed ich wysłaniem na porty KISS.
 - `nonaprs <on/off>` – *on* włącza, *off* wyłącza odbiór pakietów niebędących pakietami APRS (np. dla Packet Radio)
 - `fx25 <on/off>` - *on* włącza, *off* wyłącza obsługę protokołu FX.25. Po włączeniu jednocześnie będą odbierane pakiety AX.25 i FX.25.
 - `fx25tx <on/off>` - *on* włącza, *off* wyłącza nadawanie z użyciem protokołu FX.25. Jeśli obsługa FX.25 jest wyłączona całkowicie (polecenie *fx25 off*), to pakiety zawsze będą nadawane z użyciem AX.25.
@@ -141,7 +142,7 @@ Dostępne są także polecenia wspólne:
 
 - Beacon\
     Przykład dla beaconu o numerze 0. Dostępne są beacony od 0 do 7.
-    1. *beacon 0 data !5002.63N/02157.91E#VP-Digi* – ustawienie danych beaconu w standardzie APRS
+    1. *beacon 0 data !5000.00N/02200.00E#VP-Digi* – ustawienie danych beaconu w standardzie APRS
     2. *beacon 0 path WIDE2-2* – ustawienie ścieżki
     4. *beacon 0 iv 15* – nadawanie co 15 minut
     5. *beacon 0 dl 5* – beacon będzie nadany po raz pierwszy po 5 minutach od uruchomienia urządzenia
@@ -333,6 +334,8 @@ Jeśli dla dopasowanego aliasu włączona jest funkcja *viscous delay*, to gotow
 Ponadto regularnie odświeżany jest bufor funkcji *viscous delay*. Jeśli minął odpowiedni czas i pakiet nie został usunięty z bufora (patrz *początek tej sekcji*), to jego hasz jest zapisywany do bufora filtra duplikatów, pakiet jest wysyłany i usuwany z bufora *viscous delay*.
 
 ## 4. Rejestr zmian dokumentacji
+### 2026/08/28
+- Konfiguracja filtrowania KISS + zmiana przykładowych koordynatów - Piotr Wilkoń
 ### 2025/03/04
 - Nowy schemat - Piotr Wilkoń
 ### 2024/05/16

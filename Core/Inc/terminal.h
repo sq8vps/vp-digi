@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -27,17 +27,23 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
  * @brief Send data to all available ports
  * @param mode Output mode/data type
  * @param *data Data buffer
- * @param size Data size
  */
-void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size);
+void TermSendToAll(enum UartMode mode, const char *data);
 
 /**
- * @brief Send signed number to all available ports
+ * @brief Send data to all available ports
  * @param mode Output mode/data type
- * @param n Number to send
+ * @param *data Data buffer
+ * @param size Data size
  */
-void TermSendNumberToAll(enum UartMode mode, int32_t n);
+void TermSendToAllN(enum UartMode mode, const void *data, uint16_t size);
 
+/**
+ * @brief Send character to all available ports
+ * @param mode Output mode/data type
+ * @param data Character to send
+ */
+void TermSendByteToAll(enum UartMode mode, char data);
 
 /**
  * @brief Handle "special" terminal cases like backspace or local echo

@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -24,6 +24,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <systick.h>
 #include "ax25.h"
 #include "terminal.h"
+#include "aprs.h"
 
 struct Beacon beacon[8];
 
@@ -47,7 +48,7 @@ void BeaconSend(uint8_t number)
 	for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //add source address
 		buf[idx++] = GeneralConfig.call[i];
 
-	buf[idx++] = ((GeneralConfig.callSsid << 1) + 0b01100000); //add source ssid
+	buf[idx++] = ENCODE_SSID(GeneralConfig.callSsid); //add source ssid
 
 	if(beacon[number].path[0] > 0) //this beacon has some path set
 	{
@@ -58,7 +59,7 @@ void BeaconSend(uint8_t number)
 				buf[idx] = beacon[number].path[i]; //copy path
 				if((i == 6) || (i == 13)) //it was and ssid
 				{
-					buf[idx] = ((buf[idx] << 1) + 0b01100000); //add appropriate bits for ssid
+					buf[idx] = ENCODE_SSID(buf[idx]); //add appropriate bits for ssid
 				}
 				idx++;
 			}
@@ -66,9 +67,9 @@ void BeaconSend(uint8_t number)
 				break; //end here
 		}
 	}
-	buf[idx - 1] |= 1; //add c-bit on the last element
-	buf[idx++] = 0x03; //control
-	buf[idx++] = 0xF0; //pid
+	buf[idx - 1] |= C_BIT; //add c-bit on the last element
+	buf[idx++] = APRS_CONTROL; //control
+	buf[idx++] = APRS_PID; //pid
 	for(uint8_t i = 0; i < strlen((char*)beacon[number].data); i++)
 	{
 		buf[idx++] = beacon[number].data[i]; //copy beacon comment
@@ -79,17 +80,16 @@ void BeaconSend(uint8_t number)
 	{
         if(GeneralConfig.kissMonitor) //monitoring mode, send own frames to KISS ports
         {
-        	TermSendToAll(MODE_KISS, buf, idx);
+        	TermSendToAllN(MODE_KISS, (const char*)buf, idx);
         }
 
 		DigiStoreDeDupe(buf, idx); //store frame hash in duplicate protection buffer (to prevent from digipeating own packets)
 
-		TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Transmitting beacon ", 0);
-
-		TermSendNumberToAll(MODE_MONITOR, number);
-		TermSendToAll(MODE_MONITOR, (uint8_t*)": ", 0);
+		TermSendToAll(MODE_MONITOR, "(AX.25) Transmitting beacon ");
+		TermSendByteToAll(MODE_MONITOR, number + '0');
+		TermSendToAll(MODE_MONITOR, ": ");
 		SendTNC2(buf, idx);
-		TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
+		TermSendToAll(MODE_MONITOR, "\r\n");
 	}
 
 }

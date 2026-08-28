@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -34,7 +34,8 @@ struct _GeneralConfig
 	uint8_t call[6]; //device callsign
 	uint8_t callSsid; //device ssid
 	uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
-	uint8_t kissMonitor;
+	uint8_t kissMonitor; //monitor own frames on KISS
+	uint8_t kissFilter; //apply filtering to received frames on KISS
 };
 
 extern struct _GeneralConfig GeneralConfig;
@@ -58,14 +59,14 @@ int16_t Random(int16_t min, int16_t max);
  */
 int64_t StrToInt(const char *str, uint16_t len);
 
-///**
-// * @brief Convert AX25 frame to TNC2 (readable) format
-// * @param *from Input AX25 frame
-// * @param len Input frame length
-// * @param *to Destination buffer, will be NULL terminated
-// * @param limit Destination buffer size limit
-// */
-//void ConvertToTNC2(uint8_t *from, uint16_t fromlen, uint8_t *to, uint16_t limit);
+/**
+ * @brief Convert int to string
+ * @param n Number to convert
+ * @param *str Target string buffer
+ * @return Pointer to the null character following the written data
+ * @note The buffer must be at least 9 bytes long
+ */
+char *IntToStr(int32_t n, char *str);
 
 /**
  * @brief Convert AX25 frame to TNC2 (readable) format and send it through available ports

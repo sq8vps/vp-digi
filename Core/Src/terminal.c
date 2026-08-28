@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -52,7 +52,7 @@ void TermHandleSpecial(Uart *u)
 	uint16_t t = u->rxBufferHead; //store last index
 	if(u->lastRxBufferHead < t) //local echo handling
 	{
-		UartSendString(u, (uint8_t*)&u->rxBuffer[u->lastRxBufferHead], t - u->lastRxBufferHead); //echo characters entered by user
+		UartSendString(u, (const char*)&u->rxBuffer[u->lastRxBufferHead], t - u->lastRxBufferHead); //echo characters entered by user
 		if((u->rxBuffer[t - 1] == '\r') || (u->rxBuffer[t - 1] == '\n'))
 			UartSendString(u, "\r\n", 2);
 		u->lastRxBufferHead = t;
@@ -61,7 +61,7 @@ void TermHandleSpecial(Uart *u)
 }
 
 
-void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size)
+void TermSendToAllN(enum UartMode mode, const void *data, uint16_t size)
 {
 	if(MODE_KISS == mode)
 	{
@@ -80,19 +80,31 @@ void TermSendToAll(enum UartMode mode, uint8_t *data, uint16_t size)
 	}
 }
 
-void TermSendNumberToAll(enum UartMode mode, int32_t n)
+void TermSendToAll(enum UartMode mode, const char *data)
 {
-	if(MODE_MONITOR == mode)
+	TermSendToAllN(mode, data, 0);
+}
+
+void TermSendByteToAll(enum UartMode mode, char data)
+{
+	if(MODE_KISS == mode)
+	{
+		KissSend(&Uart1, &data, 1);
+		KissSend(&Uart2, &data, 1);
+		KissSend(&UartUsb, &data, 1);
+	}
+	else if(MODE_MONITOR == mode)
 	{
 		if(UartUsb.mode == MODE_MONITOR)
-			UartSendNumber(&UartUsb, n);
+			UartSendByte(&UartUsb, data);
 		if(Uart1.mode == MODE_MONITOR)
-			UartSendNumber(&Uart1, n);
+			UartSendByte(&Uart1, data);
 		if(Uart2.mode == MODE_MONITOR)
-			UartSendNumber(&Uart2, n);
+			UartSendByte(&Uart2, data);
 	}
-
 }
+
+
 
 static const char monitorHelp[] = "\r\nCommands available in monitor mode:\r\n"
 		"help - show this help page\r\n"
@@ -140,6 +152,7 @@ static const char configHelp[] = 	"\r\nCommands available in config mode:\r\n"
 		"digi dupe <5-255> - set duplicate protection buffer time (s)\r\n"
 		"digi list <0-19> [set <call>/remove] - set/clear given callsign slot in filter list\r\n"
 		"monkiss [on/off] - send own and digipeated frames to KISS ports\r\n"
+		"filkiss [on/off] - filter RX frames before sending to KISS port\r\n"
 		"nonaprs [on/off] - enable reception of non-APRS frames\r\n"
 		"fx25 [on/off] - enable FX.25 protocol (AX.25 + FEC)\r\n"
 		"fx25tx [on/off] - enable TX in FX.25 mode\r\n";
@@ -149,7 +162,9 @@ static void sendUartParams(Uart *output, Uart *uart)
 {
 	if(!uart->isUsb)
 	{
-		UartSendNumber(output, uart->baudrate);
+		char buf[20];
+		IntToStr(uart->baudrate, buf);
+		UartSendString(output, buf, 0);
 		UartSendString(output, " baud, ", 0);
 	}
 	UartSendString(output, "default mode: ", 0);
@@ -169,6 +184,7 @@ static void sendUartParams(Uart *output, Uart *uart)
 
 static void printConfig(Uart *src)
 {
+	char buf[20];
 	UartSendString(src, "Modem: ", 0);
 	switch(ModemConfig.modem)
 	{
@@ -192,7 +208,8 @@ static void printConfig(Uart *src)
 			UartSendByte(src, GeneralConfig.call[i] >> 1);
 	}
 	UartSendByte(src, '-');
-	UartSendNumber(src, GeneralConfig.callSsid);
+	IntToStr(GeneralConfig.callSsid, buf);
+	UartSendString(src, buf, 0);
 
 	UartSendString(src, "\r\nDestination: ", 0);
 	for(uint8_t i = 0; i < 6; i++)
@@ -202,11 +219,14 @@ static void printConfig(Uart *src)
 	}
 
 	UartSendString(src, "\r\nTXDelay (ms): ", 0);
-	UartSendNumber(src, Ax25Config.txDelayLength);
+	IntToStr(Ax25Config.txDelayLength, buf);
+	UartSendString(src, buf, 0);
 	UartSendString(src, "\r\nTXTail (ms): ", 0);
-	UartSendNumber(src, Ax25Config.txTailLength);
+	IntToStr(Ax25Config.txTailLength, buf);
+	UartSendString(src, buf, 0);
 	UartSendString(src, "\r\nQuiet time (ms): ", 0);
-	UartSendNumber(src, Ax25Config.quietTime);
+	IntToStr(Ax25Config.quietTime, buf);
+	UartSendString(src, buf, 0);
 	UartSendString(src, "\r\nUSB: ", 0);
 	sendUartParams(src, &UartUsb);
 	UartSendString(src, "\r\nUART1: ", 0);
@@ -232,9 +252,11 @@ static void printConfig(Uart *src)
 			UartSendString(src, "On, Iv: ", 0);
 		else
 			UartSendString(src, "Off, Iv: ", 0);
-		UartSendNumber(src, beacon[i].interval / 6000);
+		IntToStr(beacon[i].interval / 6000, buf);
+		UartSendString(src, buf, 0);
 		UartSendString(src, ", Dl: ", 0);
-		UartSendNumber(src, beacon[i].delay / 60);
+		IntToStr(beacon[i].delay / 60, buf);
+		UartSendString(src, buf, 0);
 		UartSendByte(src, ',');
 		UartSendByte(src, ' ');
 		if(beacon[i].path[0] != 0)
@@ -245,7 +267,8 @@ static void printConfig(Uart *src)
 					UartSendByte(src, beacon[i].path[j] >> 1);
 			}
 			UartSendByte(src, '-');
-			UartSendNumber(src, beacon[i].path[6]);
+			IntToStr(beacon[i].path[6], buf);
+			UartSendString(src, buf, 0);
 			if(beacon[i].path[7] != 0)
 			{
 				UartSendByte(src, ',');
@@ -255,14 +278,15 @@ static void printConfig(Uart *src)
 						UartSendByte(src, beacon[i].path[j] >> 1);
 				}
 				UartSendByte(src, '-');
-				UartSendNumber(src, beacon[i].path[13]);
+				IntToStr(beacon[i].path[13], buf);
+				UartSendString(src, buf, 0);
 			}
 		}
 		else
 			UartSendString(src, "no path", 0);
 		UartSendByte(src, ',');
 		UartSendByte(src, ' ');
-		UartSendString(src, beacon[i].data, 0);
+		UartSendString(src, (const char*)beacon[i].data, 0);
 	}
 
 	UartSendString(src, "\r\nDigipeater: ", 0);
@@ -289,9 +313,11 @@ static void printConfig(Uart *src)
 			UartSendString(src, "On, max: ", 0);
 		else
 			UartSendString(src, "Off, max: ", 0);
-		UartSendNumber(src, DigiConfig.max[i]);
+		IntToStr(DigiConfig.max[i], buf);
+		UartSendString(src, buf, 0);
 		UartSendString(src, ", rep: ", 0);
-		UartSendNumber(src, DigiConfig.rep[i]);
+		IntToStr(DigiConfig.rep[i], buf);
+		UartSendString(src, buf, 0);
 		if(DigiConfig.traced & (1 << i))
 			UartSendString(src, ", traced, ", 0);
 		else
@@ -317,7 +343,8 @@ static void printConfig(Uart *src)
 			}
 		}
 		UartSendByte(src, '-');
-		UartSendNumber(src, DigiConfig.ssid[i]);
+		IntToStr(DigiConfig.ssid[i], buf);
+		UartSendString(src, buf, 0);
 		UartSendString(src, ": ", 0);
 		if(DigiConfig.enableAlias & (1 << (i + 4)))
 			UartSendString(src, "On, ", 0);
@@ -337,7 +364,8 @@ static void printConfig(Uart *src)
 			UartSendString(src, "unfiltered\r\n", 0);
 	}
 	UartSendString(src, "Anti-duplicate buffer hold time (s): ", 0);
-	UartSendNumber(src, DigiConfig.dupeTime);
+	IntToStr(DigiConfig.dupeTime, buf);
+	UartSendString(src, buf, 0);
 	UartSendString(src, "\r\nCallsign filter type: ", 0);
 	if(DigiConfig.filterPolarity)
 		UartSendString(src, "whitelist\r\n", 0);
@@ -350,9 +378,15 @@ static void printConfig(Uart *src)
 		if(DigiConfig.callFilter[i][0] != 0)
 			entries++;
 	}
-	UartSendNumber(src, entries);
+	IntToStr(entries, buf);
+	UartSendString(src, buf, 0);
 	UartSendString(src, " entries\r\nKISS monitor: ", 0);
 	if(GeneralConfig.kissMonitor == 1)
+		UartSendString(src, "On\r\n", 0);
+	else
+		UartSendString(src, "Off\r\n", 0);
+	UartSendString(src, "Filter KISS RX: ", 0);
+	if(GeneralConfig.kissFilter == 1)
 		UartSendString(src, "On\r\n", 0);
 	else
 		UartSendString(src, "Off\r\n", 0);
@@ -375,8 +409,10 @@ static void printConfig(Uart *src)
 
 static void sendTime(Uart *src)
 {
+	char buf[20];
 	UartSendString(src, "Time since boot: ", 0);
-	UartSendNumber(src, SysTickGet() * SYSTICK_INTERVAL / 60000); //convert from ms to minutes
+	IntToStr(SysTickGet() * SYSTICK_INTERVAL / 60000, buf); //convert from ms to minutes
+	UartSendString(src, buf, 0);
 	UartSendString(src, " minutes\r\n", 0);
 }
 
@@ -398,13 +434,13 @@ void TermParse(Uart *src)
 	 */
 	if(!strncmp(cmd, "kiss", 4))
 	{
-		UartSendString(src, (uint8_t*)"Switched to KISS mode\r\n", 0);
+		UartSendString(src, "Switched to KISS mode\r\n", 0);
 		src->mode = MODE_KISS;
 		return;
 	}
 	else if(!strncmp(cmd, "config", 6))
 	{
-		UartSendString(src, (uint8_t*)"Switched to configuration mode\r\n"
+		UartSendString(src, "Switched to configuration mode\r\n"
 				"Some settings require the device to be rebooted\r\n"
 				"in order to behave correctly\r\n"
 				"Always use \"save\" to save and reboot\r\n", 0);
@@ -413,7 +449,7 @@ void TermParse(Uart *src)
 	}
 	else if(!strncmp(cmd, "monitor", 7))
 	{
-		UartSendString(src, (uint8_t*)"Switched to monitor mode\r\n", 0);
+		UartSendString(src, "Switched to monitor mode\r\n", 0);
 		src->mode = MODE_MONITOR;
 		return;
 	}
@@ -424,12 +460,12 @@ void TermParse(Uart *src)
 	{
 		if(!strncmp(cmd, "help", 4))
 		{
-			UartSendString(src, (char *)monitorHelp, 0);
+			UartSendString(src, monitorHelp, 0);
 			return;
 		}
 		else if(!strncmp(cmd, "version", 7))
 		{
-			UartSendString(src, (char *)versionString, 0);
+			UartSendString(src, versionString, 0);
 			return;
 		}
 		else if(!strncmp(cmd, "reboot", 6))
@@ -453,7 +489,7 @@ void TermParse(Uart *src)
 				else
 				{
 					UartSendString(src, "Beacon " , 0);
-					UartSendNumber(src, number);
+					UartSendByte(src, number + '0');
 					UartSendString(src, " is not enabled. Cannot transmit disabled beacons.\r\n", 0);
 				}
 			}
@@ -506,12 +542,12 @@ void TermParse(Uart *src)
 
 	if(!strncmp(cmd, "help", 4))
 	{
-		UartSendString(src, (uint8_t*)configHelp, 0);
+		UartSendString(src, configHelp, 0);
 		return;
 	}
 	else if(!strncmp(cmd, "version", 7))
 	{
-		UartSendString(src, (uint8_t*)versionString, 0);
+		UartSendString(src, versionString, 0);
 		return;
 	}
 	else if(!strncmp(cmd, "time", 4))
@@ -540,14 +576,16 @@ void TermParse(Uart *src)
 	}
 	else if(!strncmp(cmd, "list", 4)) //list calls in call filter table
 	{
+		char buf[20];
 		UartSendString(src, "Callsign filter list: \r\n", 0);
 		for(uint8_t i = 0; i < 20; i++)
 		{
-			UartSendNumber(src, i);
+			IntToStr(i, buf);
+			UartSendString(src, buf, 0);
 			UartSendString(src, ". ", 0);
 			if(DigiConfig.callFilter[i][0] != 0)
 			{
-                    uint8_t cl[10] = {0};
+                    char cl[10] = {0};
                     uint8_t clIdx = 0;
                     for(uint8_t j = 0; j < 6; j++)
                     {
@@ -1069,6 +1107,15 @@ void TermParse(Uart *src)
 			GeneralConfig.kissMonitor = 1;
 		else if(!strncmp(&cmd[8], "off", 3))
 			GeneralConfig.kissMonitor = 0;
+		else
+			err = true;
+	}
+	else if(!strncmp(cmd, "filkiss ", 8))
+	{
+		if(!strncmp(&cmd[8], "on", 2))
+			GeneralConfig.kissFilter = 1;
+		else if(!strncmp(&cmd[8], "off", 3))
+			GeneralConfig.kissFilter = 0;
 		else
 			err = true;
 	}

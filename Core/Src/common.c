@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2024 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -22,6 +22,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "common.h"
 #include "ax25.h"
 #include "usbd_cdc_if.h"
+#include "aprs.h"
 
 struct _GeneralConfig GeneralConfig =
 {
@@ -32,11 +33,13 @@ struct _GeneralConfig GeneralConfig =
 };
 
 
-const char versionString[] = "VP-Digi v. 2.1.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
+const char versionString[] = "VP-Digi v. 2.2.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
 #ifdef ENABLE_FX25
 		"With FX.25 support compiled-in\r\n"
 #endif
 		;
+
+#define AX25_UI_CONTROL_MASK 0b11101111
 
 
 static uint64_t pow10i(uint16_t exp)
@@ -69,6 +72,37 @@ int64_t StrToInt(const char *str, uint16_t len)
 	return tmp;
 }
 
+static uint32_t findHighestPosition(uint32_t n)
+{
+    uint32_t i = 1;
+    while((i * 10) <= n)
+        i *= 10;
+
+    return i;
+}
+
+
+char *IntToStr(int32_t n, char *str)
+{
+	if(n < 0)
+	{
+		*str++ = '-';
+		n = -n;
+	}
+    uint32_t position = findHighestPosition(n);
+    while(position)
+    {
+        uint32_t number = n / position;
+        *str++ = number + '0';
+        n -= (number * position);
+        position /= 10;
+    }
+
+    *str++ = '\0';
+
+    return str;
+}
+
 
 int16_t Random(int16_t min, int16_t max)
 {
@@ -86,6 +120,7 @@ int16_t Random(int16_t min, int16_t max)
 
 static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 {
+	char buf[20];
 	for(uint8_t i = 0; i < 6; i++) //source call
 	{
 		if((from[7 + i] >> 1) != ' ') //skip spaces
@@ -94,11 +129,12 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 		}
 	}
 
-	uint8_t ssid = ((from[13] >> 1) & 0b00001111); //store ssid
+	uint8_t ssid = EXTRACT_SSID(from[13]); //store ssid
 	if(ssid > 0) //SSID >0
 	{
+		IntToStr(ssid, buf);
 		UartSendByte(uart, '-'); //add -
-		UartSendNumber(uart, ssid);
+		UartSendString(uart, buf, 0);
 	}
 
 	UartSendByte(uart, '>'); //first separator
@@ -110,17 +146,18 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 			UartSendByte(uart, from[i] >> 1);
 		}
 	}
-	ssid = ((from[6] >> 1) & 0b00001111); //store ssid
+	ssid = EXTRACT_SSID(from[6]); //store ssid
 
 	if(ssid > 0) //SSID >0
 	{
+		IntToStr(ssid, buf);
 		UartSendByte(uart, '-'); //add -
-		UartSendNumber(uart, ssid);
+		UartSendString(uart, buf, 0);
 	}
 
 	uint16_t nextPathEl = 14; //next path element index
 
-    if(!(from[13] & 1)) //no c-bit in source address, there is a digi path
+    if(!(from[13] & C_BIT)) //no c-bit in source address, there is a digi path
     {
         do //analyze all path elements
         {
@@ -134,30 +171,31 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
         		}
         	}
 
-            ssid = ((from[nextPathEl + 6] >> 1) & 0b00001111); //store ssid
+            ssid = EXTRACT_SSID(from[nextPathEl + 6]); //store ssid
         	if(ssid > 0) //SSID >0
         	{
+        		IntToStr(ssid, buf);
         		UartSendByte(uart, '-'); //add -
-        		UartSendNumber(uart, ssid);
+        		UartSendString(uart, buf, 0);
         	}
-            if((from[nextPathEl + 6] & 0x80)) //h-bit in ssid
+            if((from[nextPathEl + 6] & H_BIT)) //h-bit in ssid
             	UartSendByte(uart, '*'); //add *
 
             nextPathEl += 7; //next path element
             if(nextPathEl > 56) //too many path elements
             	break;
         }
-        while((from[nextPathEl - 1] & 1) == 0); //loop until the c-bit is found
+        while((from[nextPathEl - 1] & C_BIT) == 0); //loop until the c-bit is found
 
     }
 
 	UartSendByte(uart, ':'); //separator
 
-    if((from[nextPathEl] & 0b11101111) == 0b00000011) //check if UI packet
+    if((from[nextPathEl] & AX25_UI_CONTROL_MASK) == APRS_CONTROL) //check if UI packet
     {
 		nextPathEl += 2; //skip Control and PID
 
-		UartSendString(uart, &(from[nextPathEl]), len - nextPathEl); //send information field
+		UartSendString(uart, (const char*)&(from[nextPathEl]), len - nextPathEl); //send information field
     }
     else
     	UartSendString(uart, "<not UI packet>", 0);

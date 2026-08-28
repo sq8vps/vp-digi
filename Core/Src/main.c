@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -16,7 +16,7 @@
   ******************************************************************************
   */
 /*
-Copyright 2020-2025 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -105,19 +105,23 @@ static void handleFrame(void)
 
 	while(Ax25ReadNextRxFrame(&buf, &size, &peak, &valley, &signalLevel, &fixed))
 	{
-		TermSendToAll(MODE_KISS, buf, size);
+		if(DigiCheckFilter(&buf[7]) || !GeneralConfig.kissFilter)
+			TermSendToAllN(MODE_KISS, buf, size);
 
 		if(((UartUsb.mode == MODE_MONITOR) || (Uart1.mode == MODE_MONITOR) || (Uart2.mode == MODE_MONITOR)))
 		{
+			char str[20];
+			char *pstr = str;
+
 			if(signalLevel > 70)
 			{
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too high! Please reduce so most stations are around 30-50%.\r\n", 0);
+				TermSendToAll(MODE_MONITOR, "\r\nInput level too high! Please reduce so most stations are around 30-50%.\r\n");
 			}
 			else if(signalLevel < 5)
 			{
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\nInput level too low! Please increase so most stations are around 30-50%.\r\n", 0);
+				TermSendToAll(MODE_MONITOR, "\r\nInput level too low! Please increase so most stations are around 30-50%.\r\n");
 			}
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Frame received [", 0);
+			TermSendToAll(MODE_MONITOR, "(AX.25) Frame received [");
 			for(uint8_t i = 0; i < ModemGetDemodulatorCount(); i++)
 			{
 				if(modemBitmap & (1 << i))
@@ -126,38 +130,44 @@ static void handleFrame(void)
 					switch(m)
 					{
 						case PREFILTER_PREEMPHASIS:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"P", 1);
+							*pstr++ = 'P';
 							break;
 						case PREFILTER_DEEMPHASIS:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"D", 1);
+							*pstr++ = 'D';
 							break;
 						case PREFILTER_FLAT:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"F", 1);
+							*pstr++ = 'F';
 							break;
 						case PREFILTER_NONE:
-							TermSendToAll(MODE_MONITOR, (uint8_t*)"N", 1);
+							*pstr++ = 'N';
+							break;
 					}
 				}
 				else
-					TermSendToAll(MODE_MONITOR, (uint8_t*)"_", 1);
+					*pstr++ = '_';
 			}
-
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"], ", 0);
+			*pstr++ = '\0';
+			TermSendToAll(MODE_MONITOR, str);
+			TermSendToAll(MODE_MONITOR, "], ");
 			if(fixed != AX25_NOT_FX25)
 			{
-				TermSendNumberToAll(MODE_MONITOR, fixed);
-				TermSendToAll(MODE_MONITOR, (uint8_t*)" bytes fixed, ", 0);
+				IntToStr(fixed, str);
+				TermSendToAll(MODE_MONITOR, str);
+				TermSendToAll(MODE_MONITOR, " bytes fixed, ");
 			}
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"signal level ", 0);
-			TermSendNumberToAll(MODE_MONITOR, signalLevel);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"% (", 0);
-			TermSendNumberToAll(MODE_MONITOR, peak);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"%/", 0);
-			TermSendNumberToAll(MODE_MONITOR, valley);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"%): ", 0);
+			TermSendToAll(MODE_MONITOR, "signal level ");
+			IntToStr(signalLevel, str);
+			TermSendToAll(MODE_MONITOR, str);
+			TermSendToAll(MODE_MONITOR, "% (");
+			IntToStr(peak, str);
+			TermSendToAll(MODE_MONITOR, str);
+			TermSendToAll(MODE_MONITOR, "%/");
+			IntToStr(valley, str);
+			TermSendToAll(MODE_MONITOR, str);
+			TermSendToAll(MODE_MONITOR, "%): ");
 
 			SendTNC2(buf, size);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
+			TermSendToAll(MODE_MONITOR, "\r\n");
 		}
 
 

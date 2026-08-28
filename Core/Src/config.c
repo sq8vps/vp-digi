@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -100,7 +100,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define CONFIG_MODE_USB 1220
 #define CONFIG_MODE_UART1 1222
 #define CONFIG_MODE_UART2 1224
-#define CONFIG_XXX 1226 //next address (not used)
+#define CONFIG_KISSFILTER 1226
+#define CONFIG_XXX 1228 //next address (not used)
 
 
 /**
@@ -267,6 +268,7 @@ void ConfigWrite(void)
 	writeString(CONFIG_DIGIFILLIST, DigiConfig.callFilter[0], sizeof(DigiConfig.callFilter));
 	write(CONFIG_PWM_FLAT, ModemConfig.usePWM | (ModemConfig.flatAudioIn << 1));
 	write(CONFIG_KISSMONITOR, GeneralConfig.kissMonitor);
+	write(CONFIG_KISSFILTER, GeneralConfig.kissFilter);
 	write(CONFIG_ALLOWNONAPRS, Ax25Config.allowNonAprs);
 	write(CONFIG_FX25, Ax25Config.fx25 | (Ax25Config.fx25Tx << 1));
 	write(CONFIG_MODEM, ModemConfig.modem);
@@ -360,6 +362,7 @@ uint8_t ConfigRead(void)
 	ModemConfig.usePWM = t & 1;
 	ModemConfig.flatAudioIn = (t & 2) > 0;
 	GeneralConfig.kissMonitor = (read(CONFIG_KISSMONITOR) == 1);
+	GeneralConfig.kissFilter = (read(CONFIG_KISSFILTER) == 1);
 	Ax25Config.allowNonAprs = (read(CONFIG_ALLOWNONAPRS) == 1);
 	t = (uint8_t)read(CONFIG_FX25);
 	Ax25Config.fx25 = t & 1;

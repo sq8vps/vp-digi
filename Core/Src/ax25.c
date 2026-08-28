@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -26,6 +26,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include "systick.h"
 #include "digipeater.h"
+#include "aprs.h"
 
 struct Ax25ProtoConfig Ax25Config;
 
@@ -41,7 +42,7 @@ struct Ax25ProtoConfig Ax25Config;
 
 #define MAX_TRANSMIT_RETRY_COUNT 8 //max number of retries if channel is busy
 
-#define SYNC_BYTE 0x7E //preamble/postamble octet
+#define SYNC_BYTE AX25_FLAG //preamble/postamble octet
 
 struct FrameHandle
 {
@@ -212,7 +213,7 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 
 	uint16_t index = 0;
 	//header flag
-	txFx25Buffer[index++] = 0x7E;
+	txFx25Buffer[index++] = AX25_FLAG;
 
 	uint16_t crc = 0xFFFF;
 
@@ -284,7 +285,7 @@ static void *writeFx25Frame(uint8_t *data, uint16_t size)
 			txFx25Buffer[index] >>= 1;
 			bits++;
 
-			if((0x7E >> k) & 1)
+			if((AX25_FLAG >> k) & 1)
 			{
 				txFx25Buffer[index] |= 0x80;
 			}
@@ -329,7 +330,7 @@ static struct FrameHandle* parseFx25Frame(uint8_t *frame, uint16_t size, uint16_
 
 	uint16_t i = 0; //input data index
 	uint16_t k = 0; //output data size
-	while(frame[i] == 0x7E)
+	while(frame[i] == AX25_FLAG)
 		i++;
 
 	uint8_t bitstuff = 0;
@@ -401,7 +402,7 @@ endParseFx25Frame:
 			pathEnd %= FRAME_BUFFER_SIZE;
 		}
 
-		if(Ax25Config.allowNonAprs || (((rxBuffer[(pathEnd + 1) % FRAME_BUFFER_SIZE] == 0x03) && (rxBuffer[(pathEnd + 2) % FRAME_BUFFER_SIZE] == 0xF0))))
+		if(Ax25Config.allowNonAprs || (((rxBuffer[(pathEnd + 1) % FRAME_BUFFER_SIZE] == APRS_CONTROL) && (rxBuffer[(pathEnd + 2) % FRAME_BUFFER_SIZE] == APRS_PID))))
 		{
 			h->size = k - 2;
 			return h;
@@ -533,7 +534,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 	{
 #endif
 
-		if(rx->rawData == 0x7E) //HDLC flag received
+		if(rx->rawData == AX25_FLAG) //HDLC flag received
 		{
 			if(rx->rx == RX_STAGE_FRAME) //if we are in frame, this is the end of the frame
 			{
@@ -551,7 +552,7 @@ void Ax25BitParse(uint8_t bit, uint8_t modem)
 						}
 
 						//if non-APRS frames are not allowed, check if this frame has control=0x03 and PID=0xF0
-						if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == 0x03) && (rx->frame[i + 2] == 0xF0))))
+						if(Ax25Config.allowNonAprs || (((rx->frame[i + 1] == APRS_CONTROL) && (rx->frame[i + 2] == APRS_PID))))
 						{
 							rx->frameReceived = 1;
 							rx->frameIdx -= 2; //remove CRC
@@ -718,7 +719,7 @@ transmitTag:
 		{
 			if(txFlagsElapsed < STATIC_HEADER_FLAG_COUNT)
 			{
-				txByte = 0x7E;
+				txByte = AX25_FLAG;
 				txFlagsElapsed++;
 			}
 			else
@@ -798,7 +799,7 @@ transmitTail:
 		{
 			if(txFlagsElapsed < STATIC_FOOTER_FLAG_COUNT)
 			{
-				txByte = 0x7E;
+				txByte = AX25_FLAG;
 				txFlagsElapsed++;
 			}
 			else

@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2025 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -26,6 +26,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <modem.h>
 #include <systick.h>
 #include "drivers/digipeater_ll.h"
+#include "aprs.h"
 
 struct _DigiConfig DigiConfig;
 
@@ -69,7 +70,7 @@ static uint8_t viscousCheckAndRemove(uint32_t hash)
     		viscous[i].hash = 0; //clear slot
     		viscous[i].timeLimit = 0;
     		viscous[i].size = 0;
-    		TermSendToAll(MODE_MONITOR, (uint8_t*)"Digipeated frame received, dropping old frame from viscous-delay buffer\r\n", 0);
+    		TermSendToAll(MODE_MONITOR, "Digipeated frame received, dropping old frame from viscous-delay buffer\r\n");
     		return 1;
     	}
     }
@@ -94,12 +95,12 @@ static void DigiViscousRefresh(void)
             {
 				if(GeneralConfig.kissMonitor) //monitoring mode, send own frames to KISS ports
 				{
-					TermSendToAll(MODE_KISS, viscous[i].frame, viscous[i].size);
+					TermSendToAllN(MODE_KISS, viscous[i].frame, viscous[i].size);
 				}
 
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Transmitting viscous-delayed frame: ", 0);
+				TermSendToAll(MODE_MONITOR, "(AX.25) Transmitting viscous-delayed frame: ");
 				SendTNC2(viscous[i].frame, viscous[i].size);
-				TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
+				TermSendToAll(MODE_MONITOR, "\r\n");
             }
 
     		viscous[i].hash = 0; //clear slot
@@ -113,53 +114,39 @@ static void DigiViscousRefresh(void)
  * @brief Compare callsign with specified call in call filter table - helper function.
  * @param *call Callsign
  * @param index Callsign filter table index
- * @return 1 if matched, 0 otherwise
+ * @return true if matched, false otherwise
  */
-static uint8_t compareFilterCall(uint8_t *call, uint8_t index)
+static bool compareFilterCall(const uint8_t *call, uint8_t index)
 {
-	uint8_t err = 0;
-
 	for(uint8_t i = 0; i < 6; i++)
 	{
 		if((DigiConfig.callFilter[index][i] < 0xff) && ((call[i] >> 1) != DigiConfig.callFilter[index][i]))
-			err = 1;
+			return false;
 	}
-	if((DigiConfig.callFilter[index][6] < 0xff) && ((call[6] - 96) != DigiConfig.callFilter[index][6])) //special case for ssid
-		err = 1;
+	if((DigiConfig.callFilter[index][6] < 0xff) && (EXTRACT_SSID(call[6]) != DigiConfig.callFilter[index][6])) //special case for ssid
+		return false;
 
-	return (err == 0);
+	return true;
 }
 
-/**
- * @brief Check frame with call filter
- * @param[in] *call Callsign in incoming frame
- * @param[in] alias Digi alias index currently used
- * @return 1 if accepted, 0 if rejected
- */
-static uint8_t filterFrameCheck(uint8_t *call, uint8_t alias)
+bool DigiCheckFilter(const uint8_t *call)
 {
 	//filter by call
-	if((DigiConfig.callFilterEnable >> alias) & 1) //check if enabled
+	for(uint8_t i = 0; i < (sizeof(DigiConfig.callFilter) / sizeof(DigiConfig.callFilter[0])); i++)
 	{
-		for(uint8_t i = 0; i < (sizeof(DigiConfig.callFilter) / sizeof(DigiConfig.callFilter[0])); i++)
+		if(compareFilterCall(call, i)) //if callsigns match...
 		{
-			if(compareFilterCall(call, i)) //if callsigns match...
-			{
-				if(DigiConfig.filterPolarity == 0)
-					return 0; //...and blacklist is enabled, drop the frame
-				else
-					return 1; //...and whitelist is enabled, accept the frame
-			}
+			if(DigiConfig.filterPolarity == 0)
+				return false; //...and blacklist is enabled, drop the frame
+			else
+				return true; //...and whitelist is enabled, accept the frame
 		}
-		//if callsign is not on the list...
-		if((DigiConfig.filterPolarity) == 0)
-			return 1; //...and blacklist is enabled, accept the frame
-		else
-			return 0; //...and whitelist is enabled, drop the frame
-
 	}
-	//filter by call disabled
-	return 1;
+	//if callsign is not on the list...
+	if((DigiConfig.filterPolarity) == 0)
+		return true; //...and blacklist is enabled, accept the frame
+	else
+		return false; //...and whitelist is enabled, drop the frame
 }
 
 
@@ -206,12 +193,15 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     }
 
 
-    if(alias < 8)
+    if((alias < 8) && ((DigiConfig.callFilterEnable >> alias) & 1))
     {
-    	if(!filterFrameCheck(&frame[7], alias)) //push source callsign through the filter
+    	if(!DigiCheckFilter(&frame[7])) //push source callsign through the filter
+    	{
+    		TermSendToAll(MODE_MONITOR, "Frame dropped by the filter\r\n");
     		return;
+    	}
     }
-    uint8_t ssid = (frame[elStart + 6] >> 1) - 48; //store SSID (N)
+    uint8_t ssid = EXTRACT_SSID(frame[elStart + 6]); //store SSID (N)
 
 
     if(alias < 8)
@@ -235,15 +225,15 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 
     	if((alias == 8) || ((DigiConfig.traced & (1 << alias)) == 0)) //own call or untraced
     	{
-    		buffer[elStart + 6] += 128; //add h-bit
+    		buffer[elStart + 6] |= H_BIT; //add h-bit
     	}
     	else //not our call, but treat it as a simple alias
     	{
     		for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //replace with own call
     			buffer[elStart + i] = GeneralConfig.call[i];
 
-    		buffer[elStart + 6] &= 1; //clear everything but path end bit
-    		buffer[elStart + 6] |= ((GeneralConfig.callSsid << 1) + 0b11100000); //insert ssid and h-bit
+    		buffer[elStart + 6] &= C_BIT; //clear everything but path end bit
+    		buffer[elStart + 6] |= ENCODE_SSID(GeneralConfig.callSsid) | H_BIT; //insert ssid and h-bit
     	}
     }
     else //standard n-N alias
@@ -264,7 +254,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     		for(uint8_t i = 0; i < sizeof(GeneralConfig.call); i++) //insert own call
     			buffer[(*index)++] = GeneralConfig.call[i];
 
-    		buffer[(*index)++] = ((GeneralConfig.callSsid << 1) + 0b11100000); //insert ssid and h-bit
+    		buffer[(*index)++] = ENCODE_SSID(GeneralConfig.callSsid) | H_BIT; //insert ssid and h-bit
     		shift = 7; //additional shift when own call is inserted
     	}
 
@@ -275,9 +265,9 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
     	}
 
 		buffer[elStart + shift + 6] -= 2; //decrement SSID in alias (2 because ssid is shifted left by 1)
-		if((buffer[elStart + shift + 6] & 0b11110) == 0) //if SSID is 0
+		if(EXTRACT_SSID(buffer[elStart + shift + 6]) == 0) //if SSID is 0
 		{
-			buffer[elStart + shift + 6] += 0x80; //add h-bit
+			buffer[elStart + shift + 6] |= H_BIT; //add h-bit
 		}
 
     }
@@ -286,7 +276,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 	{
 		viscous[viscousSlot].hash = hash;
     	viscous[viscousSlot].timeLimit = SysTickGet() + (VISCOUS_HOLD_TIME / SYSTICK_INTERVAL);
-		TermSendToAll(MODE_MONITOR, (uint8_t*)"Saving frame for viscous-delay digipeating\r\n", 0);
+		TermSendToAll(MODE_MONITOR, "Saving frame for viscous-delay digipeating\r\n");
 	}
 	else
 	{
@@ -297,12 +287,12 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 
 			if(GeneralConfig.kissMonitor) //monitoring mode, send own frames to KISS ports
 			{
-				TermSendToAll(MODE_KISS, buffer, *index);
+				TermSendToAllN(MODE_KISS, buffer, *index);
 			}
 
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"(AX.25) Digipeating frame: ", 0);
+			TermSendToAll(MODE_MONITOR, "(AX.25) Digipeating frame: ");
 			SendTNC2(buffer, *index);
-			TermSendToAll(MODE_MONITOR, (uint8_t*)"\r\n", 0);
+			TermSendToAll(MODE_MONITOR, "\r\n");
         }
 	}
 }
@@ -358,7 +348,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
     }
     t++; //now t is the index for the first byte in path element we want to process
 
-    uint8_t ssid = ((frame[t + 6] >> 1) - 0b00110000); //current path element SSID
+    uint8_t ssid = EXTRACT_SSID(frame[t + 6]); //current path element SSID
 
     uint8_t err = 0;
 
@@ -417,7 +407,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
 
         if(err == 0) //alias matching, check further
         {
-            uint8_t n = ((frame[t + j] >> 1) - 48); //get n from alias (e.g. WIDEn-N) - N is in ssid variable
+            uint8_t n = ((frame[t + j] >> 1) - '0'); //get n from alias (e.g. WIDEn-N) - N is in ssid variable
 
             //every path must meet several requirements
             //say we have a WIDEn-N path. Then:
@@ -452,7 +442,7 @@ void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
 
     uint16_t i = 13;
 
-    while((buf[i] & 1) == 0) //look for path end bit (skip path)
+    while((buf[i] & C_BIT) == 0) //look for path end bit (skip path)
     {
         i++;
         if(i == size)

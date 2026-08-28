@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2024 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -72,7 +72,7 @@ extern Uart Uart1, Uart2, UartUsb;
  * @param[in] *port UART
  * @param[in] data Data
  */
-void UartSendByte(Uart *port, uint8_t data);
+void UartSendByte(Uart *port, char data);
 
 /**
  * @brief Send string
@@ -80,14 +80,7 @@ void UartSendByte(Uart *port, uint8_t data);
  * @param *data Buffer
  * @param len Buffer length or 0 for null-terminated string
  */
-void UartSendString(Uart *port, void *data, uint16_t datalen);
-
-/**
- * @brief Send signed number
- * @param *port UART
- * @param n Number
- */
-void UartSendNumber(Uart *port, int32_t n);
+void UartSendString(Uart *port, const char *data, uint16_t length);
 
 
 /**

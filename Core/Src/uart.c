@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -79,7 +79,7 @@ void UART_LL_UART2_INTERUPT_HANDLER(void)
 }
 
 
-void UartSendByte(Uart *port, uint8_t data)
+void UartSendByte(Uart *port, char data)
 {
 	if(!port->enabled)
 		return;
@@ -104,41 +104,17 @@ void UartSendByte(Uart *port, uint8_t data)
 }
 
 
-void UartSendString(Uart *port, void *data, uint16_t len)
+void UartSendString(Uart *port, const char *data, uint16_t len)
 {
 	if(0 == len)
-		len = strlen((char*)data);
+		len = strlen(data);
 
 	for(uint16_t i = 0; i < len; i++)
 	{
-		UartSendByte(port, ((uint8_t*)data)[i]);
+		UartSendByte(port, data[i]);
 	}
 }
 
-
-static unsigned int findHighestPosition(unsigned int n)
-{
-    unsigned int i = 1;
-    while((i * 10) <= n)
-        i *= 10;
-
-    return i;
-}
-
-void UartSendNumber(Uart *port, int32_t n)
-{
-	if(n < 0)
-		UartSendByte(port, '-');
-	n = abs(n);
-    unsigned int position = findHighestPosition(n);
-    while(position)
-    {
-        unsigned int number = n / position;
-        UartSendByte(port, (number + 48));
-        n -= (number * position);
-        position /= 10;
-    }
-}
 
 void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 {

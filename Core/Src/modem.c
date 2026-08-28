@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify

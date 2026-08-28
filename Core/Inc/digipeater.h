@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2025 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -21,6 +21,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define DIGIPEATER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
 struct _DigiConfig
@@ -42,6 +43,13 @@ struct _DigiConfig
 
 extern struct _DigiConfig DigiConfig; //digipeater state
 
+
+/**
+ * @brief Check frame with call filter
+ * @param[in] *call Callsign in the incoming frame
+ * @return true if accepted, false if rejected
+ */
+bool DigiCheckFilter(const uint8_t *call);
 
 /**
  * @brief Digipeater entry point

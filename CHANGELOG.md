@@ -1,3 +1,12 @@
+# 2.2.0 (2026-08-31)
+## New features
+* Receives frames can be filtered before being sent to KISS port
+## Bug fixes
+* Fixed reserved bit handling in AX.25 SSIDs, so that frames from not-exactly-APRS-compliant devices are handled properly
+## Other
+* Code cleanup
+## Know bugs
+* none
 # 2.1.0 (2025-03-04)
 ## New features
 * Digipeater disable input at PB0 (pull to GND to disable digipeater)

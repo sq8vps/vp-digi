@@ -118,6 +118,7 @@ The following commands are available in configuration mode:
 - `digi list POSITION set CALLSIGN-SSID` – enters a call sign into the selected position (ranging from 0 to 19) of the filtering list. You can use \* to mask all characters to the end of the call sign. *?* masks a single letter in the call sign. To mask the SSID, you can use \* or *?*.
 - `digi list POSITION remove` – removes the selected position (ranging from 0 to 19) from the filtering list.
 - `monkiss <on/off>` – *on* enables, *off* disables sending own and repeated frames to KISS ports.
+- `filkiss <on/off>` - *on* enables, *off* disables filtering (using `digi list`) of received packets before sending them to KISS ports.
 - `nonaprs <on/off>` – *on* enables, *off* disables the reception of non-APRS packets (e.g., for Packet Radio).
 - `fx25 <on/off>` - *on* enables, *off* disables FX.25 protocol support. When enabled, both AX.25 and FX.25 packets will be received simultaneously.
 - `fx25tx <on/off>` - *on* enables, *off* disables transmission using the FX.25 protocol. If FX.25 support is completely disabled (command *fx25 off*), packets will always be transmitted using AX.25.
@@ -140,7 +141,7 @@ Common commands are also available:
 
 - Beacon\
     Example for beacon number 0. Beacons are available from 0 to 7.
-    1. *beacon 0 data !5002.63N/02157.91E#VP-Digi* – setting APRS standard beacon data
+    1. *beacon 0 data !5000.00N/02200.00E#VP-Digi* – setting APRS standard beacon data
     2. *beacon 0 path WIDE2-2* – setting the path
     3. *beacon 0 iv 15* – transmitting every 15 minutes
     4. *beacon 0 dl 5* – the beacon will be transmitted for the first time after 5 minutes from device startup
@@ -349,6 +350,8 @@ If *viscous delay* functionality is enabled for the matched alias, the completed
 In addition, the *viscous delay* buffer is regularly refreshed. If the specified time has passed, and the packet has not been removed from the buffer (see *the beginning of this section*), its hash is saved to the duplicate filter buffer, the packet is transmitted, and removed from the *viscous delay* buffer.
 
 ## 4. Documentation changelog
+### 2026/08/28
+- KISS filter command + changed example coordinates - Piotr Wilkoń
 ### 2025/03/04
 - New schematic - Piotr Wilkoń
 ### 2024/05/16

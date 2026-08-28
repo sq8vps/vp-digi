@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2024 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -21,26 +21,27 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include "digipeater.h"
 
-void KissSend(Uart *port, uint8_t *buf, uint16_t size)
+void KissSend(Uart *port, const void *buf, uint16_t size)
 {
+	const uint8_t *d = buf;
 	if(port->mode == MODE_KISS)
 	{
 		UartSendByte(port, 0xC0);
 		UartSendByte(port, 0x00);
 		for(uint16_t i = 0; i < size; i++)
 		{
-			if(buf[i] == 0xC0) //frame end in data
+			if(d[i] == 0xC0) //frame end in data
 			{
 				UartSendByte(port, 0xDB); //frame escape
 				UartSendByte(port, 0xDC); //transposed frame end
 			}
-			else if(buf[i] == 0xDB) //frame escape in data
+			else if(d[i] == 0xDB) //frame escape in data
 			{
 				UartSendByte(port, 0xDB); //frame escape
 				UartSendByte(port, 0xDD); //transposed frame escape
 			}
 			else
-				UartSendByte(port, buf[i]);
+				UartSendByte(port, d[i]);
 		}
 		UartSendByte(port, 0xC0);
 	}
