@@ -1,4 +1,4 @@
-# 2.2.0 (2026-08-31)
+# 2.2.1 (2026-08-31)
 ## New features
 * Receives frames can be filtered before being sent to KISS port
 ## Bug fixes
@@ -6,6 +6,17 @@
 ## Other
 * Code cleanup
 ## Know bugs
+* none
+# 2.2.0 (2025-03-20)
+## New features
+* [AIOC](https://github.com/skuep/AIOC)-compatibility
+* FPU support for modem
+* "Interactive" calibration menu
+## Bug fixes
+* none
+## Other
+* Got rid of multiline macros in modem this time :)
+## Known bugs
 * none
 # 2.1.0 (2025-03-04)
 ## New features

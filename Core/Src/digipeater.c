@@ -23,12 +23,11 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "common.h"
 #include "ax25.h"
 #include <math.h>
-#include <modem.h>
-#include <systick.h>
+#include "modem.h"
 #include "drivers/digipeater_ll.h"
 #include "aprs.h"
 
-struct _DigiConfig DigiConfig;
+struct DigiConfig DigiConfig;
 
 #define VISCOUS_MAX_FRAME_COUNT 10 //max frames in viscous-delay buffer
 #define VISCOUS_MAX_FRAME_SIZE 150
@@ -88,7 +87,7 @@ static void DigiViscousRefresh(void)
 
 	for(uint8_t i = 0; i < VISCOUS_MAX_FRAME_COUNT; i++)
     {
-    	if((viscous[i].timeLimit > 0) && (SysTickGet() >= viscous[i].timeLimit)) //it's time to transmit this frame
+    	if((viscous[i].timeLimit > 0) && (HAL_GetTick() >= viscous[i].timeLimit)) //it's time to transmit this frame
         {
             void *handle = NULL;
             if(NULL != (handle = Ax25WriteTxFrame(viscous[i].frame, viscous[i].size)))
@@ -275,7 +274,7 @@ static void makeFrame(uint8_t *frame, uint16_t elStart, uint16_t len, uint32_t h
 	if((alias < 8) && (DigiConfig.viscous & (1 << alias)))
 	{
 		viscous[viscousSlot].hash = hash;
-    	viscous[viscousSlot].timeLimit = SysTickGet() + (VISCOUS_HOLD_TIME / SYSTICK_INTERVAL);
+    	viscous[viscousSlot].timeLimit = HAL_GetTick() + (VISCOUS_HOLD_TIME / SYSTICK_INTERVAL);
 		TermSendToAll(MODE_MONITOR, "Saving frame for viscous-delay digipeating\r\n");
 	}
 	else
@@ -305,7 +304,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
 		return;
 
     uint16_t t = 13; //start from first byte that can contain path end bit
-    while((frame[t] & 1) == 0) //look for path end
+    while((frame[t] & C_BIT) == 0) //look for path end
     {
     	if((t + 7) >= len)
     		return;
@@ -326,7 +325,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
     {
         if(deDupe[i].hash == hash)
         {
-            if(SysTickGet() < (deDupe[i].timeLimit))
+            if(HAL_GetTick() < (deDupe[i].timeLimit))
             	return; //filter out duplicate frame
         }
     }
@@ -338,7 +337,7 @@ void DigiDigipeat(uint8_t *frame, uint16_t len)
     }
 
 
-    while((frame[t] & 0x80) == 0) //look for h-bit
+    while((frame[t] & H_BIT) == 0) //look for h-bit
     {
         if(t == 13)
         {
@@ -455,7 +454,7 @@ void DigiStoreDeDupe(uint8_t *buf, uint16_t size)
     deDupeCount %= DEDUPE_SIZE;
 
     deDupe[deDupeCount].hash = hash;
-    deDupe[deDupeCount].timeLimit = SysTickGet() + (DigiConfig.dupeTime * 1000 / SYSTICK_INTERVAL);
+    deDupe[deDupeCount].timeLimit = HAL_GetTick() + (DigiConfig.dupeTime * 1000 / SYSTICK_INTERVAL);
 
     deDupeCount++;
 }
@@ -471,12 +470,18 @@ void DigiUpdateState(void)
 	if(DigiConfig.enable)
 	{
 		if(DIGIPEATER_LL_GET_DISABLE_STATE())
+		{
 			DIGIPEATER_LL_LED_OFF();
+		}
 		else
+		{
 			DIGIPEATER_LL_LED_ON();
+		}
 	}
 	else
+	{
 		DIGIPEATER_LL_LED_OFF();
+	}
 
 	DigiViscousRefresh();
 }

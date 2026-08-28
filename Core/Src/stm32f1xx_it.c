@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2026 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -15,6 +15,7 @@
   *
   ******************************************************************************
   */
+#if defined(STM32F103xB) || defined(STM32F103x8)
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -72,7 +73,7 @@ void NMI_Handler(void)
 	NVIC_SystemReset();
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-  while (1)
+   while (1)
   {
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -187,8 +188,7 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-  extern volatile uint32_t ticks;
-  ticks++;
+
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -214,5 +214,5 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-
+#endif
 /* USER CODE END 1 */

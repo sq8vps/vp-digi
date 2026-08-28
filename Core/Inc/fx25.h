@@ -20,6 +20,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef FX25_H_
 #define FX25_H_
 
+#include "defines.h"
+
 #ifdef ENABLE_FX25
 
 #include <stdint.h>

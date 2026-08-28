@@ -21,24 +21,26 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "digipeater.h"
 #include "common.h"
 #include <string.h>
-#include <systick.h>
 #include "ax25.h"
 #include "terminal.h"
 #include "aprs.h"
 
-struct Beacon beacon[8];
+struct Beacon BeaconConfig[BEACON_COUNT];
 
 static uint32_t beaconDelay[8] = {0};
 static uint8_t buf[150]; //frame buffer
 
 /**
- * @brief Send specified beacon
- * @param[in] no Beacon number (0-7)
+ * @brief Send specified BeaconConfig
+ * @param[in] no BeaconConfig number (0-7)
  */
 void BeaconSend(uint8_t number)
 {
-	if(beacon[number].enable == 0)
-		return; //beacon disabled
+	if(number >= BEACON_COUNT)
+		return;
+
+	if(BeaconConfig[number].enable == 0)
+		return; //BeaconConfig disabled
 
 	uint16_t idx = 0;
 
@@ -50,13 +52,13 @@ void BeaconSend(uint8_t number)
 
 	buf[idx++] = ENCODE_SSID(GeneralConfig.callSsid); //add source ssid
 
-	if(beacon[number].path[0] > 0) //this beacon has some path set
+	if(BeaconConfig[number].path[0] > 0) //this BeaconConfig has some path set
 	{
 		for(uint8_t i = 0; i < 14; i++) //loop through path
 		{
-			if((beacon[number].path[i] > 0) || (i == 6) || (i == 13)) //normal data, not a NULL symbol
+			if((BeaconConfig[number].path[i] > 0) || (i == 6) || (i == 13)) //normal data, not a NULL symbol
 			{
-				buf[idx] = beacon[number].path[i]; //copy path
+				buf[idx] = BeaconConfig[number].path[i]; //copy path
 				if((i == 6) || (i == 13)) //it was and ssid
 				{
 					buf[idx] = ENCODE_SSID(buf[idx]); //add appropriate bits for ssid
@@ -70,9 +72,9 @@ void BeaconSend(uint8_t number)
 	buf[idx - 1] |= C_BIT; //add c-bit on the last element
 	buf[idx++] = APRS_CONTROL; //control
 	buf[idx++] = APRS_PID; //pid
-	for(uint8_t i = 0; i < strlen((char*)beacon[number].data); i++)
+	for(uint8_t i = 0; i < strlen((char*)BeaconConfig[number].data); i++)
 	{
-		buf[idx++] = beacon[number].data[i]; //copy beacon comment
+		buf[idx++] = BeaconConfig[number].data[i]; //copy BeaconConfig comment
 	}
 
 	void *handle = NULL;
@@ -95,20 +97,20 @@ void BeaconSend(uint8_t number)
 }
 
 /**
- * @brief Check if any beacon should be transmitted and transmit if necessary
+ * @brief Check if any BeaconConfig should be transmitted and transmit if necessary
  */
 void BeaconCheck(void)
 {
-	for(uint8_t i = 0; i < 8; i++)
+	for(uint8_t i = 0; i < BEACON_COUNT; i++)
 	{
-		if(beacon[i].enable == 0)
+		if(BeaconConfig[i].enable == 0)
 			continue;
 
-		if((beacon[i].interval > 0) && ((SysTickGet() >= beacon[i].next) || (beacon[i].next == 0)))
+		if((BeaconConfig[i].interval > 0) && ((HAL_GetTick() >= BeaconConfig[i].next) || (BeaconConfig[i].next == 0)))
 		{
-			if(beaconDelay[i] > SysTickGet()) //check for beacon delay (only for the very first transmission)
+			if(beaconDelay[i] > HAL_GetTick()) //check for BeaconConfig delay (only for the very first transmission)
 				continue;
-			beacon[i].next = SysTickGet() + beacon[i].interval; //save next beacon timestamp
+			BeaconConfig[i].next = HAL_GetTick() + BeaconConfig[i].interval; //save next BeaconConfig timestamp
 			beaconDelay[i] = 0;
 			BeaconSend(i);
 		}
@@ -117,14 +119,14 @@ void BeaconCheck(void)
 
 
 /**
- * @brief Initialize beacon module
+ * @brief Initialize BeaconConfig module
  */
 void BeaconInit(void)
 {
-	for(uint8_t i = 0; i < 8; i++)
+	for(uint8_t i = 0; i < BEACON_COUNT; i++)
 	{
-		beaconDelay[i] = (beacon[i].delay * SYSTICK_FREQUENCY) + SysTickGet() + (30000 / SYSTICK_INTERVAL); //set delay for beacons and add constant 30 seconds of delay
-		beacon[i].next = 0;
+		beaconDelay[i] = (BeaconConfig[i].delay * SYSTICK_FREQUENCY) + HAL_GetTick() + (30000 / SYSTICK_INTERVAL); //set delay for beacons and add constant 30 seconds of delay
+		BeaconConfig[i].next = 0;
 	}
 }
 
