@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -20,13 +20,17 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include "common.h"
 #include <string.h>
-#include <systick.h>
 #include <uart.h>
 #include "digipeater.h"
 #include "kiss.h"
 
-Uart Uart1 = {.defaultMode = MODE_KISS}, Uart2 = {.defaultMode = MODE_KISS}, UartUsb= {.defaultMode = MODE_KISS};
+#ifdef BLUE_PILL
+Uart Uart1 = {.config.defaultMode = MODE_KISS};
+Uart Uart2 = {.config.defaultMode = MODE_KISS};
+#endif
+Uart UartUsb= {.config.defaultMode = MODE_KISS};
 
+#ifdef BLUE_PILL
 static void handleInterrupt(Uart *port)
 {
 	if(UART_LL_CHECK_RX_NOT_EMPTY(port->port)) //byte received
@@ -65,7 +69,9 @@ static void handleInterrupt(Uart *port)
 		}
 	}
 }
+#endif
 
+#ifdef BLUE_PILL
 void UART_LL_UART1_INTERUPT_HANDLER(void) __attribute__ ((interrupt));
 void UART_LL_UART1_INTERUPT_HANDLER(void)
 {
@@ -77,17 +83,19 @@ void UART_LL_UART2_INTERUPT_HANDLER(void)
 {
 	handleInterrupt(&Uart2);
 }
+#endif
 
 
-void UartSendByte(Uart *port, uint8_t data)
+void UartSendByte(Uart *port, char data)
 {
 	if(!port->enabled)
 		return;
 
 	if(port->isUsb)
 	{
-		CDC_Transmit_FS(&data, 1);
+		CDC_Transmit_FS((uint8_t*)&data, 1);
 	}
+#ifdef BLUE_PILL
 	else
 	{
 		while(port->txBufferFull)
@@ -101,57 +109,34 @@ void UartSendByte(Uart *port, uint8_t data)
 			UART_LL_ENABLE_TX_EMPTY_INTERRUPT(port->port);
 		__enable_irq();
 	}
+#endif
 }
 
 
-void UartSendString(Uart *port, void *data, uint16_t len)
+void UartSendString(Uart *port, const char *data, uint16_t len)
 {
 	if(0 == len)
-		len = strlen((char*)data);
+		len = strlen(data);
 
 	for(uint16_t i = 0; i < len; i++)
 	{
-		UartSendByte(port, ((uint8_t*)data)[i]);
+		UartSendByte(port, data[i]);
 	}
 }
 
 
-static unsigned int findHighestPosition(unsigned int n)
-{
-    unsigned int i = 1;
-    while((i * 10) <= n)
-        i *= 10;
-
-    return i;
-}
-
-void UartSendNumber(Uart *port, int32_t n)
-{
-	if(n < 0)
-		UartSendByte(port, '-');
-	n = abs(n);
-    unsigned int position = findHighestPosition(n);
-    while(position)
-    {
-        unsigned int number = n / position;
-        UartSendByte(port, (number + 48));
-        n -= (number * position);
-        position /= 10;
-    }
-}
-
 void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 {
 	port->port = uart;
-	port->baudrate = baud;
+	port->config.baudrate = baud;
 	port->rxType = DATA_NOTHING;
 	port->rxBufferHead = 0;
 	port->txBufferHead = 0;
 	port->txBufferTail = 0;
 	port->txBufferFull = 0;
-	if(port->defaultMode > MODE_MONITOR)
-		port->defaultMode = MODE_KISS;
-	port->mode = port->defaultMode;
+	if(port->config.defaultMode > MODE_MONITOR)
+		port->config.defaultMode = MODE_KISS;
+	port->mode = port->config.defaultMode;
 	port->enabled = 0;
 	port->kissBufferHead = 0;
 	port->lastRxBufferHead = 0;
@@ -163,9 +148,10 @@ void UartInit(Uart *port, USART_TypeDef *uart, uint32_t baud)
 
 void UartConfig(Uart *port, uint8_t state)
 {
+#ifdef BLUE_PILL
 	if(port->port == UART_LL_UART1_STRUCTURE)
 	{
-		UART_LL_UART1_INITIALIZE_PERIPHERAL(port->baudrate);
+		UART_LL_UART1_INITIALIZE_PERIPHERAL(port->config.baudrate);
 
 		if(state)
 		{
@@ -184,10 +170,12 @@ void UartConfig(Uart *port, uint8_t state)
 
 		port->enabled = state > 0;
 		port->isUsb = 0;
+		return;
 	}
-	else if(port->port == UART_LL_UART2_STRUCTURE)
+
+	if(port->port == UART_LL_UART2_STRUCTURE)
 	{
-		UART_LL_UART2_INITIALIZE_PERIPHERAL(port->baudrate);
+		UART_LL_UART2_INITIALIZE_PERIPHERAL(port->config.baudrate);
 
 		if(state)
 		{
@@ -206,11 +194,14 @@ void UartConfig(Uart *port, uint8_t state)
 
 		port->enabled = state > 0;
 		port->isUsb = 0;
+		return;
 	}
-	else
+#endif
+	if(port == &UartUsb)
 	{
 		port->isUsb = 1;
 		port->enabled = state > 0;
+		return;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -19,6 +19,8 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef FX25_H_
 #define FX25_H_
+
+#include "defines.h"
 
 #ifdef ENABLE_FX25
 

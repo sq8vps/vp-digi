@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2024 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -25,13 +25,12 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "ax25.h"
 #include "drivers/uart_ll.h"
 
-#define UART_BUFFER_SIZE 130
-
 enum UartMode
 {
 	MODE_KISS,
 	MODE_TERM,
 	MODE_MONITOR,
+	MODE_CALIBRATION,
 };
 
 enum UartDataType
@@ -44,8 +43,12 @@ enum UartDataType
 
 typedef struct
 {
+	struct
+	{
+		uint32_t baudrate; //baudrate 1200-115200
+		enum UartMode defaultMode;
+	} config;
 	volatile USART_TypeDef *port; //UART peripheral
-	uint32_t baudrate; //baudrate 1200-115200
 	volatile enum UartDataType rxType; //rx status
 	uint8_t enabled : 1;
 	uint8_t isUsb : 1;
@@ -55,7 +58,6 @@ typedef struct
 	volatile uint16_t txBufferHead, txBufferTail;
 	volatile uint8_t txBufferFull : 1;
 	enum UartMode mode;
-	enum UartMode defaultMode;
 	volatile uint16_t lastRxBufferHead; //for special characters handling
 	volatile uint8_t kissBuffer[AX25_FRAME_MAX_SIZE + 1];
 	volatile uint16_t kissBufferHead;
@@ -64,7 +66,11 @@ typedef struct
 	volatile uint16_t kissTempBufferHead;
 } Uart;
 
-extern Uart Uart1, Uart2, UartUsb;
+#ifdef BLUE_PILL
+extern Uart Uart1;
+extern Uart Uart2;
+#endif
+extern Uart UartUsb;
 
 
 /**
@@ -72,7 +78,7 @@ extern Uart Uart1, Uart2, UartUsb;
  * @param[in] *port UART
  * @param[in] data Data
  */
-void UartSendByte(Uart *port, uint8_t data);
+void UartSendByte(Uart *port, char data);
 
 /**
  * @brief Send string
@@ -80,14 +86,7 @@ void UartSendByte(Uart *port, uint8_t data);
  * @param *data Buffer
  * @param len Buffer length or 0 for null-terminated string
  */
-void UartSendString(Uart *port, void *data, uint16_t datalen);
-
-/**
- * @brief Send signed number
- * @param *port UART
- * @param n Number
- */
-void UartSendNumber(Uart *port, int32_t n);
+void UartSendString(Uart *port, const char *data, uint16_t length);
 
 
 /**

@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -29,7 +29,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
  * @param *buf Frame buffer
  * @param size Frame size
  */
-void KissSend(Uart *port, uint8_t *buf, uint16_t size);
+void KissSend(Uart *port, const void *buf, uint16_t size);
 
 /**
  * @brief Parse bytes received from UART to form a KISS frame (possibly) and send this frame

@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2025 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -21,9 +21,10 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define DIGIPEATER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
-struct _DigiConfig
+struct DigiConfig
 {
 	uint8_t alias[8][6]; //digi alias list
 	uint8_t ssid[4]; //ssid list for simple aliases
@@ -40,8 +41,15 @@ struct _DigiConfig
 	uint8_t filterPolarity : 1; //filter polarity: 0 - blacklist, 1- whitelist
 };
 
-extern struct _DigiConfig DigiConfig; //digipeater state
+extern struct DigiConfig DigiConfig; //digipeater state
 
+
+/**
+ * @brief Check frame with call filter
+ * @param[in] *call Callsign in the incoming frame
+ * @return true if accepted, false if rejected
+ */
+bool DigiCheckFilter(const uint8_t *call);
 
 /**
  * @brief Digipeater entry point

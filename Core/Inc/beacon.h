@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -24,6 +24,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 
 #define BEACON_MAX_PAYLOAD_SIZE 100
+#define BEACON_COUNT 8
 
 struct Beacon
 {
@@ -35,7 +36,7 @@ struct Beacon
 	uint32_t next; //next beacon timestamp
 };
 
-extern struct Beacon beacon[8];
+extern struct Beacon BeaconConfig[BEACON_COUNT];
 
 /**
  * @brief Send specified beacon

@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2023 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -23,21 +23,42 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include "uart.h"
 
+#if defined(STM32F103xB) || defined(STM32F103x8)
+#include "stm32f1xx_hal.h"
+#elif defined(STM32F302xC)
+#include "stm32f3xx_hal.h"
+#endif
+
+#define VPDIGI_HAL_TICK_FREQUENCY HAL_TICK_FREQ_100HZ /**< Systick frequency for HAL. Use this to change systick frequency */
+
+#if VPDIGI_HAL_TICK_FREQUENCY == HAL_TICK_FREQ_100HZ
+#define SYSTICK_INTERVAL (10)
+#elif VPDIGI_HAL_TICK_FREQUENCY == HAL_TICK_FREQ_10HZ
+#define SYSTICK_INERVAL (100)
+#elif VPDIGI_HAL_TICK_FREQUENCY == HAL_TICK_FREQ_1KHZ
+#define SYSTICK_INTERVAL (1)
+#else
+#error Wrong systick frequency!
+#endif
+
+#define SYSTICK_FREQUENCY (1000 / SYSTICK_INTERVAL)
+
 #define IS_UPPERCASE_ALPHANUMERIC(x) ((((x) >= '0') && ((x) <= '9')) || (((x) >= 'A') && ((x) <= 'Z')))
 #define IS_NUMBER(x) (((x) >= '0') && ((x) <= '9'))
 #define ABS(x) (((x) > 0) ? (x) : (-x))
 
 #define CRC32_INIT 0xFFFFFFFF
 
-struct _GeneralConfig
+struct GeneralConfig
 {
 	uint8_t call[6]; //device callsign
 	uint8_t callSsid; //device ssid
-	uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for VP-Digi, but can be changed. SSID MUST remain 0.
-	uint8_t kissMonitor;
+	uint8_t dest[7]; //destination address for own beacons. Should be APNV01-0 for Blue Pill VP-Digi and APNV02-0 for AIOC VP-Digi, but can be changed. SSID MUST remain 0.
+	uint8_t kissMonitor; //monitor own frames on KISS
+	uint8_t kissFilter; //apply filtering to received frames on KISS
 };
 
-extern struct _GeneralConfig GeneralConfig;
+extern struct GeneralConfig GeneralConfig;
 
 extern const char versionString[]; //version string
 
@@ -58,14 +79,14 @@ int16_t Random(int16_t min, int16_t max);
  */
 int64_t StrToInt(const char *str, uint16_t len);
 
-///**
-// * @brief Convert AX25 frame to TNC2 (readable) format
-// * @param *from Input AX25 frame
-// * @param len Input frame length
-// * @param *to Destination buffer, will be NULL terminated
-// * @param limit Destination buffer size limit
-// */
-//void ConvertToTNC2(uint8_t *from, uint16_t fromlen, uint8_t *to, uint16_t limit);
+/**
+ * @brief Convert int to string
+ * @param n Number to convert
+ * @param *str Target string buffer
+ * @return Pointer to the null character following the written data
+ * @note The buffer must be at least 9 bytes long
+ */
+char *IntToStr(int32_t n, char *str);
 
 /**
  * @brief Convert AX25 frame to TNC2 (readable) format and send it through available ports

@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2025 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 This file is part of VP-Digi.
 
 VP-Digi is free software: you can redistribute it and/or modify
@@ -24,8 +24,9 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #define DRIVERS_DIGIPEATER_LL_H_
 
 #include <stdint.h>
+#include "defines.h"
 
-#if defined(STM32F103xB) || defined(STM32F103x8)
+#if defined(BLUE_PILL)
 
 #include "stm32f1xx.h"
 
@@ -55,7 +56,21 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 	GPIOB->CRL &= ~GPIO_CRL_CNF1; \
 } while(0); \
 
+#elif defined(AIOC)
 
+#define DIGIPEATER_LL_LED_ON()
+
+#define DIGIPEATER_LL_LED_OFF()
+
+/**
+ * @brief Placeholder on AIOC port
+ * @return Always 0
+ */
+#define DIGIPEATER_LL_GET_DISABLE_STATE() (0)
+
+#define DIGIPEATER_LL_INITIALIZE_RCC()
+
+#define DIGIPEATER_LL_INITIALIZE_INPUTS_OUTPUTS()
 
 #endif
 

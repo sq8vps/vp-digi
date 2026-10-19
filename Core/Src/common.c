@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2024 Piotr Wilkon
+Copyright 2020-2026 Piotr Wilkon
 
 This file is part of VP-Digi.
 
@@ -22,19 +22,27 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 #include "common.h"
 #include "ax25.h"
 #include "usbd_cdc_if.h"
+#include "aprs.h"
 
-struct _GeneralConfig GeneralConfig =
+struct GeneralConfig GeneralConfig =
 {
 		.call = {'N' << 1, '0' << 1, 'C' << 1, 'A' << 1, 'L' << 1, 'L' << 1},
 		.callSsid = 0,
+#ifdef BLUE_PILL
 		.dest = {130, 160, 156, 172, 96, 98, 96}, //destination address: APNV01-0 by default. SSID MUST remain 0.
+#elif defined(AIOC)
+		.dest = {130, 160, 156, 172, 96, 100, 96}, //destination address: APNV02-0 by default. SSID MUST remain 0.
+#endif
 		.kissMonitor = 0,
 };
 
 
-const char versionString[] = "VP-Digi v. 2.1.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
+const char versionString[] = "VP-Digi v. 2.2.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
 #ifdef ENABLE_FX25
 		"With FX.25 support compiled-in\r\n"
+#endif
+#ifdef AIOC
+		"Built for AIOC\r\n"
 #endif
 		;
 
@@ -69,6 +77,37 @@ int64_t StrToInt(const char *str, uint16_t len)
 	return tmp;
 }
 
+static uint32_t findHighestPosition(uint32_t n)
+{
+    uint32_t i = 1;
+    while((i * 10) <= n)
+        i *= 10;
+
+    return i;
+}
+
+
+char *IntToStr(int32_t n, char *str)
+{
+	if(n < 0)
+	{
+		*str++ = '-';
+		n = -n;
+	}
+    uint32_t position = findHighestPosition(n);
+    while(position)
+    {
+        uint32_t number = n / position;
+        *str++ = number + '0';
+        n -= (number * position);
+        position /= 10;
+    }
+
+    *str++ = '\0';
+
+    return str;
+}
+
 
 int16_t Random(int16_t min, int16_t max)
 {
@@ -86,6 +125,7 @@ int16_t Random(int16_t min, int16_t max)
 
 static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 {
+	char buf[20];
 	for(uint8_t i = 0; i < 6; i++) //source call
 	{
 		if((from[7 + i] >> 1) != ' ') //skip spaces
@@ -94,11 +134,12 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 		}
 	}
 
-	uint8_t ssid = ((from[13] >> 1) & 0b00001111); //store ssid
+	uint8_t ssid = EXTRACT_SSID(from[13]); //store ssid
 	if(ssid > 0) //SSID >0
 	{
+		IntToStr(ssid, buf);
 		UartSendByte(uart, '-'); //add -
-		UartSendNumber(uart, ssid);
+		UartSendString(uart, buf, 0);
 	}
 
 	UartSendByte(uart, '>'); //first separator
@@ -110,17 +151,18 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 			UartSendByte(uart, from[i] >> 1);
 		}
 	}
-	ssid = ((from[6] >> 1) & 0b00001111); //store ssid
+	ssid = EXTRACT_SSID(from[6]); //store ssid
 
 	if(ssid > 0) //SSID >0
 	{
+		IntToStr(ssid, buf);
 		UartSendByte(uart, '-'); //add -
-		UartSendNumber(uart, ssid);
+		UartSendString(uart, buf, 0);
 	}
 
 	uint16_t nextPathEl = 14; //next path element index
 
-    if(!(from[13] & 1)) //no c-bit in source address, there is a digi path
+    if(!(from[13] & C_BIT)) //no c-bit in source address, there is a digi path
     {
         do //analyze all path elements
         {
@@ -134,30 +176,31 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
         		}
         	}
 
-            ssid = ((from[nextPathEl + 6] >> 1) & 0b00001111); //store ssid
+            ssid = EXTRACT_SSID(from[nextPathEl + 6]); //store ssid
         	if(ssid > 0) //SSID >0
         	{
+        		IntToStr(ssid, buf);
         		UartSendByte(uart, '-'); //add -
-        		UartSendNumber(uart, ssid);
+        		UartSendString(uart, buf, 0);
         	}
-            if((from[nextPathEl + 6] & 0x80)) //h-bit in ssid
+            if((from[nextPathEl + 6] & H_BIT)) //h-bit in ssid
             	UartSendByte(uart, '*'); //add *
 
             nextPathEl += 7; //next path element
             if(nextPathEl > 56) //too many path elements
             	break;
         }
-        while((from[nextPathEl - 1] & 1) == 0); //loop until the c-bit is found
+        while((from[nextPathEl - 1] & C_BIT) == 0); //loop until the c-bit is found
 
     }
 
 	UartSendByte(uart, ':'); //separator
 
-    if((from[nextPathEl] & 0b11101111) == 0b00000011) //check if UI packet
+    if((from[nextPathEl] & APRS_CONTROL_MASK) == APRS_CONTROL) //check if UI packet
     {
 		nextPathEl += 2; //skip Control and PID
 
-		UartSendString(uart, &(from[nextPathEl]), len - nextPathEl); //send information field
+		UartSendString(uart, (const char*)&(from[nextPathEl]), len - nextPathEl); //send information field
     }
     else
     	UartSendString(uart, "<not UI packet>", 0);
@@ -169,10 +212,12 @@ void SendTNC2(uint8_t *from, uint16_t len)
 {
 	if(UartUsb.mode == MODE_MONITOR)
 		sendTNC2ToUart(&UartUsb, from, len);
+#ifdef BLUE_PILL
 	if(Uart1.mode == MODE_MONITOR)
 		sendTNC2ToUart(&Uart1, from, len);
 	if(Uart2.mode == MODE_MONITOR)
 		sendTNC2ToUart(&Uart2, from, len);
+#endif
 }
 
 uint32_t Crc32(uint32_t crc0, uint8_t *s, uint64_t n)
@@ -256,4 +301,25 @@ bool ParseSsid(const char *in, uint16_t size, uint8_t *out)
 	return false;
 }
 
+extern volatile uint32_t uwTick;
 
+void HAL_IncTick(void)
+{
+  ++uwTick;
+}
+
+void HAL_Delay(uint32_t Delay)
+{
+  uint32_t tickstart = HAL_GetTick();
+  uint32_t wait = Delay / SYSTICK_INTERVAL;
+
+  /* Add freq to guarantee minimum wait */
+  if (wait < HAL_MAX_DELAY)
+  {
+    ++wait;
+  }
+
+  while((HAL_GetTick() - tickstart) < wait)
+  {
+  }
+}
