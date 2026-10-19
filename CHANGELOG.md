@@ -1,23 +1,17 @@
-# 2.2.1 (2026-08-31)
-## New features
-* Receives frames can be filtered before being sent to KISS port
-## Bug fixes
-* Fixed reserved bit handling in AX.25 SSIDs, so that frames from not-exactly-APRS-compliant devices are handled properly
-## Other
-* Code cleanup
-## Know bugs
-* none
-# 2.2.0 (2025-03-20)
+# 2.2.0 (2026-10-19)
 ## New features
 * [AIOC](https://github.com/skuep/AIOC)-compatibility
 * FPU support for modem
 * "Interactive" calibration menu
+* Receives frames can be filtered before being sent to KISS port
 ## Bug fixes
-* none
+* Fixed reserved bit handling in AX.25 SSIDs, so that frames from not-exactly-APRS-compliant devices are handled properly
 ## Other
 * Got rid of multiline macros in modem this time :)
+* Code cleanup
+* **R2R-based DAC support dropped***
 ## Known bugs
-* none
+* Sometimes the USB may require physical reconnection after saving the configuration or rebooting. I believe this is due to some USB stack bug in the HAL.
 # 2.1.0 (2025-03-04)
 ## New features
 * Digipeater disable input at PB0 (pull to GND to disable digipeater)

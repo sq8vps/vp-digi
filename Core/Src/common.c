@@ -37,7 +37,7 @@ struct GeneralConfig GeneralConfig =
 };
 
 
-const char versionString[] = "VP-Digi v. 2.2.1\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
+const char versionString[] = "VP-Digi v. 2.2.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
 #ifdef ENABLE_FX25
 		"With FX.25 support compiled-in\r\n"
 #endif
@@ -45,8 +45,6 @@ const char versionString[] = "VP-Digi v. 2.2.1\r\nThe open-source standalone APR
 		"Built for AIOC\r\n"
 #endif
 		;
-
-#define AX25_UI_CONTROL_MASK 0b11101111
 
 
 static uint64_t pow10i(uint16_t exp)
@@ -198,7 +196,7 @@ static void sendTNC2ToUart(Uart *uart, uint8_t *from, uint16_t len)
 
 	UartSendByte(uart, ':'); //separator
 
-    if((from[nextPathEl] & AX25_UI_CONTROL_MASK) == APRS_CONTROL) //check if UI packet
+    if((from[nextPathEl] & APRS_CONTROL_MASK) == APRS_CONTROL) //check if UI packet
     {
 		nextPathEl += 2; //skip Control and PID
 

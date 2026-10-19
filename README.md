@@ -22,9 +22,10 @@ Polska wersja tego pliku dostępna jest [tutaj](README_pl.md).
 The latest compiled firmware can be downloaded [here](https://github.com/sq8vps/vp-digi/releases).\
 Full documentation can be found [here](doc/manual.md).
 
-## Updating to 2.0.0+ on older hardware
+## Updating to 2.2.0+ on older hardware
 
-Since version 2.0.0, the component values have changed to provide support for faster modulations (9600 Bd). If you want to use these, some components must be replaced. For more information, refer to the [manual](doc/manual.md).
+Most importantly, the R2R (resistor ladder) DAC support was dropped in version 2.2.0, and now only the PWM generation can be used.
+Also, in version 2.0.0, the component values have changed to provide support for faster modulations (9600 Bd). If you want to use these, some components must be replaced. For more information, refer to the [manual](doc/manual.md).
 
 ## Description, schematic, instructions
 

@@ -21,9 +21,10 @@
 Najnowsze skompilowane oprogramowanie można znaleźć [tutaj](https://github.com/sq8vps/vp-digi/releases).\
 Pełną dokumentację można znaleźć [tutaj](doc/manual_pl.md).
 
-## Aktualizacja oprogramowania do wersji 2.0.0+ na starszym sprzęcie 
+## Aktualizacja oprogramowania do wersji 2.2.0+ na starszym sprzęcie 
 
-W wersji 2.0.0 wartości komponentów zostały zmienione, aby umożliwić obsługę szybszych modulacji (9600 Bd). W przypadku potrzeby użycia tych modulacji niektóre komponenty muszą zostać wymienione. Więcej informacji dostępnych jest w [instrukcji obsługi](doc/manual_pl.md).
+Przede wszystkim w wersji 2.2.0 możliwość generacji sygnału drabinką rezystorową (R2R) została usunięta.
+Ponadto w wersji 2.0.0 wartości komponentów zostały zmienione, aby umożliwić obsługę szybszych modulacji (9600 Bd). W przypadku potrzeby użycia tych modulacji niektóre komponenty muszą zostać wymienione. Więcej informacji dostępnych jest w [instrukcji obsługi](doc/manual_pl.md).
 
 ## Opis, schemat, instrukcje
 

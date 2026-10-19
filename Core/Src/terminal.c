@@ -29,6 +29,9 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 void TermHandleSpecial(Uart *u)
 {
+#ifdef AIOC
+	char buf[20];
+#endif
 	if(MODE_CALIBRATION == u->mode)
 	{
 		char c = u->rxBuffer[u->rxBufferHead - 1];
@@ -68,7 +71,8 @@ void TermHandleSpecial(Uart *u)
 				else if(('m' == c) && (ModemConfig.txLevel	< 100))
 					++ModemConfig.txLevel;
 				UartSendString(u, "TX level set to ", 0);
-				UartSendNumber(u, ModemConfig.txLevel);
+				IntToStr(ModemConfig.txLevel, buf);
+				UartSendString(u, buf, 0);
 				UartSendString(u, "%\r\n", 0);
 				break;
 #endif
@@ -144,8 +148,10 @@ void TermSendByteToAll(enum UartMode mode, char data)
 {
 	if(MODE_KISS == mode)
 	{
+#ifdef BLUE_PILL
 		KissSend(&Uart1, &data, 1);
 		KissSend(&Uart2, &data, 1);
+#endif
 		KissSend(&UartUsb, &data, 1);
 	}
 	else if(MODE_MONITOR == mode)
@@ -308,14 +314,16 @@ static void printConfig(Uart *src)
 		UartSendString(src, "no", 0);
 #ifdef AIOC
 	UartSendString(src, "\r\nTX level: ", 0);
-	UartSendNumber(src, ModemConfig.txLevel);
+	IntToStr(ModemConfig.txLevel, buf);
+	UartSendString(src, buf, 0);
 	UartSendString(src, "%, attenuator ", 0);
 	if(ModemConfig.attenuator)
 		UartSendString(src, "enabled", 0);
 	else
 		UartSendString(src, "disabled", 0);
 	UartSendString(src, "\r\nRX gain: ", 0);
-	UartSendNumber(src, 1 << ModemConfig.gain);
+	IntToStr(1 << ModemConfig.gain, buf);
+	UartSendString(src, buf, 0);
 	UartSendString(src, "\r\nPTT output: ", 0);
 	if(!ModemConfig.pttOutput)
 		UartSendString(src, "primary", 0);

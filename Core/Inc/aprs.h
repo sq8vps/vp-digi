@@ -23,6 +23,7 @@ along with VP-Digi.  If not, see <http://www.gnu.org/licenses/>.
 
 #define AX25_FLAG 0x7E /**< AX.25 flag */
 
+#define APRS_CONTROL_MASK 0xEF /**< AX.25 control field mask */
 #define APRS_CONTROL 0x03 /**< AX.25 control field value for APRS */
 #define APRS_PID 0xF0 /**< AX.25 PID field value for APRS */
 
