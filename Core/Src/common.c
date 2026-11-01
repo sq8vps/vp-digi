@@ -37,7 +37,7 @@ struct GeneralConfig GeneralConfig =
 };
 
 
-const char versionString[] = "VP-Digi v. 2.2.0\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
+const char versionString[] = "VP-Digi v. 2.2.1\r\nThe open-source standalone APRS digipeater controller and KISS TNC\r\n"
 #ifdef ENABLE_FX25
 		"With FX.25 support compiled-in\r\n"
 #endif
