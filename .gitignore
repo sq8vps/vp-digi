@@ -103,6 +103,7 @@ Release/
 .vscode/
 build/
 Drivers/
+!Core/Inc/drivers
 Middlewares/
 USB_DEVICE/
 !USB_DEVICE/App/usbd_cdc_if.c
@@ -127,3 +128,4 @@ stm32f*_it.h
 
 .project
 .cproject
+
