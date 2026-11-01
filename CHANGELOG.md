@@ -1,3 +1,14 @@
+# 2.2.1 (2026-11-01)
+## New features
+* none
+## Bug fixes
+* none
+## Other
+* LwFEC updated to the newest version
+* .gitignore fixed
+* Missing header files are present in the repository now
+## Known bugs
+* Sometimes the USB may require physical reconnection after saving the configuration or rebooting. I believe this is due to some USB stack bug in the HAL.
 # 2.2.0 (2026-10-19)
 ## New features
 * [AIOC](https://github.com/skuep/AIOC)-compatibility
